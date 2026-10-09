@@ -9,7 +9,7 @@
   const PHONES = ['01111117958', '01010107958', '01222227958'];
   const MAP = 'https://maps.app.goo.gl/WXWC2jJhyESubBve9';
   const ADDRESS = 'شارع حديقة الزهرية، أمام برج القاهرة، الزمالك – القاهرة';
-  const DOCNAME = { akhenaten: 'منيو قاعة أخناتون', isis: 'منيو قاعة إيزيس', lotus: 'منيو قاعة اللوتس', mawadda: 'منيو قاعة المودة والرحمة', birthday: 'منيو أعياد الميلاد', special: 'منيو المناسبات الخاصة', photo: 'منيو الفوتو سيشن', rules: 'لائحة تنظيم حجز وإقامة الحفلات' };
+  const DOCNAME = { akhenaten: 'منيو قاعة أخناتون', isis: 'منيو قاعة إيزيس', lotus: 'منيو قاعة اللوتس', mawadda: 'منيو قاعة المودة والرحمة', birthday: 'منيو أعياد الميلاد', special: 'منيو المناسبات الخاصة', photo: 'منيو الفوتو سيشن', rules: 'شروط وأحكام الحجز بالدار' };
   let K = null;
 
   /* ---------------- text helpers ---------------- */
@@ -154,94 +154,101 @@
 
   /* ---------------- UI ---------------- */
   const CSS = `
-.dmb-launch{--b:#C9A45C;position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;height:60px;padding:0 8px 0 18px;border:1px solid rgba(201,164,92,.7);border-radius:28px;background:#14203A;color:#F3E7CC;display:flex;align-items:center;gap:10px;font:600 15px/1 "IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;box-shadow:0 10px 28px rgba(3,8,18,.55);cursor:pointer;direction:rtl;transition:transform .2s ease}
-.dmb-launch:hover{transform:translateY(-2px)}
-.dmb-launch .dmb-lt{display:inline-grid;gap:4px;line-height:1.15}
-.dmb-launch .dmb-lt .en{font:700 17px/1 "Segoe UI","Helvetica Neue",Arial,sans-serif;color:#F3E7CC;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;direction:ltr}
-.dmb-launch .dmb-lt .ar{width:0;min-width:100%;font:600 15px/1.2 "IBM Plex Sans Arabic","Segoe UI",sans-serif;color:#C9A45C;text-align:center;white-space:nowrap;overflow:hidden}
-.dmb-launch .dmb-ic{width:42px;height:42px;border-radius:50%;background:linear-gradient(145deg,#DDBE7C,#A9843E);color:#14203A;display:flex;align-items:center;justify-content:center;flex:none;order:-1}
+.dmb-panel,.dmb-launch{--ink:#1B2336;--night:#0A1120;--night2:#101A2E;--night3:#17233B;--gold:#C8A464;--gold2:#E9D3A1;--goldD:#8C6A2E;--paper:#FCFAF4;--paper2:#F5EEDD;--line:#E6D7B2;--wine:#5E1B2C;--wine2:#7A2638;--sans:"Tajawal","IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;--serif:"Amiri","Noto Naskh Arabic",serif;--latin:"Cormorant Garamond","Cormorant","Didot","Bodoni 72",Georgia,serif}
+.dmb-launch{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;height:64px;padding:0 10px 0 22px;border:0;border-radius:32px;background:linear-gradient(180deg,#121D33,#0A1120);color:var(--gold2);display:flex;align-items:center;gap:12px;box-shadow:0 0 0 1px rgba(200,164,100,.75),0 0 0 4px #0A1120,0 0 0 5px rgba(200,164,100,.35),0 14px 34px rgba(0,0,0,.55);cursor:pointer;direction:rtl;transition:transform .25s ease,box-shadow .25s ease}
+.dmb-launch:hover{transform:translateY(-2px);box-shadow:0 0 0 1px var(--gold2),0 0 0 4px #0A1120,0 0 0 5px rgba(233,211,161,.5),0 18px 40px rgba(0,0,0,.6)}
+.dmb-launch .dmb-lt{display:inline-grid;gap:3px;line-height:1.1}
+.dmb-launch .dmb-lt .en{font:700 19px/1 var(--latin);letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;direction:ltr;background:linear-gradient(180deg,#FFF3D6 0%,#EBCB8A 60%,#CFA55E 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.dmb-launch .dmb-lt .ar{width:0;min-width:100%;font:700 15px/1.25 var(--serif);color:var(--gold);text-align:center;white-space:nowrap;overflow:hidden}
+.dmb-launch .dmb-ic{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#F3DFAE,#C8A464 55%,#8C6A2E);color:#0A1120;display:flex;align-items:center;justify-content:center;flex:none;order:-1;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
 .dmb-launch svg{width:22px;height:22px}
-.dmb-launch:focus-visible{outline:2px solid #F3E7CC;outline-offset:3px}
+.dmb-launch:focus-visible{outline:2px solid var(--gold2);outline-offset:6px}
 .dmb-open .dmb-launch{display:none}
-@media(max-width:420px){.dmb-launch{right:12px;padding:0 6px 0 14px;gap:8px}.dmb-launch .dmb-lt .en{font-size:15px}.dmb-launch .dmb-lt .ar{font-size:13.5px}.dmb-launch .dmb-ic{width:44px;height:44px}}
+@media(max-width:420px){.dmb-launch{right:12px;height:58px;padding:0 7px 0 16px;gap:9px}.dmb-launch .dmb-lt .en{font-size:16px;letter-spacing:.12em}.dmb-launch .dmb-lt .ar{font-size:13.5px}.dmb-launch .dmb-ic{width:42px;height:42px}}
 body.printing .dmb-launch,body.printing .dmb-panel{display:none!important}
 @media(max-width:560px){html.dmb-open,html.dmb-open body{overflow:hidden}}
-.dmb-panel{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:130;width:min(410px,calc(100vw - 32px));height:min(660px,calc(100dvh - 32px));display:flex;flex-direction:column;background:#0E1729;color:#F3E7CC;border:1px solid rgba(201,164,92,.45);border-radius:20px;box-shadow:0 24px 60px rgba(3,8,18,.7);overflow:hidden;direction:rtl;font-family:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;font-size:15px;line-height:1.75}
+.dmb-panel{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:130;width:min(420px,calc(100vw - 32px));height:min(680px,calc(100dvh - 32px));display:flex;flex-direction:column;background:radial-gradient(120% 60% at 50% 0%,#15223A 0%,#0A1120 60%) #0A1120;color:var(--gold2);border-radius:22px;box-shadow:0 0 0 1px rgba(200,164,100,.55),0 30px 70px rgba(0,0,0,.65);overflow:hidden;direction:rtl;font-family:var(--sans);font-size:15.5px;line-height:1.8;animation:dmbIn .28s ease-out}
+@keyframes dmbIn{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
 .dmb-panel[hidden]{display:none}
-@media(max-width:560px){.dmb-panel{left:0;right:0;top:0;bottom:auto;width:auto;height:100dvh;border-radius:0;border:0;padding-bottom:env(safe-area-inset-bottom,0px)}.dmb-m{max-width:96%}}
-.dmb-hd{display:flex;align-items:center;gap:12px;padding:14px 16px 13px;background:#14203A;border-bottom:1px solid #C9A45C;box-shadow:0 3px 0 -2px rgba(201,164,92,.35)}
-.dmb-hd img{width:46px;height:auto;flex:none}
+@media(max-width:560px){.dmb-panel{left:0;right:0;top:0;bottom:auto;width:auto;height:100dvh;border-radius:0;box-shadow:none;padding-bottom:env(safe-area-inset-bottom,0px)}.dmb-m{max-width:96%}}
+.dmb-hd{position:relative;display:flex;align-items:center;gap:12px;padding:15px 16px 16px;background:linear-gradient(180deg,#0E182B,#0A1120)}
+.dmb-hd:after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:5px;border-top:1px solid rgba(200,164,100,.85);border-bottom:1px solid rgba(200,164,100,.35)}
+.dmb-hd img{width:46px;height:auto;flex:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
 .dmb-hd .dmb-tt{flex:1;min-width:0;display:flex;justify-content:flex-start}
-.dmb-hd .dmb-nm{display:inline-grid;gap:3px;max-width:100%}
-.dmb-hd b{display:block;font-family:"Amiri","Noto Naskh Arabic",serif;font-weight:700;font-size:20px;color:#F3E7CC;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media(max-width:420px){.dmb-hd b{font-size:18px}.dmb-hd img{width:38px}}
-.dmb-hd b.en{font:700 19px/1.25 "Segoe UI","Helvetica Neue",Arial,sans-serif;letter-spacing:.07em;text-transform:uppercase;direction:ltr;text-align:right}
-@media(max-width:420px){.dmb-hd b.en{font-size:16.5px}}
-.dmb-hd small{width:0;min-width:100%;display:flex;align-items:center;justify-content:center;gap:6px;color:#C9A45C;font-size:15px;font-weight:600;line-height:1.5;margin-top:2px;letter-spacing:.02em}
+.dmb-hd .dmb-nm{display:inline-grid;gap:2px;max-width:100%}
+.dmb-hd b{display:block;font-family:var(--serif);font-weight:700;font-size:20px;color:var(--gold2);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dmb-hd b.en{font:700 21px/1.15 var(--latin);letter-spacing:.13em;overflow:visible;text-transform:uppercase;direction:ltr;text-align:right;background:linear-gradient(180deg,#F6E7C4 0%,#D9B979 55%,#B48A45 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+@media(max-width:420px){.dmb-hd b.en{font-size:17px;letter-spacing:.08em}.dmb-hd img{width:36px}.dmb-hd{gap:9px;padding:13px 12px 15px}.dmb-hd button{width:34px;height:34px}}
+.dmb-hd small{width:0;min-width:100%;display:flex;align-items:center;justify-content:center;gap:7px;color:var(--gold);font:700 15px/1.4 var(--serif);margin-top:1px}
 .dmb-hd small .ar{white-space:nowrap;overflow:hidden}
-.dmb-hd small i{width:7px;height:7px;border-radius:50%;background:#4FC27E;box-shadow:0 0 0 3px rgba(79,194,126,.18)}
-.dmb-hd button{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid rgba(243,231,204,.22);background:transparent;color:#F3E7CC;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.dmb-hd button:hover{border-color:#C9A45C;color:#C9A45C}
-.dmb-hd button:focus-visible,.dmb-chips button:focus-visible,.dmb-btn:focus-visible{outline:2px solid #C9A45C;outline-offset:2px}
-.dmb-log{flex:1;overflow-y:auto;padding:16px 14px 8px;display:flex;flex-direction:column;gap:12px;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(201,164,92,.4) transparent}
-.dmb-m{max-width:94%;word-wrap:break-word}
-.dmb-b{align-self:flex-start;background:#FBF7EE;color:#1F2B42;border:1px solid #E3D3AE;border-radius:4px 16px 16px 16px;padding:13px 15px 12px;box-shadow:0 2px 0 rgba(169,132,62,.25)}
-.dmb-u{align-self:flex-end;background:#24375A;color:#F6EEDB;border:1px solid rgba(201,164,92,.35);border-radius:16px 4px 16px 16px;padding:9px 14px;font-weight:500}
-.dmb-m p{margin:0 0 7px}.dmb-m p:last-child{margin-bottom:0}
-.dmb-m ul,.dmb-m ol{margin:4px 0 9px;padding-inline-start:20px}.dmb-m li{margin:2px 0}
-.dmb-b ul li::marker{color:#A9843E}.dmb-b ol li::marker{color:#8A6A2C;font-weight:700}
-.dmb-b b{color:#14203A}
-.dmb-b a{color:#7A5B22}
-.dmb-sec{margin:8px 0 6px}.dmb-sec>b{display:block;color:#8A6A2C;font-size:14px;font-weight:700;margin-bottom:1px}
-.dmb-sec p{color:#5D667A;font-size:13px;margin:0}
-.dmb-h{font-family:"Amiri","Noto Naskh Arabic",serif;font-weight:700;font-size:20px;color:#14203A;margin:0 0 6px!important;line-height:1.35;padding-bottom:6px;border-bottom:1px solid #E3D3AE}
-.dmb-t{width:100%;border-collapse:collapse;margin:8px 0 10px;font-size:13.5px}
-.dmb-t th,.dmb-t td{padding:7px 6px;border-bottom:1px dotted #D9C79F;text-align:right;vertical-align:top}
-.dmb-t th{color:#8A6A2C;font-weight:700;font-size:12px;border-bottom:1px solid #C9A45C}
-.dmb-t small{color:#6B7385}
-.dmb-t td.n{white-space:nowrap;font-weight:700;color:#14203A;text-align:left;font-variant-numeric:tabular-nums}
-.dmb-t tr.tot td{background:#14203A;color:#F3E7CC;border:0;font-weight:700;padding:9px 10px}
-.dmb-t tr.tot td.n{color:#E4C27F}
-.dmb-t tr.tot td:first-child{border-radius:0 8px 8px 0}.dmb-t tr.tot td:last-child{border-radius:8px 0 0 8px}
-.dmb-note{font-size:12.5px;color:#4C566B;background:#F4ECDB;border-inline-start:3px solid #C9A45C;padding:6px 10px;border-radius:0 6px 6px 0;margin:7px 0!important}
-.dmb-src{font-size:11.5px;color:#8A8F9C;margin-top:9px!important;padding-top:7px;border-top:1px solid #EADFC4}
-.dmb-law summary{cursor:pointer;color:#7A5B22;font-size:13px;font-weight:600;margin-top:8px}
-.dmb-law p{font-size:12.5px;color:#3E485C;background:#F4ECDB;padding:8px 10px;border-radius:8px;margin:6px 0!important;line-height:1.8}
-.dmb-acts{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
-.dmb-btn{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;border:1px solid #14203A;background:transparent;color:#14203A;font:600 13px/1.3 inherit;font-family:inherit;cursor:pointer;text-decoration:none}
-.dmb-btn:hover{background:#14203A;color:#F3E7CC}
-.dmb-btn.wa{background:#1DA851;border-color:#1DA851;color:#fff}
-.dmb-btn.wa:hover{background:#168A42;border-color:#168A42}
-.dmb-btn.pri{background:#14203A;color:#F3E7CC}
-.dmb-btn.pri:hover{background:#24375A}
-.dmb-chips{display:flex;flex-wrap:wrap;gap:7px;padding:6px 14px 10px}
+.dmb-hd small i{width:7px;height:7px;border-radius:50%;background:#5FCB8A;box-shadow:0 0 0 3px rgba(95,203,138,.16)}
+.dmb-hd button{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid rgba(200,164,100,.4);background:transparent;color:var(--gold2);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.dmb-hd button:hover{border-color:var(--gold2);background:rgba(200,164,100,.12)}
+.dmb-hd button:focus-visible,.dmb-chips button:focus-visible,.dmb-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.dmb-log{flex:1;overflow-y:auto;padding:18px 14px 10px;display:flex;flex-direction:column;gap:14px;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(200,164,100,.4) transparent}
+.dmb-m{max-width:94%;word-wrap:break-word;animation:dmbUp .22s ease-out}
+@keyframes dmbUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.dmb-b{align-self:flex-start;position:relative;background:linear-gradient(180deg,#FFFDF8,var(--paper));color:var(--ink);border-radius:3px 18px 18px 18px;padding:15px 17px 14px;box-shadow:inset 0 0 0 1px var(--line),inset 0 0 0 4px var(--paper),inset 0 0 0 5px rgba(200,164,100,.28),0 10px 24px rgba(0,0,0,.28)}
+.dmb-u{align-self:flex-end;background:linear-gradient(160deg,var(--wine2),var(--wine));color:#F8EBD5;border-radius:18px 3px 18px 18px;padding:10px 16px;font-weight:500;box-shadow:inset 0 0 0 1px rgba(233,211,161,.28),0 8px 18px rgba(0,0,0,.3)}
+.dmb-m p{margin:0 0 8px}.dmb-m p:last-child{margin-bottom:0}
+.dmb-m ul,.dmb-m ol{margin:4px 0 10px;padding-inline-start:20px}.dmb-m li{margin:3px 0}
+.dmb-b ul li::marker{color:var(--gold)}.dmb-b ol li::marker{color:var(--goldD);font-weight:700}
+.dmb-b b{color:#0E1628}
+.dmb-b a{color:var(--goldD)}
+.dmb-sec{margin:9px 0 6px}.dmb-sec>b{display:block;color:var(--goldD);font:700 15.5px/1.5 var(--serif);margin-bottom:2px}
+.dmb-sec p{color:#5A6274;font-size:13.5px;margin:0}
+.dmb-h{font:700 21px/1.4 var(--serif);color:#0E1628;margin:0 0 8px!important;padding-bottom:8px;background:linear-gradient(90deg,transparent,var(--gold),transparent) bottom/100% 1px no-repeat}
+.dmb-t{width:100%;border-collapse:collapse;margin:9px 0 11px;font-size:14px}
+.dmb-t th,.dmb-t td{padding:8px 6px;border-bottom:1px dashed #E2D2AA;text-align:right;vertical-align:top}
+.dmb-t th{color:var(--goldD);font:700 13px/1.4 var(--serif);border-bottom:1px solid var(--gold)}
+.dmb-t small{color:#707789}
+.dmb-t td.n{white-space:nowrap;font-weight:700;color:#0E1628;text-align:left;font-variant-numeric:tabular-nums}
+.dmb-t tr.tot td{background:linear-gradient(180deg,#14203A,#0B1424);color:var(--gold2);border:0;font-weight:700;padding:10px 12px}
+.dmb-t tr.tot td.n{color:#F1D9A0;font-size:15px}
+.dmb-t tr.tot td:first-child{border-radius:0 10px 10px 0}.dmb-t tr.tot td:last-child{border-radius:10px 0 0 10px}
+.dmb-note{font-size:13px;color:#4A5367;background:var(--paper2);border-inline-start:2px solid var(--gold);padding:7px 11px;border-radius:0 8px 8px 0;margin:8px 0!important}
+.dmb-src{font-size:11.5px;color:#9A8F78;margin-top:10px!important;padding-top:8px;border-top:1px solid #EFE4C9}
+.dmb-law summary{cursor:pointer;color:var(--goldD);font:700 14px/1.5 var(--serif);margin-top:8px}
+.dmb-law p{font-size:13px;color:#3E465A;background:var(--paper2);padding:9px 11px;border-radius:10px;margin:6px 0!important;line-height:1.9}
+.dmb-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.dmb-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:12px;border:1px solid #0E1628;background:transparent;color:#0E1628;font:700 13.5px/1.3 var(--sans);cursor:pointer;text-decoration:none;transition:all .2s}
+.dmb-btn:hover{background:#0E1628;color:var(--gold2)}
+.dmb-btn.wa{background:linear-gradient(180deg,#1FAE5A,#138A45);border-color:transparent;color:#fff;box-shadow:0 4px 12px rgba(19,138,69,.3)}
+.dmb-btn.wa:hover{background:linear-gradient(180deg,#22B862,#117A3D);color:#fff}
+.dmb-btn.pri{background:linear-gradient(180deg,#16233D,#0B1424);color:var(--gold2);border-color:var(--gold);box-shadow:0 4px 12px rgba(10,17,32,.25)}
+.dmb-btn.pri:hover{background:#0B1424;color:#F6E7C4}
+.dmb-chips{display:flex;flex-wrap:wrap;gap:8px;padding:8px 14px 12px}
 .dmb-chips:empty{display:none}
-.dmb-chips button{padding:6px 13px;border-radius:999px;border:1px solid rgba(201,164,92,.55);background:transparent;color:#F3E7CC;font:500 13px/1.35 inherit;font-family:inherit;cursor:pointer}
-.dmb-chips button:hover{background:#C9A45C;color:#14203A}
-.dmb-in{display:flex;gap:8px;padding:11px 14px;border-top:1px solid rgba(201,164,92,.3);background:#14203A}
-.dmb-in input{flex:1;min-width:0;height:46px;border-radius:23px;border:1px solid transparent;background:#FBF7EE;color:#1F2B42;padding:0 18px;font:16px inherit;font-family:inherit;direction:rtl}
-.dmb-in input:focus{outline:none;border-color:#C9A45C;box-shadow:0 0 0 3px rgba(201,164,92,.3)}
-.dmb-in input::placeholder{color:#8A8F9C}
-.dmb-in button{flex:none;height:46px;min-width:46px;padding:0 16px;gap:6px;border-radius:23px;border:0;font:700 15px/1 inherit;font-family:inherit;background:linear-gradient(145deg,#DDBE7C,#A9843E);color:#14203A;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.dmb-in button svg{width:20px;height:20px;transform:scaleX(-1)}
-.dmb-typing{align-self:flex-start;display:flex;gap:5px;padding:14px 16px;background:#FBF7EE;border:1px solid #E3D3AE;border-radius:4px 16px 16px 16px}
-.dmb-typing i{width:7px;height:7px;border-radius:50%;background:#A9843E;animation:dmbB 1s infinite ease-in-out}
+.dmb-chips button{padding:7px 15px;border-radius:12px;border:1px solid rgba(200,164,100,.5);background:rgba(200,164,100,.06);color:var(--gold2);font:500 13.5px/1.35 var(--sans);cursor:pointer;transition:all .2s}
+.dmb-chips button:hover{background:linear-gradient(180deg,#E9D3A1,#C8A464);border-color:transparent;color:#0A1120}
+.dmb-in{display:flex;gap:9px;padding:12px 14px 13px;background:linear-gradient(180deg,#0E182B,#0A1120);position:relative}
+.dmb-in:before{content:"";position:absolute;left:14px;right:14px;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,164,100,.7),transparent)}
+.dmb-in input{flex:1;min-width:0;height:48px;border-radius:14px;border:1px solid rgba(200,164,100,.35);background:var(--paper);color:var(--ink);padding:0 16px;font:16px var(--sans);direction:rtl}
+.dmb-in input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,164,100,.28)}
+.dmb-in input::placeholder{color:#9A9384}
+.dmb-in button{flex:none;height:48px;min-width:48px;padding:0 18px;gap:7px;border-radius:14px;border:0;font:700 15px/1 var(--sans);background:radial-gradient(circle at 30% 25%,#F3DFAE,#C8A464 60%,#9C7A3A);color:#0A1120;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(0,0,0,.35)}
+.dmb-in button svg{width:19px;height:19px;transform:scaleX(-1)}
+.dmb-typing{align-self:flex-start;display:flex;gap:6px;padding:15px 18px;background:var(--paper);border-radius:3px 18px 18px 18px;box-shadow:inset 0 0 0 1px var(--line)}
+.dmb-typing i{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:dmbB 1s infinite ease-in-out}
 .dmb-typing i:nth-child(2){animation-delay:.15s}.dmb-typing i:nth-child(3){animation-delay:.3s}
 @keyframes dmbB{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
 .dmb-wide{max-width:100%;width:100%;align-self:stretch}
-.dmb-form{display:flex;flex-direction:column;gap:9px;margin-top:10px}
-.dmb-form input{width:100%;box-sizing:border-box;height:52px;border-radius:12px;border:1.5px solid #C9A45C;background:#fff;color:#14203A;padding:0 14px;font:17px inherit;font-family:inherit;color-scheme:light;cursor:pointer}
-.dmb-form input:focus{outline:none;box-shadow:0 0 0 3px rgba(201,164,92,.35)}
-.dmb-form .dmb-btn{width:100%;justify-content:center;height:50px;font-size:16px;border-radius:12px}
-.dmb-form .dmb-btn:disabled{opacity:.55;cursor:default}
-.dmb-form .dmb-hint{font-size:12.5px;color:#6B7385;margin:0}
-.dmb-hr{border:0;border-top:1px solid #E3D3AE;margin:12px 0}
-@media(prefers-reduced-motion:reduce){.dmb-typing i{animation:none}.dmb-launch{transition:none}}
+.dmb-form{display:flex;flex-direction:column;gap:10px;margin-top:11px}
+.dmb-form input{width:100%;box-sizing:border-box;height:54px;border-radius:14px;border:1.5px solid var(--gold);background:#fff;color:#0E1628;padding:0 14px;font:17px var(--sans);color-scheme:light;cursor:pointer}
+.dmb-form input:focus{outline:none;box-shadow:0 0 0 3px rgba(200,164,100,.3)}
+.dmb-form .dmb-btn{width:100%;justify-content:center;height:52px;font-size:16px;border-radius:14px}
+.dmb-form .dmb-btn:disabled{opacity:.5;cursor:default}
+.dmb-form .dmb-hint{font-size:12.5px;color:#707789;margin:0}
+.dmb-cols{columns:2;column-gap:18px;font-size:13.5px}.dmb-cols li{break-inside:avoid}
+@media(max-width:380px){.dmb-cols{columns:1}}
+.dmb-hr{border:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:14px 0}
+@media(prefers-reduced-motion:reduce){.dmb-typing i,.dmb-m,.dmb-panel{animation:none}.dmb-launch{transition:none}}
 `;
   const ICON_CHAT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.8 2 11.5c0 2.4 1.2 4.6 3.1 6.1L4.4 21l3.9-1.9c1.2.4 2.4.6 3.7.6 5.5 0 10-3.8 10-8.5S17.5 3 12 3zm-4 9.7a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4zm4 0a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4zm4 0a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4z"/></svg>';
   const ICON_SEND = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg>';
   const ICON_WA = '<svg viewBox="0 0 32 32" width="16" height="16" aria-hidden="true"><path fill="#fff" d="M16 3a13 13 0 0 0-11.2 19.6L3 29l6.6-1.7A13 13 0 1 0 16 3zm5.8 15.7c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1a8.7 8.7 0 0 1-4.3-3.8c-.3-.6.3-.5.9-1.7.1-.2 0-.4 0-.5l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6a1.2 1.2 0 0 0-.9.4 3.7 3.7 0 0 0-1.1 2.7 6.4 6.4 0 0 0 1.3 3.4 14.6 14.6 0 0 0 5.6 5c2.1.9 2.9 1 4 .8a3.4 3.4 0 0 0 2.2-1.6 2.8 2.8 0 0 0 .2-1.6c-.1-.1-.3-.2-.6-.4z"/></svg>';
 
+  if (!document.querySelector('link[data-dmb-fonts]')) { const fl = document.createElement('link'); fl.rel = 'stylesheet'; fl.dataset.dmbFonts = '1'; fl.href = 'https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Cormorant+Garamond:wght@600;700&family=Amiri:wght@400;700&display=swap'; document.head.appendChild(fl); }
   const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
   const launch = document.createElement('button');
   launch.type = 'button'; launch.className = 'dmb-launch'; launch.setAttribute('aria-label', 'مساعد دار المراسم الذكي – اسأل عن القاعات والأسعار');
@@ -338,17 +345,21 @@ body.printing .dmb-launch,body.printing .dmb-panel{display:none!important}
     { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'العنوان والتواصل', q: 'العنوان والتليفون' }
   ];
   function welcome() {
-    bot(`<p class="dmb-h">مرحباً بكم في دار المراسم لضباط الشرطة</p><p>أنا <b>مساعد دار المراسم الذكي</b>، وأستطيع مساعدتكم في:</p><ul><li>أسعار القاعات والباكدجات ومحتوى كل منيو</li><li>أي خدمة أو إضافة: هل هي مشمولة في الباكدج وسعرها إن وُجد</li><li>حساب تكلفة تقديرية حسب العدد ويوم الحفل</li><li>اختيار القاعة المناسبة لمناسبتكم</li><li>شروط الحجز والسداد والإلغاء وفق اللائحة</li><li>تجهيز طلب الحجز أو موعد المعاينة وإرساله لفريق الحفلات</li></ul><p>اكتبوا سؤالكم بأي صيغة، أو اختاروا من الاقتراحات.</p><p class="dmb-src">جميع الإجابات مستندة إلى المنيوهات واللائحة المعتمدة بالدار.</p>`);
+    bot(`<p class="dmb-h">مرحباً بكم في دار المراسم لضباط الشرطة</p><p>أنا <b>مساعد دار المراسم الذكي</b>، وأستطيع مساعدتكم في:</p><ul><li>أسعار القاعات والباكدجات ومحتوى كل منيو</li><li>أي خدمة أو إضافة: هل هي مشمولة في الباكدج وسعرها إن وُجد</li><li>حساب تكلفة تقديرية حسب العدد ويوم الحفل</li><li>اختيار القاعة المناسبة لمناسبتكم</li><li>شروط الحجز والسداد والإلغاء والتأجيل</li><li>تجهيز طلب الحجز أو موعد المعاينة وإرساله لفريق الحفلات</li></ul><p>اكتبوا سؤالكم بأي صيغة، أو اختاروا من الاقتراحات.</p><p class="dmb-src">نتشرف بخدمتكم، ويسعد فريق الحفلات استكمال أي تفاصيل معكم مباشرةً.</p>`);
     chips(MAIN());
   }
   function fallback(t) {
-    bot(`<p>هذه المعلومة غير واردة في المنيوهات واللائحة المعتمدة، لذلك لا أستطيع تأكيدها.</p><p>ويسعد فريق الحفلات الرد على استفساركم مباشرةً عبر واتساب أو الهاتف.</p>`,
+    bot(`<p>شكراً لاستفساركم الكريم.</p><p>حرصاً على تزويدكم بمعلومة دقيقة ومحدّثة، يسعد فريق الحفلات الرد على هذا الاستفسار مباشرةً، ويمكنكم التواصل معهم عبر واتساب أو الهاتف، أو حجز موعد لزيارة الدار ومعاينة القاعات (يومياً من ١٠ صباحاً حتى ١٠ مساءً).</p>`,
       [waAct('دار المراسم لضباط الشرطة – استفسار' + (t ? ':\n' + t : '')), { t: 'اتصلوا بنا', fn: contact }]);
     chips(MAIN());
   }
 
   let LASTT = '';
-  function respond(raw) {
+  function respond(raw, inner) {
+    if (!inner && !FLOW) {
+      const parts = String(raw).split(/[؟?\n]+|\s+(?:وكمان|وايضا|وأيضاً|وايضاً)\s+/).map(x => x.trim()).filter(x => x.split(/\s+/).length >= 2);
+      if (parts.length >= 2) { parts.slice(0, 3).forEach(p => respond(p, true)); return; }
+    }
     const t = norm(raw); LASTT = t;
     const halls = findHalls(t), ev = findEvent(t), date = findDate(t);
     const menuQ = findMenu(t);
@@ -415,6 +426,14 @@ body.printing .dmb-launch,body.printing .dmb-panel{display:none!important}
       if (S.event === 'special') return ['lulu', 'marasem'].includes(halls[0]) ? hallBrief(halls[0]) : special();
     }
     if (W('سمك', 'اسماك', 'سي فود', 'ماكولات بحريه', 'seafood', 'fish')) return knowledge(norm('سيمون سالمون جمبري'), raw, null, null, { lead: '<p>لا يوجد طبق سمك رئيسي في منيوهات الأفراح، وتتوفر الأصناف البحرية التالية:</p>', minCover: 0.3, rel: 0.5 }) || fallback(raw);
+    const budget = findBudget(t);
+    if (budget && budget >= 10000 && (W('ميزانيه', 'ميزانيتي', 'ميزانيتنا', 'معايا', 'معانا', 'حدود', 'اقصي', 'مش اكتر', 'budget') || /الف/.test(t))) return budgetAns(budget);
+    if (W('يعني ايه', 'ما هو', 'ما هي', 'ايه معني', 'معني', 'تعريف', 'المقصود ب', 'المقصود', 'يعني اي') && defineAns(t)) return;
+    if (halls.length >= 2 && halls.includes('mawadda') && halls.includes('lotus')) { S.event = 'katb'; S.hall = null; return katb(null); }
+    if (halls.filter(h => K.halls[h]).length >= 2) return compareHalls(halls[0], halls[1]);
+    if (halls.length && W('عرفني', 'حدثني', 'معلومات عن', 'معلومات', 'تفاصيل', 'وصف', 'نبذه', 'ايه هي', 'احكيلي', 'كل حاجه عن', 'اعرف عن', 'شكلها', 'مميزات', 'تفاصيل قاعه')) return hallProfile(halls[0]);
+    if (W('كل الاضافات', 'الاضافات كلها', 'قائمه الاضافات', 'ايه الاضافات', 'الخدمات الاضافيه', 'الاضافات المتاحه', 'اضافات', 'الاضافات', 'الخدمات المتاحه', 'الخدمات اللي عندكم', 'خدماتكم') && !(strongItem && hasItemWord(t))) return allAddons(halls[0] && (K.halls[halls[0]] || ['mawadda', 'birthday', 'special', 'photo'].includes(halls[0])) ? halls[0] : ctxScope());
+    if (incW && !S.hall && !S.event && !strongItem && !decorW && !hasItemWord(t)) return inclusionsCompare();
     if (dearW) return mostExpensive();
     if (cheapW) return cheapest();
     if (W('اكبر قاعه', 'اصغر قاعه', 'اقل قاعه', 'اكبر سعه', 'اقل سعه', 'سعه القاعات', 'سعات القاعات', 'اصغر حاجه', 'اكبر حاجه')) return capacities();
@@ -431,7 +450,7 @@ body.printing .dmb-launch,body.printing .dmb-panel{display:none!important}
       if (count && K.halls[S.hall] && menuQ.k !== 'cb' && menuQ.k !== 'ssm' && hallMenu(S.hall, menuQ)) return estimate();
       return menuDetail(menuQ, count);
     }
-    if (strongItem && !(incW && !hasItemWord(t))) { if (W('دقيقه', 'دقايق', 'مدتها', 'مدته', 'بتاخد قد ايه', 'وقتها')) bot('<p>مدة الفقرة غير مذكورة في المنيوهات المعتمدة، ويحددها فريق الحفلات. وهذه البيانات الواردة:</p>'); if (knowledge(t, raw, R)) return; }
+    if (strongItem && !(incW && !hasItemWord(t))) { if (W('دقيقه', 'دقايق', 'مدتها', 'مدته', 'بتاخد قد ايه', 'وقتها')) bot('<p>يتولى فريق الحفلات تنسيق مدة الفقرة وتوقيتها معكم بما يناسب برنامج الحفل، وهذه أسعارها:</p>'); if (knowledge(t, raw, R)) return; }
     if (decorW && !otherItem) return decor();
     if (incW && (S.hall || S.event)) return included();
 
@@ -483,7 +502,7 @@ ${row('قاعة المودة والرحمة', 'من ١٠٠ حتى ١٥٠ فرد'
 ${row('أعياد الميلاد', 'اللوتس – الروف توب – الزجاجية', money(5000), 'الروف توب (٢٠ – ٤٠ فرد)')}
 ${row('المناسبات الخاصة', 'مؤتمرات – اجتماعات – كوفي بريك', money(5000), 'حجز قاعة اللؤلؤة، والمنيو بالفرد')}
 ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الجلسة')}</table>
-<p class="dmb-note">الأسعار وفق المنيوهات المعتمدة، وتختلف حسب العدد والمنيو المختار ويوم الحفل.</p>`,
+<p class="dmb-note">الأسعار وفق قوائم الدار الحالية، وتختلف حسب العدد والمنيو المختار ويوم الحفل.</p>`,
       []);
     chips([{ t: 'أسعار أخناتون', q: 'أسعار قاعة أخناتون' }, { t: 'أسعار إيزيس', q: 'أسعار قاعة إيزيس' }, { t: 'أسعار اللوتس', q: 'أسعار قاعة اللوتس' }, { t: 'كتب الكتاب', q: 'كتب الكتاب' }, { t: 'ترشيح قاعة حسب العدد', fn: () => startRec() }]);
   }
@@ -622,7 +641,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
   }
   function notesFor(h, n, baseN, day) {
     const L = [];
-    if (n < baseN) L.push(`الباكدج محسوب على ${AD(baseN)} فرد كحد أدنى مضمون، ولا يقل السعر بانخفاض العدد (اللائحة م ٢٠، م ٢٥).`);
+    if (n < baseN) L.push(`الباكدج محسوب على ${AD(baseN)} فرد كحد أدنى مضمون، ولا يقل السعر بانخفاض العدد.`);
     if (h.pk.type !== 'wk' && !day) L.push(`وإذا أُقيم الحفل يوم الخميس أو الجمعة أو السبت أو في الأعياد والعطلات الرسمية، يُضاف ${money(h.pk.fee)}.`);
     if (S.date && h.pk.type !== 'wk') L.push('تُضاف رسوم الأعياد والعطلات الرسمية إذا وافق التاريخ عطلة رسمية.');
     L.push('التقدير لا يشمل التأمين ولا الإضافات خارج الباكدج، والسعر النهائي يؤكده فريق الحفلات عند التعاقد.');
@@ -634,11 +653,11 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
   function capacity(hid) {
     const h = K.halls[hid];
     const n = S.count;
-    if (h && n) { bot(`<p>${n >= h.min && n <= h.max ? `<b>نعم</b>، تتسع ${h.name} لعدد ${AD(n)} فرد؛ فسعتها من ${AD(h.min)} حتى ${AD(h.max)} فرد.` : n > h.max ? `<b>لا</b>، العدد ${AD(n)} فرد يتجاوز سعة ${h.name} (حتى ${AD(h.max)} فرد).` : `سعة ${h.name} من ${AD(h.min)} حتى ${AD(h.max)} فرد، والباكدج محسوب على ${AD(h.pk.type === 'wk' ? h.pk.wd.n : h.pk.n)} فرد كحد أدنى مضمون حتى لو كان العدد ${AD(n)} فرد.`}</p>${src(hid, 1)}`); chips([{ t: 'احسب التكلفة لعدد ' + n, fn: () => { S.hall = hid; estimate(); } }, { t: 'ترشيح قاعة حسب العدد', fn: () => recommend() }]); return; }
+    if (h && n) { bot(`<p>${n >= h.min && n <= h.max ? `<b>نعم</b>، تتسع ${h.name} لعدد ${AD(n)} فرد؛ فسعتها من ${AD(h.min)} حتى ${AD(h.max)} فرد.` : n > h.max ? `نعتذر، العدد ${AD(n)} فرد يتجاوز سعة ${h.name} (حتى ${AD(h.max)} فرد)، ويسعدنا ترشيح القاعة الأنسب لكم.` : `سعة ${h.name} من ${AD(h.min)} حتى ${AD(h.max)} فرد، والباكدج محسوب على ${AD(h.pk.type === 'wk' ? h.pk.wd.n : h.pk.n)} فرد كحد أدنى مضمون حتى لو كان العدد ${AD(n)} فرد.`}</p>${src(hid, 1)}`); chips([{ t: 'احسب التكلفة لعدد ' + n, fn: () => { S.hall = hid; estimate(); } }, { t: 'ترشيح قاعة حسب العدد', fn: () => recommend() }]); return; }
     if (h) bot(`<p>تتسع <b>${h.name}</b> من ${AD(h.min)} حتى ${AD(h.max)} فرد، والباكدج محسوب على ${h.pk.type === 'wk' ? `${AD(h.pk.wd.n)} فرد منتصف الأسبوع و${AD(h.pk.we.n)} فرد نهاية الأسبوع` : `${AD(h.pk.n)} فرد`} كحد أدنى.</p>${src(hid, 1)}`);
     else if (hid === 'mawadda') bot(`<p>تتسع <b>قاعة المودة والرحمة</b> من ١٠٠ حتى ١٥٠ فرد، وهي مخصصة لعقد القران. الباكدج لعدد ١٠٠ فرد بقيمة ${money(K.katb.mawadda.price)}، والفرد الإضافي ${money(K.katb.mawadda.extra)}.</p>${src('mawadda', 1)}`);
     else if (hid === 'roof' || hid === 'glass') { const b = K.birthday.find(x => x.id === hid); bot(`<p>${b.name}: ${b.cap}، وباكدج أعياد الميلاد بها ${money(b.price)}.</p>${src('birthday', 2)}`); }
-    else if (hid === 'lulu' || hid === 'marasem') { const s = K.special.halls.find(x => x.id === hid); bot(`<p>${s.name}: باكدج المناسبات الخاصة لعدد ${AD(s.n)} فرد بقيمة ${money(s.price)}. أما السعة القصوى فغير منشورة في المنيو، ويُرجى تأكيدها مع فريق الحفلات.</p>${src('special', 2)}`); }
+    else if (hid === 'lulu' || hid === 'marasem') { const s = K.special.halls.find(x => x.id === hid); bot(`<p>${s.name}: باكدج المناسبات الخاصة لعدد ${AD(s.n)} فرد بقيمة ${money(s.price)}. ويسعد فريق الحفلات إفادتكم بالسعة القصوى وأنسب ترتيب للجلوس.</p>${src('special', 2)}`); }
     chips([{ t: 'الأسعار', fn: () => (K.halls[hid] ? hallPrices(hid) : hid === 'mawadda' ? katb('mawadda') : hallBrief(hid)) }, { t: 'سعات جميع القاعات', fn: capacities }, { t: 'ترشيح قاعة حسب العدد', fn: () => startRec() }]);
   }
 
@@ -676,7 +695,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     if (fits.length === 1 && !S.hall) { S.hall = fits[0]; S.menu = null; bot(`<p>لعدد ${AD(n)} فرد، القاعة المناسبة هي <b>${HALLNAME[fits[0]]}</b> (السعة ${AD(K.halls[fits[0]].min)} – ${AD(K.halls[fits[0]].max)} فرد).</p>`); return estimate(); }
     let html = `<p>القاعات المناسبة ل${EVNAME[ev] || 'الحفل'} لعدد <b>${AD(n)} فرد</b>:</p>`;
     if (!fits.length && n < 100) { html += `<p>أصغر باكدجات الأفراح بقاعة اللوتس لعدد ١٠٠ فرد كحد أدنى مضمون، ويبدأ من ${money(K.halls.lotus.menus[0].price)}.</p>`; fits.push('lotus'); }
-    else if (!fits.length) { bot(`<p>العدد ${AD(n)} فرد يتجاوز أكبر سعة منشورة لقاعات الدار (قاعة أخناتون حتى ٦٠٠ فرد)، ويُرجى التواصل مع فريق الحفلات لدراسة الطلب.</p>`, [waAct(`دار المراسم لضباط الشرطة – استفسار عن حفل لعدد ${n} فرد`, 'تواصلوا مع فريق الحفلات عبر واتساب')]); chips([{ t: 'سعات القاعات', fn: capacities }, { t: 'التواصل', fn: contact }]); return; }
+    else if (!fits.length) { bot(`<p>نشكر اهتمامكم؛ العدد ${AD(n)} فرد يتجاوز سعة أكبر قاعاتنا (قاعة أخناتون حتى ٦٠٠ فرد)، ويسعد فريق الحفلات دراسة طلبكم واقتراح الترتيب الأنسب.</p>`, [waAct(`دار المراسم لضباط الشرطة – استفسار عن حفل لعدد ${n} فرد`, 'تواصلوا مع فريق الحفلات عبر واتساب')]); chips([{ t: 'سعات القاعات', fn: capacities }, { t: 'التواصل', fn: contact }]); return; }
     else {
       const rows = fits.map(h => {
         const H = K.halls[h], rng = d => { const v = H.menus.map(m => estTotal(H, m, n, d)); return [Math.min(...v), Math.max(...v)]; };
@@ -705,7 +724,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     const k = K.katb;
     const n = S.count;
     if (!which && n > 150 && n <= 200) which = 'lotus';
-    if (n > 200) { bot(`<p>العدد ${AD(n)} فرد يتجاوز سعة قاعتي عقد القران (المودة والرحمة حتى ١٥٠ فرد، واللوتس حتى ٢٠٠ فرد)؛ يُرجى التواصل مع فريق الحفلات لترتيب البديل المناسب.</p>`, [waAct(`دار المراسم لضباط الشرطة – استفسار عن عقد قران لعدد ${n} فرد`, 'تواصلوا مع فريق الحفلات عبر واتساب')]); chips([{ t: 'أسعار عقد القران', fn: () => { S.count = null; katb(); } }, { t: 'التواصل', fn: contact }]); return; }
+    if (n > 200) { bot(`<p>نشكر اهتمامكم؛ العدد ${AD(n)} فرد يتجاوز سعة قاعتي عقد القران (المودة والرحمة حتى ١٥٠ فرد، واللوتس حتى ٢٠٠ فرد)، ويسعد فريق الحفلات ترتيب البديل الأنسب لكم.</p>`, [waAct(`دار المراسم لضباط الشرطة – استفسار عن عقد قران لعدد ${n} فرد`, 'تواصلوا مع فريق الحفلات عبر واتساب')]); chips([{ t: 'أسعار عقد القران', fn: () => { S.count = null; katb(); } }, { t: 'التواصل', fn: contact }]); return; }
     const show = which ? [which] : ['mawadda', 'lotus'];
     const leadTxt = show.map(id => { const x = k[id]; const ex = n ? Math.max(n - x.n, 0) : 0; return `${x.name}: <b>${money(x.price + ex * x.extra)}</b>${n ? ` لعدد ${AD(Math.max(n, x.n))} فرد` : ` لعدد ${AD(x.n)} فرد`}`; }).join('، و');
     const lead = `<p>${n ? 'التكلفة التقديرية لعقد القران — ' : 'أسعار باكدج عقد القران — '}${leadTxt}. ومدة الحفل ساعة ونصف.</p>${n > 150 && !which ? '' : ''}`;
@@ -746,7 +765,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     let lead = '', opts = [];
     if (n) {
       opts = sp.halls.map(h => { if (n <= h.n) return { h, extra: 0, cost: h.price }; if (CAP[h.id] && n <= CAP[h.id]) return { h, extra: n - h.n, cost: h.price + (n - h.n) * 50 }; return null; }).filter(Boolean).sort((a, b) => a.cost - b.cost);
-      lead = opts.length ? `<p>لعدد <b>${AD(n)} فرد</b>، القاعات المناسبة حسب تكلفة الحجز:</p><table class="dmb-t">${opts.slice(0, 4).map(o => `<tr><td>${o.h.name}${o.extra ? `<br><small>باكدج ${AD(o.h.n)} فرد ${money(o.h.price)} + ${AD(o.extra)} ترابيزة وكرسي إضافي × ${money(50)}</small>` : `<br><small>باكدج لعدد ${AD(o.h.n)} فرد</small>`}</td><td class="n">${money(o.cost)}</td></tr>`).join('')}</table><p>ويُضاف المنيو بسعر الفرد، مثل: اسبيشيال ست منيو (١) ${money(450)} × ${AD(n)} = <b>${money(450 * n)}</b>، أو كوفي بريك (١) ${money(345)} × ${AD(n)} = <b>${money(345 * n)}</b>.</p><p class="dmb-note">حُسبت الزيادة عن عدد الباكدج ببند «ترابيزة + كرسي إضافي» (${money(50)}) الوارد بالمنيو، والسعة القصوى لقاعتي اللؤلؤة والمراسم غير منشورة؛ يُرجى تأكيد الترتيب النهائي مع فريق الحفلات.</p>` : `<p>العدد ${AD(n)} فرد يتجاوز السعات المنشورة (قاعة أخناتون حتى ٦٠٠ فرد)؛ يُرجى التواصل مع فريق الحفلات.</p>`;
+      lead = opts.length ? `<p>لعدد <b>${AD(n)} فرد</b>، القاعات المناسبة حسب تكلفة الحجز:</p><table class="dmb-t">${opts.slice(0, 4).map(o => `<tr><td>${o.h.name}${o.extra ? `<br><small>باكدج ${AD(o.h.n)} فرد ${money(o.h.price)} + ${AD(o.extra)} ترابيزة وكرسي إضافي × ${money(50)}</small>` : `<br><small>باكدج لعدد ${AD(o.h.n)} فرد</small>`}</td><td class="n">${money(o.cost)}</td></tr>`).join('')}</table><p>ويُضاف المنيو بسعر الفرد، مثل: اسبيشيال ست منيو (١) ${money(450)} × ${AD(n)} = <b>${money(450 * n)}</b>، أو كوفي بريك (١) ${money(345)} × ${AD(n)} = <b>${money(345 * n)}</b>.</p><p class="dmb-note">حُسبت الزيادة عن عدد الباكدج ببند «ترابيزة + كرسي إضافي» (${money(50)}) الوارد بالمنيو، ويسعد فريق الحفلات تأكيد السعة وترتيب الجلوس الأنسب لقاعتي اللؤلؤة والمراسم.</p>` : `<p>العدد ${AD(n)} فرد يتجاوز سعة أكبر قاعاتنا (قاعة أخناتون حتى ٦٠٠ فرد)، ويسعد فريق الحفلات دراسة طلبكم.</p>`;
     }
     const table = `<div class="dmb-sec"><b>حجز القاعات (شامل الكراسي والترابيزات)</b></div><table class="dmb-t">${sp.halls.map(h => `<tr><td>${h.name}<br><small>الباكدج لعدد ${AD(h.n)} فرد</small></td><td class="n">${money(h.price)}</td></tr>`).join('')}</table><div class="dmb-sec"><b>المنيوهات (بالفرد)</b></div><table class="dmb-t">${sp.menus.map(m => `<tr><td>${A(m.name)}${m.pcs ? ` <small>(${pcs(m.pcs)})</small>` : ''}</td><td class="n">${money(m.pp)}</td></tr>`).join('')}</table>`;
     bot(`<p class="dmb-h">المناسبات الخاصة والمؤتمرات</p>${lead}${n ? `<details class="dmb-law"><summary>جميع أسعار القاعات والمنيوهات</summary>${table}</details>` : table}${src('special', '٢، ٤ – ١٢')}`, [{ t: 'عرض منيو المناسبات الخاصة', go: 'special' }]);
@@ -756,7 +775,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
   function photo() {
     S.event = 'photo';
     const L = K.addons.filter(a => a.s === 'photo');
-    bot(`<p class="dmb-h">فوتو سيشن</p><p>رسوم جلسة الفوتو سيشن <b>${ar(L[0].p)}</b> (بحد أقصى ٦ أفراد). ويُضاف حسب الطلب:</p><table class="dmb-t">${L.slice(1).map(a => `<tr><td>${A(a.n)}</td><td class="n">${ar(a.p)}</td></tr>`).join('')}</table><p class="dmb-note">أماكن التصوير داخل الدار غير مذكورة في المنيو؛ ويُرجى تأكيدها مع فريق الحفلات.</p>${src('photo', 2)}`, [{ t: 'عرض منيو الفوتو سيشن', go: 'photo' }, waAct('دار المراسم لضباط الشرطة – أرغب في حجز فوتو سيشن', 'احجزوا فوتو سيشن عبر واتساب')]);
+    bot(`<p class="dmb-h">فوتو سيشن</p><p>رسوم جلسة الفوتو سيشن <b>${ar(L[0].p)}</b> (بحد أقصى ٦ أفراد). ويُضاف حسب الطلب:</p><table class="dmb-t">${L.slice(1).map(a => `<tr><td>${A(a.n)}</td><td class="n">${ar(a.p)}</td></tr>`).join('')}</table><p class="dmb-note">يسعد فريق الحفلات تنسيق أماكن التصوير المناسبة داخل الدار معكم.</p>${src('photo', 2)}`, [{ t: 'عرض منيو الفوتو سيشن', go: 'photo' }, waAct('دار المراسم لضباط الشرطة – أرغب في حجز فوتو سيشن', 'احجزوا فوتو سيشن عبر واتساب')]);
     chips([{ t: 'التصوير الفوتوغرافي في الأفراح', q: 'سعر التصوير الفوتوغرافي' }, { t: 'التواصل', fn: contact }]);
   }
 
@@ -802,7 +821,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
 
   function askEvent() {
     const n = S.count;
-    if (n > 600) { bot(`<p>العدد ${AD(n)} فرد يتجاوز أكبر سعة منشورة لقاعات الدار (قاعة أخناتون حتى ٦٠٠ فرد)، ويُرجى التواصل مع فريق الحفلات لدراسة الطلب.</p>`, [waAct(`دار المراسم لضباط الشرطة – استفسار عن مناسبة لعدد ${n} فرد`, 'تواصلوا مع فريق الحفلات عبر واتساب')]); chips([{ t: 'سعات القاعات', fn: capacities }, { t: 'التواصل', fn: contact }]); return; }
+    if (n > 600) { bot(`<p>نشكر اهتمامكم؛ العدد ${AD(n)} فرد يتجاوز سعة أكبر قاعاتنا (قاعة أخناتون حتى ٦٠٠ فرد)، ويسعد فريق الحفلات دراسة طلبكم واقتراح الترتيب الأنسب.</p>`, [waAct(`دار المراسم لضباط الشرطة – استفسار عن مناسبة لعدد ${n} فرد`, 'تواصلوا مع فريق الحفلات عبر واتساب')]); chips([{ t: 'سعات القاعات', fn: capacities }, { t: 'التواصل', fn: contact }]); return; }
     bot(`<p>لعدد ${AD(n)} فرد، ما نوع المناسبة؟ تختلف القاعات والباكدجات حسب المناسبة.</p>`);
     chips(['wedding', 'engagement', 'katb', 'birthday', 'aqiqa', 'special'].map(e => ({ t: EVNAME[e], fn: () => { S.event = e; recommend(); } })));
   }
@@ -847,7 +866,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
   }
   function hallBrief(hid) {
     const dep = K.deposit.find(r => r[0] === { roof: 'الروف توب', glass: 'الخيمة VIP', lulu: 'قاعة اللؤلؤة', marasem: 'قاعة المراسم' }[hid]);
-    const depTxt = dep && hid !== 'glass' ? `<p class="dmb-note">مقدم الحجز ${money(dep[1])} والتأمين ${money(dep[2])} (اللائحة، ص ١٠).</p>` : '';
+    const depTxt = dep && hid !== 'glass' ? `<p class="dmb-note">مقدم الحجز ${money(dep[1])} والتأمين ${money(dep[2])}.</p>` : '';
     if (hid === 'roof' || hid === 'glass') {
       const b = K.birthday.find(x => x.id === (hid === 'roof' ? 'roof' : 'glass'));
       bot(`<p><b>${b.name}</b>: باكدج أعياد الميلاد <b>${money(b.price)}</b>، و${b.cap}.</p><p>يشمل الباكدج حجز القاعة والكراسي والترابيزات وساوند سيستم SPEAKERS.</p>${depTxt}${src('birthday', 2)}`, [{ t: 'عرض منيو أعياد الميلاد', go: 'birthday' }]);
@@ -855,7 +874,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
       return;
     }
     const h = K.special.halls.find(x => x.id === hid);
-    bot(`<p><b>${h.name}</b>: حجز القاعة للمناسبات الخاصة <b>${money(h.price)}</b> لعدد ${AD(h.n)} فرد، شامل الكراسي والترابيزات، والمنيو يُحتسب بالفرد (اسبيشيال ست منيو من ${money(450)}، كوفي بريك من ${money(345)}).</p><p class="dmb-note">السعة القصوى للقاعة غير منشورة في المنيو؛ ويوجد بند «ترابيزة + كرسي إضافي» بسعر ${money(50)}.</p>${depTxt}${src('special', '٢ – ٣')}`, [{ t: 'عرض منيو المناسبات الخاصة', go: 'special' }]);
+    bot(`<p><b>${h.name}</b>: حجز القاعة للمناسبات الخاصة <b>${money(h.price)}</b> لعدد ${AD(h.n)} فرد، شامل الكراسي والترابيزات، والمنيو يُحتسب بالفرد (اسبيشيال ست منيو من ${money(450)}، كوفي بريك من ${money(345)}).</p><p class="dmb-note">يسعد فريق الحفلات إفادتكم بالسعة القصوى وترتيب الجلوس الأنسب، ويتوفر بند «ترابيزة + كرسي إضافي» بسعر ${money(50)}.</p>${depTxt}${src('special', '٢ – ٣')}`, [{ t: 'عرض منيو المناسبات الخاصة', go: 'special' }]);
     chips([{ t: 'محتوى الكوفي بريك', fn: () => menuDetail({ k: 'cb', n: 0 }) }, { t: 'محتوى اسبيشيال ست منيو', fn: () => menuDetail({ k: 'ssm', n: 0 }) }, { t: 'احسب لعدد معين', fn: () => askCount(special) }]);
   }
   const pcs = n => AD(n) + (n >= 3 && n <= 10 ? ' قطع' : ' قطعة');
@@ -865,6 +884,97 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     else { baseN = H.pk.n; base = m.price + (day === 'we' ? H.pk.fee : 0); }
     const ex = Math.max(n - baseN, 0);
     return base + (m.tiers ? tierCost(ex, m.tiers).total : ex * m.extra);
+  }
+  function hallProfile(hid) {
+    if (!K.halls[hid]) return hid === 'mawadda' ? katb('mawadda') : hallBrief(hid);
+    S.hall = hid;
+    const h = K.halls[hid], d = K.desc[hid] || {}, p2 = K.p2[hid] || '';
+    const ex = K.addons.find(a => a.s === hid && norm(a.n).trim() === 'ساعه اضافيه');
+    const dep = K.deposit.find(r => r[0] === h.name);
+    const lo = h.pk.type === 'wk' ? h.menus[0].wd : h.menus[0].price, hi = h.pk.type === 'wk' ? Math.max(...h.menus.map(m => m.we)) : Math.max(...h.menus.map(m => m.price));
+    const incList = h.inc.map(s => s.o.filter(o => o[0] === 'i').map(o => A(o[1])).join('، ')).filter(Boolean).join('، ');
+    bot(`<p class="dmb-h">${h.name}</p>${d.desc ? `<p>${A(d.desc)}</p>` : ''}${p2 ? `<p class="dmb-note">${A(p2)}</p>` : ''}<table class="dmb-t">
+<tr><td>السعة</td><td class="n">${AD(h.min)} – ${AD(h.max)} فرد</td></tr>
+<tr><td>الاستخدام</td><td>${A(h.use)}</td></tr>
+<tr><td>الباكدج محسوب على</td><td>${h.pk.type === 'wk' ? `${AD(h.pk.wd.n)} فرد (الأحد – الأربعاء)<br>${AD(h.pk.we.n)} فرد (الخميس – السبت)` : `${AD(h.pk.n)} فرد، ويُضاف ${money(h.pk.fee)} لأيام نهاية الأسبوع والعطلات`}</td></tr>
+<tr><td>المنيوهات المتاحة</td><td>${h.menus.map(m => A(m.name)).join('، ')}</td></tr>
+<tr><td>الأسعار</td><td class="n">من ${money(lo)}<br><small>حتى ${money(hi)}</small></td></tr>
+${ex ? `<tr><td>الساعة الإضافية</td><td class="n">${ar(ex.p)}</td></tr>` : ''}
+${dep ? `<tr><td>مقدم الحجز / التأمين</td><td class="n">${money(dep[1])}<br><small>تأمين ${money(dep[2])}</small></td></tr>` : ''}
+</table><div class="dmb-sec"><b>يشمل الباكدج:</b><ul class="dmb-cols">${h.inc.flatMap(sec => sec.o.filter(o => o[0] === 'i').map(o => `<li>${A(o[1])}</li>`)).join('')}</ul></div>${d.kosha ? `<p class="dmb-note">الكوشة: ${A(d.kosha)}.</p>` : ''}${src(hid, '١ – ٣')}`, [{ t: 'عرض منيو ' + h.name, go: h.menu }, { t: 'صور الديكورات', go: h.decor }]);
+    chips([{ t: 'أسعار كل المنيوهات', fn: () => hallPrices(hid) }, { t: 'كل الإضافات وأسعارها', fn: () => allAddons(hid) }, { t: 'احسب التكلفة لعدد معين', fn: () => askCount() }, { t: 'مقارنة بقاعة أخرى', fn: () => compareHalls(hid, hid === 'isis' ? 'akhenaten' : 'isis') }]);
+  }
+  function allAddons(sc) {
+    sc = sc || ctxScope();
+    if (!sc) { bot('<p>يُرجى اختيار القاعة أو المناسبة لعرض جميع الإضافات وأسعارها:</p>'); chips(['akhenaten', 'isis', 'lotus', 'lotusk', 'mawadda', 'birthday', 'special', 'photo'].map(s => ({ t: K.scopes[s], fn: () => allAddons(s) }))); return; }
+    const L = K.addons.filter(a => a.s === sc), groups = [];
+    L.forEach(a => { let g = groups.find(x => x.g === a.g); if (!g) { g = { g: a.g, L: [] }; groups.push(g); } g.L.push(a); });
+    bot(`<p class="dmb-h">جميع الإضافات – ${K.scopes[sc]}</p><p>${AD(L.length)} ${L.length > 10 ? 'بنداً' : 'بنود'} في ${AD(groups.length)} ${groups.length >= 3 && groups.length <= 10 ? 'مجموعات' : 'مجموعة'}. اضغطوا على المجموعة لعرض أسعارها:</p>${groups.map((g, i) => `<details class="dmb-law"${i === 0 ? ' open' : ''}><summary>${A(g.g || 'بنود متنوعة')} (${AD(g.L.length)})</summary><table class="dmb-t">${g.L.map(a => `<tr><td>${A(a.n)}</td><td class="n">${ar(a.p)}</td></tr>`).join('')}</table></details>`).join('')}${src(K.docOf[sc], [...new Set(L.map(a => a.pg))].map(AD).join('، '))}`, [{ t: 'عرض المنيو المصوّر', go: K.docOf[sc] }]);
+    chips(['akhenaten', 'isis', 'lotus', 'mawadda', 'birthday', 'special'].filter(s => s !== sc).slice(0, 4).map(s => ({ t: 'إضافات ' + K.scopes[s], fn: () => allAddons(s) })));
+  }
+  function compareHalls(a, b) {
+    const H = [a, b].filter(h => K.halls[h]);
+    if (H.length < 2) return a === 'mawadda' || b === 'mawadda' ? katb() : hallPrices(a);
+    const row = (label, f) => `<tr><td><b>${label}</b></td>${H.map(h => `<td>${f(K.halls[h], h)}</td>`).join('')}</tr>`;
+    const lo = h => h.pk.type === 'wk' ? h.menus[0].wd : h.menus[0].price;
+    const exh = id => { const x = K.addons.find(a => a.s === id && norm(a.n).trim() === 'ساعه اضافيه'); return x ? ar(x.p) : '—'; };
+    const dep = h => { const r = K.deposit.find(x => x[0] === h.name); return r ? `${money(r[1])}<br><small>تأمين ${money(r[2])}</small>` : '—'; };
+    const incs = h => h.inc.flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1]));
+    const only = (x, y) => incs(x).filter(i => !incs(y).some(j => norm(j) === norm(i)));
+    const d1 = only(K.halls[H[0]], K.halls[H[1]]), d2 = only(K.halls[H[1]], K.halls[H[0]]);
+    bot(`<p class="dmb-h">مقارنة: ${HALLNAME[H[0]]} و${HALLNAME[H[1]]}</p><table class="dmb-t"><tr><th></th>${H.map(h => `<th>${HALLNAME[h]}</th>`).join('')}</tr>
+${row('السعة', h => `${AD(h.min)} – ${AD(h.max)} فرد`)}
+${row('الباكدج محسوب على', h => h.pk.type === 'wk' ? `${AD(h.pk.wd.n)} / ${AD(h.pk.we.n)} فرد` : `${AD(h.pk.n)} فرد`)}
+${row('يبدأ من', h => `<b>${money(lo(h))}</b>`)}
+${row('نهاية الأسبوع', h => h.pk.type === 'wk' ? 'باكدج مستقل لـ ٣٠٠ فرد' : `+ ${money(h.pk.fee)}`)}
+${row('المنيوهات', h => AD(h.menus.length) + ' اختيارات' + (h.menus.some(m => m.id.startsWith('ob')) ? ' (منها أوبن بوفيه)' : ''))}
+${row('الساعة الإضافية', (h, id) => exh(id))}
+${row('مقدم الحجز', h => dep(h))}
+</table>${d1.length || d2.length ? `<div class="dmb-sec"><b>فروق ما يشمله الباكدج:</b><ul>${d1.length ? `<li>${HALLNAME[H[0]]}: ${d1.map(A).join('، ')}</li>` : ''}${d2.length ? `<li>${HALLNAME[H[1]]}: ${d2.map(A).join('، ')}</li>` : ''}</ul></div>` : ''}${src(H[0], '١ – ٣')}`);
+    chips([...H.map(h => ({ t: 'تفاصيل ' + HALLNAME[h], fn: () => hallProfile(h) })), { t: 'احسب التكلفة لعدد معين', fn: () => askCount(recommend) }]);
+  }
+  function findBudget(t) {
+    let m = t.match(/(\d{2,4}) ?(?:الف|الاف|ك ج|k)/);
+    if (m) return +m[1] * 1000;
+    m = t.match(/(?:ميزانيه|ميزانيتي|ميزانيتنا|معايا|معانا|حدود|في حدود|مش اكتر من|اقصي|بحد اقصي) ?(?:حوالي )?(\d{4,7})/);
+    return m ? +m[1] : null;
+  }
+  function budgetAns(budget) {
+    const n = S.count;
+    if (!n) { bot(`<p>الميزانية ${money(budget)}. ما العدد المتوقع للمدعوين؟</p>`); FLOW = { wantCount: true, step: (raw, t, e) => { const c = e.count || findCount(t, true); if (!c) { FLOW = null; return false; } FLOW = null; S.count = c; budgetAns(budget); return true; } }; chips([]); return; }
+    const out = [];
+    ['lotus', 'isis', 'akhenaten'].forEach(hid => {
+      const H = K.halls[hid]; if (n > H.max) return;
+      (H.pk.type === 'wk' ? ['wd', 'we'] : ['wd', 'we']).forEach(d => H.menus.forEach(m => { const v = estTotal(H, m, n, d); if (v <= budget) out.push({ hid, d, m, v }); }));
+    });
+    if (!out.length) {
+      const cheapest = ['lotus', 'isis', 'akhenaten'].filter(h => n <= K.halls[h].max).map(h => ({ h, v: Math.min(...K.halls[h].menus.map(m => estTotal(K.halls[h], m, n, 'wd'))) })).sort((a, b) => a.v - b.v)[0];
+      bot(`<p>لا يوجد باكدج أفراح لعدد ${AD(n)} فرد في حدود ${money(budget)}.${cheapest ? ` وأقل تكلفة تقديرية لهذا العدد ${money(cheapest.v)} بـ${HALLNAME[cheapest.h]} في منتصف الأسبوع.` : ''}</p>`);
+      chips([{ t: 'تغيير العدد', fn: () => askCount(() => budgetAns(budget)) }, { t: 'ترشيح قاعة مناسبة', fn: recommend }]);
+      return;
+    }
+    const best = {};
+    out.forEach(o => { const k = o.hid + o.d; if (!best[k] || o.v > best[k].v) best[k] = o; });
+    const rows = Object.values(best).sort((a, b) => b.v - a.v).map(o => `<tr><td><b>${HALLNAME[o.hid]}</b> – ${A(o.m.name)}<br><small>${o.d === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}</small></td><td class="n">${money(o.v)}</td></tr>`).join('');
+    bot(`<p>في حدود ميزانية <b>${money(budget)}</b> لعدد <b>${AD(n)} فرد</b>، أعلى اختيار متاح في كل قاعة:</p><table class="dmb-t">${rows}</table><p class="dmb-note">التكلفة تقديرية شاملة الباكدج والوجبات الإضافية، ولا تشمل التأمين والإضافات.</p>`);
+    chips([...new Set(out.map(o => o.hid))].map(h => ({ t: 'التفاصيل في ' + HALLNAME[h], fn: () => { S.hall = h; S.menu = null; estimate(); } })));
+  }
+  function defineAns(t) {
+    const c = ' ' + t.trim() + ' ';
+    let best = null, bl = 0;
+    K.defs.forEach(d => { norm(d.t).trim().split(/ ?\/ ?| \(|\)/).map(x => x.trim()).filter(x => x.length > 2).forEach(k => { if (c.includes(' ' + k) && k.length > bl) { best = d; bl = k.length; } }); });
+    if (!best) return false;
+    bot(`<p><b>${esc(best.t)}</b>: ${A(best.x)}</p><p class="dmb-src">المرجع: شروط وأحكام الحجز بالدار – التعريفات</p>`);
+    chips(relatedChips(''));
+    return true;
+  }
+  function inclusionsCompare() {
+    const H = ['akhenaten', 'isis', 'lotus'].map(h => K.halls[h]);
+    const all = [];
+    H.forEach(h => h.inc.forEach(s => s.o.forEach(o => { if (o[0] === 'i' && !all.some(x => norm(x) === norm(o[1]))) all.push(o[1]); })));
+    const has = (h, x) => h.inc.some(s => s.o.some(o => o[0] === 'i' && norm(o[1]) === norm(x)));
+    bot(`<p class="dmb-h">ما يشمله باكدج الأفراح في كل قاعة</p><table class="dmb-t"><tr><th>الخدمة</th><th>أخناتون</th><th>إيزيس</th><th>اللوتس</th></tr>${all.map(x => `<tr><td><small>${A(x)}</small></td>${H.map(h => `<td>${has(h, x) ? '✓' : '—'}</td>`).join('')}</tr>`).join('')}</table><p class="dmb-note">وتشمل جميع الباكدجات الوجبات بعدد الباكدج من المنيو المختار.</p>${src('akhenaten', 3)}`);
+    chips(['akhenaten', 'isis', 'lotus'].map(h => ({ t: 'تفاصيل ' + HALLNAME[h], fn: () => hallProfile(h) })));
   }
   /* ---------------- knowledge engine: searches everything the venue documents say ---------------- */
   const STOPW = new Set(['سعر', 'اسعار', 'بكام', 'بكم', 'كام', 'عاوز', 'عايز', 'ابغي', 'اريد', 'ايه', 'هو', 'هي', 'في', 'فى', 'من', 'علي', 'عن', 'لو', 'ممكن', 'يا', 'و', 'او', 'اللي', 'ده', 'دي', 'دا', 'قاعه', 'عندكم', 'عندك', 'فيه', 'فيها', 'بتاع', 'بتاعه', 'بتاعت', 'الف', 'جنيه', 'حفل', 'فرح', 'افراح', 'تمن', 'ثمن', 'تكلفه', 'كم', 'هل', 'انا', 'احنا', 'لينا', 'ليا', 'بيبقي', 'يبقي', 'بقي', 'اعرف', 'تقولي', 'قولي', 'محتاج', 'نفسي', 'لما', 'مع', 'شويه', 'حاجه', 'ازاي', 'ليه', 'كده', 'برضه', 'اضافه', 'اضافات', 'خارج', 'باكدج', 'باكيدج', 'باقه', 'منيو', 'رسوم', 'سعرها', 'سعره', 'فرد', 'افراد', 'شخص', 'اشخاص', 'نفر', 'معزوم', 'معازيم', 'عدد', 'تقريبا', 'حوالي', 'يوم', 'خميس', 'جمعه', 'سبت', 'كتب', 'كتاب', 'عقد', 'قران', 'عيد', 'ميلاد', 'زفاف', 'خطوبه', 'سعه', 'تساع', 'قاعات', 'قاعتين', 'باكدجات', 'منيوهات', 'ارخص', 'اغلي', 'فين', 'كله', 'كلها', 'كل', 'بس', 'طيب', 'طب', 'تمام', 'ok', 'موجود', 'موجوده', 'متاح', 'متاحه', 'متوفر', 'متوفره', 'ينفع', 'مسموح', 'ضمن', 'شامل', 'بيشمل', 'يشمل', 'مجاني', 'ببلاش', 'بفلوس', 'مدفوع', 'معاه', 'معاها', 'عندها', 'بتقدموا', 'تقدموا', 'بتعملوا', 'اقدر', 'نقدر', 'اجيب', 'نجيب', 'نعمل', 'اعمل', 'عشان', 'علشان', 'لازم', 'محتاجين', 'عايزين', 'عاوزين', 'الدار', 'دار', 'المراسم', 'مراسم', 'ج', 'ك', 'كيلو', 'دخوله', 'دخولها', 'دخولهم', 'بره', 'برا', 'الخارج', 'خارجي', 'نجيبه', 'اجيبه', 'ندخل', 'ادخل', 'دخول', 'بوفيه', 'اوبن', 'ست', 'سيت', 'هاي', 'تي', 'كوفي', 'بريك', 'مفتوح', 'the', 'is', 'a', 'of', 'for', 'how', 'much', 'price', 'do', 'you', 'have']);
@@ -966,7 +1076,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
       const all = dish, label = MQ[mq.k] + (mq.n ? ' (' + AD(mq.n) + ')' : '');
       dish = dish.filter(r => r.e.where.includes(MQ[mq.k]) && (!mq.n || r.e.where.includes('(' + mq.n + ')')));
       if (dish.length) { inc.length = 0; add.length = 0; }
-      else if (all.length) { notIn = `<p><b>لا</b>، هذا الصنف غير وارد في ${label}${K.halls[S.hall] ? ' – ' + HALLNAME[S.hall] : ''}، ويوجد في المنيوهات التالية:</p>`; dish = all; inc.length = 0; add.length = 0; }
+      else if (all.length) { notIn = `<p>هذا الصنف غير متوفر ضمن ${label}${K.halls[S.hall] ? ' – ' + HALLNAME[S.hall] : ''}، ويسعدنا أن نرشّح لكم المنيوهات التي تتضمنه:</p>`; dish = all; inc.length = 0; add.length = 0; }
     }
     if (!inc.length && !add.length && !dish.length) return false;
     const parts = [], used = new Set();
@@ -1003,7 +1113,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     }
     const lead = opts && opts.lead ? opts.lead : notIn ? notIn : mq && dish.length ? '<p><b>نعم</b>، ضمن أصناف المنيو:</p>' : askInc ? (inc.length ? '<p><b>نعم، مشمول ضمن الباكدج</b> في الحالات التالية:</p>' : '<p><b>غير مشمول ضمن الباكدج</b>، ويُطلب كإضافة:</p>') : inc.length ? '<p><b>نعم، متوفر.</b></p>' : add.length && !dish.length ? '<p><b>نعم، متاح كإضافة</b> بالأسعار التالية:</p>' : '<p><b>نعم، متوفر.</b></p>';
     const ct = canon(t);
-    if (/ (?:ليزر|دخان|فاير|شموع) /.test(ct)) parts.push('<p class="dmb-note">وفقاً للائحة (م ٧٤، ٧٥): تخضع مؤثرات الليزر والدخان والشموع لموافقة الإدارة المسبقة وإشرافها، ويُحظر استخدام الألعاب النارية وأي مؤثرات خطرة؛ ويُرجى تأكيد عروض الشو فاير والفاير ورك مع فريق الحفلات.</p>');
+    if (/ (?:ليزر|دخان|فاير|شموع) /.test(ct)) parts.push('<p class="dmb-note">حرصاً على سلامة ضيوفنا، تُنفَّذ مؤثرات الليزر والدخان والشموع بالتنسيق مع إدارة الدار وتحت إشرافها، ويسعد فريق الحفلات تأكيد تفاصيل عروض الشو فاير والفاير ورك معكم.</p>');
     if (/ (?:سندوتشات) /.test(ct) && add.some(r => r.e.s === 'birthday')) setTimeout(() => chips([{ t: 'السندوتشات الباردة', q: 'السندوتشات الباردة عيد ميلاد' }, { t: 'السندوتشات الساخنة', q: 'السندوتشات الساخنة عيد ميلاد' }, { t: 'سندوتشات الكايزر', q: 'برجر كايزر عيد ميلاد' }]), 0);
     const srcs = [...used].slice(0, 4).join('، ');
     bot(lead + parts.join('') + `<p class="dmb-src">المصدر: ${srcs}</p>`);
@@ -1025,28 +1135,28 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
   const TOPICS = {
     deposit: { k: ['مقدم', 'عربون', 'تثبيت الحجز', 'اثبت الحجز', 'تاكيد الحجز', 'ادفع كام عشان احجز', 'احجز بكام', 'الحجز بكام', 'مقدم الحجز', 'اول دفعه'], a: [6, 7, 46], fn: depositAns },
     insurance: { k: ['تامين', 'التامين', 'ضمان', 'الضمان', 'ديبوزيت', 'deposit'], a: [42, 43, 44], fn: insuranceAns },
-    payment: { k: ['السداد', 'جدول السداد', 'الدفعات', 'دفعات', 'اقساط', 'تقسيط', 'قسط', 'ادفع امتي', 'الدفع ازاي', 'الباقي امتي', 'الدفعه التانيه', 'الدفعه الثانيه', 'نظام الدفع', 'باقي المبلغ', 'باقي الفلوس'], a: [33, 39], s: 'جدول السداد حسب اللائحة:<ol><li><b>مقدم الحجز:</b> يُسدَّد كاملاً عند التعاقد.</li><li><b>خلال شهر من التعاقد:</b> اختيار الباكدج والخدمات وسداد ٥٠٪ على الأقل من قيمة الباكدج.</li><li><b>باقي القيمة:</b> كامل قيمة الحفل بما فيها الإضافات والتأمين، قبل موعد الحفل بشهر على الأكثر.</li></ol>وإذا أُبرم التعاقد قبل موعد الحفل بأقل من شهر: تُسدَّد القيمة كاملة والتأمين دفعة واحدة عند التعاقد.<p class="dmb-note">لا يُعتد بالدفعة الثانية إلا مع اختيار الباكدج، وبانقضاء الشهر دون ذلك يُعد المتعاقد متأخراً في السداد (م ٣٩). وسداد باقي القيمة شرط لانعقاد الحفل.</p>' },
+    payment: { k: ['السداد', 'جدول السداد', 'الدفعات', 'دفعات', 'اقساط', 'تقسيط', 'قسط', 'ادفع امتي', 'الدفع ازاي', 'الباقي امتي', 'الدفعه التانيه', 'الدفعه الثانيه', 'نظام الدفع', 'باقي المبلغ', 'باقي الفلوس'], a: [33, 39], s: 'جدول السداد المعتمد بالدار:<ol><li><b>مقدم الحجز:</b> يُسدَّد كاملاً عند التعاقد.</li><li><b>خلال شهر من التعاقد:</b> اختيار الباكدج والخدمات وسداد ٥٠٪ على الأقل من قيمة الباكدج.</li><li><b>باقي القيمة:</b> كامل قيمة الحفل بما فيها الإضافات والتأمين، قبل موعد الحفل بشهر على الأكثر.</li></ol>وإذا أُبرم التعاقد قبل موعد الحفل بأقل من شهر: تُسدَّد القيمة كاملة والتأمين دفعة واحدة عند التعاقد.<p class="dmb-note">لا يُعتد بالدفعة الثانية إلا مع اختيار الباكدج، وبانقضاء الشهر دون ذلك يُعد المتعاقد متأخراً في السداد (م ٣٩). وسداد باقي القيمة شرط لانعقاد الحفل.</p>' },
     methods: { k: ['بالفيزا', 'الدفع بالفيزا', 'فيزا', 'visa', 'كاش', 'نقدي', 'نقدا', 'انستاباي', 'انستا باي', 'instapay', 'كارت', 'بطاقه ائتمان', 'كريدت', 'تحويل', 'فودافون كاش', 'وسائل الدفع', 'طرق الدفع', 'ادفع ازاي', 'وسيله الدفع'], a: [38, 40], s: 'السداد متاح <b>نقداً</b>، أو <b>ببطاقات الدفع (فيزا)</b>، أو <b>عبر إنستاباي</b> على حساب الدار المعتمد. يُرسل إيصال السداد للدار لاعتماده، ولا يُعتد بأي سداد إلا بإيصال معتمد صادر من الدار.' },
     pricelock: { k: ['الاسعار تزيد', 'الاسعار ممكن تزيد', 'السعر ممكن يزيد', 'الاسعار بتزيد', 'الاسعار هتعلي', 'زياده في الاسعار', 'هتزودوا', 'تثبيت السعر', 'تثبيت الاسعار', 'السعر ثابت', 'الاسعار ثابته', 'الاسعار هتزيد', 'السعر هيزيد', 'هتغلي', 'زياده الاسعار', 'الاسعار هتتغير'], a: [34], s: 'الأسعار قابلة للتغيير حسب أوضاع السوق، و<b>لا تُثبَّت إلا باختيار الباكدج وسداد كامل قيمته خلال ٣٠ يوماً من تاريخ سداد المقدم</b>؛ وفيما عدا ذلك تُطبَّق الأسعار السارية وقت الاستكمال.' },
-    discount: { k: ['خصم', 'خصومات', 'تخفيض', 'تفاوض', 'عرض خاص', 'اقل من كده', 'تنزلوا السعر', 'تنزل السعر', 'نزلي', 'سعر خاص', 'خصم للضباط'], a: [36, 35], s: 'أسعار القاعات والباكدجات والإضافات الواردة بالقوائم المعتمدة <b>نهائية وغير قابلة للتفاوض أو التخفيض</b>، ولا يُعتد بأي وعد أو اتفاق شفهي بخصم. والأسعار الواردة بالعقد شاملة الضرائب والرسوم المقررة ما لم يُنص على خلاف ذلك.' },
-    late: { k: ['اتاخرت في القسط', 'تاخرت في القسط', 'تاخير القسط', 'اتاخرت', 'تاخرت', 'معرفتش ادفع', 'تاخير السداد', 'تاخير الدفع', 'اتاخرت في الدفع', 'تاخرت في الدفع', 'تاخرت في السداد', 'اتاخرت في السداد', 'غرامه', 'غرامات', 'متاخر في السداد', 'متاخر في الدفع'], a: [39, 49], s: 'عند التأخر في السداد عن المواعيد <b>يحق للدار فرض غرامة تأخير ٥٠ جنيهاً عن كل يوم تأخير</b>. وإذا تجاوز التأخير <b>٤٥ يوماً</b> يحق للدار إلغاء الحجز ويكون المقدم غير مسترد، ويُرد ما زاد عنه بشيك بنكي.' },
-    cancel: { k: ['الغاء', 'الغي', 'الغيت', 'هلغي', 'كنسل', 'cancel', 'استرداد', 'استرجاع', 'ارجاع الفلوس', 'فلوسي', 'ترجعوا', 'هترجع', 'رجوع المبلغ', 'لو لغيت'], a: [46, 47, 48, 49, 41], s: 'طلب الإلغاء يُقدَّم <b>كتابةً</b> على النموذج المعتمد (لا يُعتد بالإلغاء الشفهي).<ul><li><b>مقدم الحجز غير مسترد</b>، إلا في حالة واحدة فقط: إعادة حجز القاعة في نفس التاريخ لمتعاقد آخر.</li><li>يُرد إليكم ما سددتموه زيادةً على قيمة المقدم <b>بشيك بنكي</b> باسم من قام بالسداد، ولا تُرد أي مبالغ نقداً.</li></ul>' },
-    postpone: {   k: ['تاجيل', 'اجل', 'ناجل', 'اغير ميعاد', 'تغيير ميعاد', 'نغير ميعاد', 'اغير معاد', 'نغير معاد', 'تغيير معاد', 'اغير التاريخ', 'نغير التاريخ', 'يتاجل', 'اجلنا', 'تغيير الميعاد', 'تغيير التاريخ', 'اغير الميعاد', 'اغير التاريخ', 'نغير الميعاد', 'تغيير معاد', 'اغير المعاد'], a: [51, 52, 53, 54], s: '<ul><li>التأجيل مسموح <b>مرة واحدة فقط</b>، بطلب كتابي قبل الموعد الأصلي بـ <b>٣٠ يوماً على الأقل</b>، بشرط توافر الموعد الجديد وموافقة الإدارة، و<b>ألا يتجاوز الموعد الجديد ٣ أشهر</b> من الموعد الأصلي.</li><li><b>الرسوم:</b> ٥٬٠٠٠ ج إذا كان الموعد الجديد في نفس الشهر، و١٠٬٠٠٠ ج إذا كان في شهر آخر، مع تحمل أي فروق أسعار (تغيّر الموسم أو الانتقال لنهاية الأسبوع أو العطلات).</li><li>طلب التأجيل قبل الحفل بأقل من ٣٠ يوماً يُعامل معاملة الإلغاء.</li></ul>' },
+    discount: { k: ['خصم', 'خصومات', 'تخفيض', 'تفاوض', 'عرض خاص', 'اقل من كده', 'تنزلوا السعر', 'تنزل السعر', 'نزلي', 'سعر خاص', 'خصم للضباط'], a: [36, 35], s: 'نقدّر اهتمامكم، ونود الإفادة بأن أسعار القاعات والباكدجات والإضافات المعلنة بقوائم الدار <b>أسعار نهائية لا تخضع للتفاوض أو التخفيض</b>، ولا يُعتد بأي وعد أو اتفاق شفهي بخصم. والأسعار الواردة بالعقد شاملة الضرائب والرسوم المقررة ما لم يُنص على خلاف ذلك.' },
+    late: { k: ['اتاخرت في القسط', 'تاخرت في القسط', 'تاخير القسط', 'اتاخرت', 'تاخرت', 'معرفتش ادفع', 'تاخير السداد', 'تاخير الدفع', 'اتاخرت في الدفع', 'تاخرت في الدفع', 'تاخرت في السداد', 'اتاخرت في السداد', 'غرامه', 'غرامات', 'متاخر في السداد', 'متاخر في الدفع'], a: [39, 49], s: 'نتفهم ما قد يطرأ من ظروف، ونود التنويه إلى أنه عند التأخر في السداد عن المواعيد المحددة <b>يحق للدار فرض غرامة تأخير ٥٠ جنيهاً عن كل يوم تأخير</b>. وإذا تجاوز التأخير <b>٤٥ يوماً</b> يحق للدار إلغاء الحجز ويكون المقدم غير مسترد، ويُرد ما زاد عنه بشيك بنكي.' },
+    cancel: { k: ['الغاء', 'الغي', 'الغيت', 'هلغي', 'كنسل', 'cancel', 'استرداد', 'استرجاع', 'ارجاع الفلوس', 'فلوسي', 'ترجعوا', 'هترجع', 'رجوع المبلغ', 'لو لغيت'], a: [46, 47, 48, 49, 41], s: '<p>نتفهم تماماً أن الظروف قد تتغير، وتوضح شروط الحجز ما يلي:</p>طلب الإلغاء يُقدَّم <b>كتابةً</b> على النموذج المعتمد (لا يُعتد بالإلغاء الشفهي).<ul><li><b>مقدم الحجز غير مسترد</b>، إلا في حالة واحدة فقط: إعادة حجز القاعة في نفس التاريخ لمتعاقد آخر.</li><li>يُرد إليكم ما سددتموه زيادةً على قيمة المقدم <b>بشيك بنكي</b> باسم من قام بالسداد، ولا تُرد أي مبالغ نقداً.</li></ul>' },
+    postpone: {   k: ['تاجيل', 'اجل', 'ناجل', 'اغير ميعاد', 'تغيير ميعاد', 'نغير ميعاد', 'اغير معاد', 'نغير معاد', 'تغيير معاد', 'اغير التاريخ', 'نغير التاريخ', 'يتاجل', 'اجلنا', 'تغيير الميعاد', 'تغيير التاريخ', 'اغير الميعاد', 'اغير التاريخ', 'نغير الميعاد', 'تغيير معاد', 'اغير المعاد'], a: [51, 52, 53, 54], s: '<p>يسعدنا مساعدتكم في إعادة ترتيب موعد الحفل وفق الضوابط التالية:</p><ul><li>التأجيل مسموح <b>مرة واحدة فقط</b>، بطلب كتابي قبل الموعد الأصلي بـ <b>٣٠ يوماً على الأقل</b>، بشرط توافر الموعد الجديد وموافقة الإدارة، و<b>ألا يتجاوز الموعد الجديد ٣ أشهر</b> من الموعد الأصلي.</li><li><b>الرسوم:</b> ٥٬٠٠٠ ج إذا كان الموعد الجديد في نفس الشهر، و١٠٬٠٠٠ ج إذا كان في شهر آخر، مع تحمل أي فروق أسعار (تغيّر الموسم أو الانتقال لنهاية الأسبوع أو العطلات).</li><li>طلب التأجيل قبل الحفل بأقل من ٣٠ يوماً يُعامل معاملة الإلغاء.</li></ul>' },
     modify: { k: ['تعديل الحجز', 'اعدل', 'تعديل المنيو', 'اغير المنيو', 'تغيير المنيو', 'اضيف خدمه', 'الغي خدمه', 'تعديل', 'اغير الباكدج'], a: [15, 55, 56, 57], s: '<ul><li><b>تعديل المنيو:</b> كتابةً قبل الحفل بـ ٧ أيام على الأقل، مع تحمل فروق الأسعار، ولا تُقبل تعديلات جوهرية بعد هذه المدة إلا بتقدير الإدارة.</li><li><b>إلغاء أو تعديل أو إضافة أي بند:</b> بإخطار كتابي قبل الحفل بـ ٤٨ ساعة على الأقل.</li><li>أي فرق لصالحك يُوجَّه إلى خدمات إضافية ولا يُسترد نقداً، وإلغاء خدمة ضمن الباكدج لا يترتب عليه بالضرورة خصم من قيمته.</li></ul>' },
     count: { k: ['ناس زياده', 'جه ناس', 'عدد زياده', 'زياده في العدد', 'العدد زياده', 'حضر عدد', 'جه عدد', 'ابلغ العدد', 'العدد النهائي', 'اكد العدد', 'تاكيد العدد', 'عدد المعازيم', 'زياده العدد', 'العدد زاد', 'العدد قل', 'نقص العدد', 'عدد اقل', 'جه عدد', 'حضروا اقل', 'حضروا اكتر', 'معازيم زياده'], a: [20, 21, 22, 23, 25], fn: countAns },
     duration: {  k: ['اتاخر ساعه', 'اتاخرنا', 'الفرح اتاخر', 'الحفل اتاخر', 'لو اتاخر', 'تاخير في الانتهاء', 'مده الحفل', 'كام ساعه', 'بتخلص', 'بيخلص', 'يخلص امتي', 'تخلص امتي', 'الحفل بيبدا', 'الفرح بيبدا', 'الحفل كام ساعه', 'الحفل بياخد', 'مده الفرح', 'وقت الحفل', 'الفرح كام ساعه', 'عدد الساعات', 'ساعات الحفل', 'بيخلص الساعه', 'لحد الساعه كام'], a: [27, 30, 31, 32], fn: durationAns },
     food: { k: ['اكل من بره', 'اكل من الخارج', 'اجيب اكل', 'نجيب اكل', 'تورته من بره', 'تورته من الخارج', 'نجيب تورته', 'اجيب تورته', 'حلويات من بره', 'مشروبات من بره', 'كيك من بره', 'اكل من برا', 'تورته من برا', 'نجيب حاجه من بره'], a: [3], fn: foodAns },
-    banned: { k: ['العاب ناريه', 'شماريخ', 'صواريخ', 'بمب', 'سلاح', 'اسلحه', 'كحول', 'خمره', 'خمور', 'بيره', 'ممنوعات', 'الممنوع', 'المحظور', 'ممنوع ايه'], a: [3, 74], s: 'يُحظر إدخال أو حيازة أو استخدام <b>الأسلحة أو الألعاب النارية أو المواد القابلة للاشتعال أو المشروبات الكحولية</b> أو أي مواد محظورة قانوناً، ويُحظر استخدام الألعاب النارية وأي مؤثرات خطرة داخل الدار، وكذلك إدخال أطعمة أو مشروبات من خارج الدار. ومؤثرات الليزر والدخان تخضع لموافقة الإدارة المسبقة وإشرافها، ولها منعها.<p class="dmb-note">ترد عروض الشو فاير والفاير ورك بقوائم إضافات القاعات؛ يُرجى تأكيد إمكانية تقديمها مع فريق الحفلات.</p>' },
-    smoking: { k: ['تدخين', 'سجاير', 'سجائر', 'شيشه', 'ادخن', 'التدخين'], a: [73], s: 'يُسمح بالتدخين في الأماكن المخصصة له فقط (إن وُجدت)، ويُحظر فيما عداها من أرجاء الدار.' },
+    banned: { k: ['العاب ناريه', 'شماريخ', 'صواريخ', 'بمب', 'سلاح', 'اسلحه', 'كحول', 'خمره', 'خمور', 'بيره', 'ممنوعات', 'الممنوع', 'المحظور', 'ممنوع ايه'], a: [3, 74], s: 'حرصاً على سلامة ضيوفنا وراحتهم، لا تسمح سياسة الدار بإدخال أو استخدام <b>الأسلحة أو الألعاب النارية أو المواد القابلة للاشتعال أو المشروبات الكحولية</b> أو أي مؤثرات خطرة، وكذلك إدخال أطعمة أو مشروبات من خارج الدار. ومؤثرات الليزر والدخان تخضع لموافقة الإدارة المسبقة وإشرافها، ولها منعها.<p class="dmb-note">ترد عروض الشو فاير والفاير ورك بقوائم إضافات القاعات؛ يُرجى تأكيد إمكانية تقديمها مع فريق الحفلات.</p>' },
+    smoking: { k: ['تدخين', 'سجاير', 'سجائر', 'شيشه', 'ادخن', 'التدخين'], a: [73], s: 'يُسمح بالتدخين في الأماكن المخصصة له فقط (إن وُجدت)، حرصاً على راحة جميع الضيوف.' },
     vendors: { k: ['من بره', 'من الخارج', 'من برا', 'مصور خارجي', 'مطرب', 'فنان', 'فرقه', 'مغني', 'ساوند من بره', 'دي جي من بره', 'ميكب من بره', 'كوافير من بره', 'مورد خارجي'], a: [67, 68, 69], fn: vendorsAns },
     guestlist: { k: ['كشف', 'كشف المدعوين', 'اسماء المعازيم', 'اسماء المدعوين', 'قايمه المعازيم', 'الدعوات', 'كروت الدعوه'], a: [72], s: 'يلتزم المتعاقد بتسليم الدار <b>كشفاً بأسماء المدعوين قبل الحفل بـ ٤٨ ساعة على الأقل</b>، وللدار تنظيم الدخول وفقاً له.' },
     photos: {  k: ['الصور هتوصل', 'استلام الصور', 'تتسلم', 'الصور امتي', 'الفيديو امتي', 'استلم الصور', 'استلم الفيديو', 'استلام الفيديو', 'الفيديو هيوصل', 'مده الاحتفاظ', 'ملفات التصوير', 'الصور الاصليه', 'امتي استلم', 'حقوق الصور', 'تنشروا صوري', 'تنزلوا صوري'], a: [64, 65], s: '<ul><li>يحتفظ مورد التصوير المعتمد لدى الدار بالصور الأصلية <b>٣ أشهر</b> وبالفيديو <b>شهراً واحداً</b> من تاريخ الحفل؛ يُرجى الاستلام وطلب النسخ أو التعديلات قبل انتهاء المدة.</li><li>حقوق صور وفيديو المناسبة كاملةً للمتعاقد، ولا تستخدمها الدار إلا بموافقته الكتابية.</li></ul>' },
     lost: { k: ['ضاع', 'ضاعت', 'نسيت', 'مفقودات', 'فقدت', 'اتسرق', 'حاجتي'], a: [83, 4], s: 'تُحفظ المفقودات المعثور عليها لدى الإدارة <b>٣٠ يوماً</b> من تاريخ الحفل، وتُسلَّم لصاحبها بعد إثبات ملكيته. والدار لا تتحمل مسؤولية فقدان أو تلف المتعلقات الشخصية داخل الدار.' },
-    kids: { k: ['اطفال', 'الاطفال', 'عيال', 'العيال', 'ولاد صغيره', 'اطفال مسموح'], a: [4], s: 'اللائحة لا تمنع حضور الأطفال، ومسؤولية رعايتهم وسلامتهم طوال تواجدهم بالدار على ذويهم ومرافقيهم.' },
+    kids: { k: ['اطفال', 'الاطفال', 'عيال', 'العيال', 'ولاد صغيره', 'اطفال مسموح'], a: [4], s: 'نرحب بحضور الأطفال، مع الحرص على أن تكون رعايتهم وسلامتهم طوال تواجدهم بالدار على ذويهم ومرافقيهم.' },
     complaint: { k: ['شكوي', 'شكاوي', 'اشتكي', 'مشكله حصلت', 'اعتراض'], a: [103, 104], s: '<ul><li><b>أثناء الحفل:</b> أي ملاحظة على القاعة أو الطعام أو الخدمة أو السويت أو التصوير والفقرات تُبلَّغ <b>فوراً</b> لإدارة الدار أثناء الحفل، ولا يُعتد بها بعد انتهائه.</li><li><b>الشكاوى الأخرى</b> (الحجز، المسائل المالية، رد المبالغ، التأمين، المفقودات…): تُقدَّم كتابةً على النموذج المعتمد بالدار خلال <b>٧ أيام</b>، ويُرد عليها كتابةً خلال <b>١٥ يوماً</b>.</li></ul>' },
-    force: {  k: ['قوه قاهره', 'وفاه', 'توفي', 'اتوفي', 'اتوفت', 'حداد', 'حاله وفاه', 'ظرف طارئ', 'ظروف طارئه', 'وباء', 'كورونا', 'قرار حكومي', 'كارثه'], a: [99, 100, 102], s: 'القوة القاهرة في اللائحة هي: <b>القرار الحكومي، الكارثة الطبيعية، الوباء، أو وفاة أحد أقارب العروسين من الدرجة الأولى</b>. عندها يجوز باتفاق الطرفين <b>تأجيل الحفل دون رسوم</b> لأقرب موعد متاح خلال ٣ أشهر، بشرط الإخطار كتابةً خلال ٧ أيام من الواقعة.' },
+    force: {  k: ['قوه قاهره', 'وفاه', 'توفي', 'اتوفي', 'اتوفت', 'حداد', 'حاله وفاه', 'ظرف طارئ', 'ظروف طارئه', 'وباء', 'كورونا', 'قرار حكومي', 'كارثه'], a: [99, 100, 102], s: 'تُعامَل الحالات التالية معاملة الظروف القاهرة: <b>القرار الحكومي، الكارثة الطبيعية، الوباء، أو وفاة أحد أقارب العروسين من الدرجة الأولى</b>. عندها يجوز باتفاق الطرفين <b>تأجيل الحفل دون رسوم</b> لأقرب موعد متاح خلال ٣ أشهر، بشرط الإخطار كتابةً خلال ٧ أيام من الواقعة.' },
     leftover: { k: ['الاكل الزياده', 'باقي الاكل', 'الاكل اللي يفضل', 'اخد الاكل', 'ناخد الاكل', 'تيك اواي', 'الاكل الفاضل', 'بواقي'], a: [19], s: 'من حقك اصطحاب ما تبقى من طعام حفلك، وتنتهي مسؤولية الدار عن سلامته بمجرد خروجه من الدار.' },
-    docs: { k: ['بطاقه', 'رقم قومي', 'الرقم القومي', 'ورق مطلوب', 'المستندات', 'الاوراق', 'العقد', 'توقيع', 'استماره'], a: [6, 9, 11], s: 'للتعاقد: تقديم بياناتك كاملة وصحيحة <b>(الاسم – الرقم القومي – وسيلة الاتصال)</b>، والتوقيع على استمارة الحجز ورقياً أو إلكترونياً عبر نظام الدار، واللائحة جزء من الاستمارة. ولا يُعد الحجز مؤكداً إلا بعد سداد مقدم الحجز كاملاً وتوقيع الاستمارة.' },
+    docs: { k: ['بطاقه', 'رقم قومي', 'الرقم القومي', 'ورق مطلوب', 'المستندات', 'الاوراق', 'العقد', 'توقيع', 'استماره'], a: [6, 9, 11], s: 'للتعاقد: تقديم بياناتك كاملة وصحيحة <b>(الاسم – الرقم القومي – وسيلة الاتصال)</b>، والتوقيع على استمارة الحجز ورقياً أو إلكترونياً عبر نظام الدار، وتُعد الشروط والأحكام جزءاً من الاستمارة. ولا يُعد الحجز مؤكداً إلا بعد سداد مقدم الحجز كاملاً وتوقيع الاستمارة.' },
     transfer: { k: ['اتنازل', 'تنازل', 'انقل الحجز', 'الحجز لحد تاني', 'اديه لحد', 'حواله الحجز'], a: [111], s: 'لا يجوز التنازل عن الحجز أو تحويله لشخص آخر إلا بموافقة الدار الكتابية المسبقة.' },
     tax: { k: ['ضريبه', 'ضرايب', 'ضرائب', 'خدمه ١٢', 'شامل الضريبه', 'القيمه المضافه', 'رسوم خدمه'], a: [35], s: 'جميع الأسعار الواردة بالعقد <b>شاملة كافة الضرائب والرسوم المقررة</b>، ما لم يُنص صراحةً على خلاف ذلك.' },
     candles: { k: ['شموع', 'شمع', 'لهب', 'ليزر مسموح', 'الدخان مسموح'], a: [75, 74], s: 'الشموع واللهب المكشوف لا تُستخدم إلا في نطاق آمن وبموافقة الإدارة المسبقة وتحت إشرافها، ومؤثرات الليزر والدخان كذلك تخضع لموافقة الإدارة وإشرافها.' },
@@ -1066,14 +1176,14 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     return best;
   }
   function lawHTML(nums) {
-    return `<details class="dmb-law"><summary>نص اللائحة (م ${nums.map(AD).join('، ')})</summary>${nums.map(n => { const a = K.rules[n - 1]; return `<p><b>م ${AD(a.n)} ${esc(a.t)}:</b> ${A(a.x)}</p>`; }).join('')}</details>`;
+    return `<details class="dmb-law"><summary>النص الرسمي للشروط (البند ${nums.map(AD).join('، ')})</summary>${nums.map(n => { const a = K.rules[n - 1]; return `<p><b>البند ${AD(a.n)} – ${esc(a.t)}:</b> ${A(a.x)}</p>`; }).join('')}</details>`;
   }
   function topic(id) {
     if (id === 'howbook') return howBook();
     if (id === 'avail') return avail();
     const tp = TOPICS[id];
     if (tp.fn) return tp.fn(tp, LASTT);
-    bot(`<div>${tp.s}</div>${lawHTML(tp.a)}${src('rules')}`, [{ t: 'قراءة اللائحة كاملة', go: 'rules' }]);
+    bot(`<div>${tp.s}</div>${lawHTML(tp.a)}${src('rules')}`, [{ t: 'الشروط والأحكام كاملة', go: 'rules' }]);
     chips(relatedChips(id));
   }
   function relatedChips(id) {
@@ -1088,17 +1198,17 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
   const hallLabel = () => ({ akhenaten: 'قاعة أخناتون', isis: 'قاعة إيزيس', lotus: 'قاعة اللوتس', mawadda: 'قاعة المودة والرحمة', marasem: 'قاعة المراسم', lulu: 'قاعة اللؤلؤة', roof: 'الروف توب', glass: 'الخيمة VIP' }[S.hall] || null);
   function depositAns(tp) {
     const f = hallLabel(); const useF = f && K.deposit.some(r => r[0] === f);
-    bot(`<p>الحجز <b>لا يُعد مؤكداً إلا بعد سداد مقدم الحجز كاملاً وتوقيع استمارة التعاقد</b>، ولا يُحتفظ بالتاريخ قبل ذلك (المواعيد بأسبقية استيفاء الحجز).</p>${depTable(useF ? f : null)}<p class="dmb-note">مقدم الحجز غير مسترد، إلا في حالة إعادة حجز القاعة في نفس التاريخ لمتعاقد آخر. والتأمين يُسدَّد مع آخر دفعة، أو عند التعاقد إذا كان موعد الحفل بعد أقل من شهر.</p>${lawHTML([6, 8, 42, 46, 48])}${src('rules', 10)}`, [{ t: 'قراءة اللائحة كاملة', go: 'rules' }]);
+    bot(`<p>الحجز <b>لا يُعد مؤكداً إلا بعد سداد مقدم الحجز كاملاً وتوقيع استمارة التعاقد</b>، ولا يُحتفظ بالتاريخ قبل ذلك (المواعيد بأسبقية استيفاء الحجز).</p>${depTable(useF ? f : null)}<p class="dmb-note">مقدم الحجز غير مسترد، إلا في حالة إعادة حجز القاعة في نفس التاريخ لمتعاقد آخر. والتأمين يُسدَّد مع آخر دفعة، أو عند التعاقد إذا كان موعد الحفل بعد أقل من شهر.</p>${lawHTML([6, 8, 42, 46, 48])}${src('rules', 10)}`, [{ t: 'الشروط والأحكام كاملة', go: 'rules' }]);
     chips(useF ? [{ t: 'كل القاعات', fn: () => { const h = S.hall; S.hall = null; depositAns(tp); S.hall = h; } }, ...relatedChips('deposit')] : relatedChips('deposit'));
   }
   function insuranceAns(tp) {
     const f = hallLabel(); const useF = f && K.deposit.some(r => r[0] === f);
-    bot(`<p>يُسدَّد <b>تأمين عن كل قاعة</b> (وكذلك عن السويت والغرفة) لضمان سلامة القاعة وممتلكات الدار، مع آخر دفعة من قيمة الحفل (أو عند التعاقد إذا كان موعد الحفل بعد أقل من شهر). ويُرد <b>بشيك بنكي خلال ٤٥ يوماً</b> من تاريخ الحفل بعد التأكد من سلامة القاعة، ويُخصم منه أي تلفيات أو مستحقات بمحضر معاينة.</p>${depTable(useF ? f : null)}${lawHTML(tp.a)}${src('rules', 10)}`, [{ t: 'قراءة اللائحة كاملة', go: 'rules' }]);
+    bot(`<p>يُسدَّد <b>تأمين عن كل قاعة</b> (وكذلك عن السويت والغرفة) لضمان سلامة القاعة وممتلكات الدار، مع آخر دفعة من قيمة الحفل (أو عند التعاقد إذا كان موعد الحفل بعد أقل من شهر). ويُرد <b>بشيك بنكي خلال ٤٥ يوماً</b> من تاريخ الحفل بعد التأكد من سلامة القاعة، ويُخصم منه أي تلفيات أو مستحقات بمحضر معاينة.</p>${depTable(useF ? f : null)}${lawHTML(tp.a)}${src('rules', 10)}`, [{ t: 'الشروط والأحكام كاملة', go: 'rules' }]);
     chips(relatedChips('insurance'));
   }
   function durationAns(tp) {
     const hrs = [['akhenaten', 'قاعة أخناتون'], ['isis', 'قاعة إيزيس'], ['lotus', 'قاعة اللوتس (الأفراح)'], ['lotusk', 'عقد القران بقاعة اللوتس']].map(([s, n]) => { const a = K.addons.find(x => x.s === s && norm(x.n).trim() === 'ساعه اضافيه'); return a ? `<tr><td>${n}</td><td class="n">${ar(a.p)}</td></tr>` : ''; }).join('');
-    bot(`<ul><li>مدة الحفل في كل القاعات <b>٤ ساعات</b>، عدا <b>كتب الكتاب بقاعتي اللوتس والمودة والرحمة: ساعة ونصف</b>.</li><li>المدة تُحسب من موعد البدء في العقد، والتأخر في البدء لا يمد موعد الانتهاء.</li><li>التمديد بموافقة الإدارة المسبقة وحسب توافر القاعة، ويُحسب <b>بالساعة الكاملة</b> (كسر الساعة يُحسب ساعة).</li><li>التأخر في إنهاء الحفل يُستحق عنه مقابل الساعة كاملة بمجرد تجاوز موعد الانتهاء، ويجوز خصمه من التأمين.</li></ul><p><b>سعر الساعة الإضافية حسب المنيوهات:</b></p><table class="dmb-t">${hrs}</table>${lawHTML(tp.a)}${src('rules')}`, [{ t: 'قراءة اللائحة كاملة', go: 'rules' }]);
+    bot(`<ul><li>مدة الحفل في كل القاعات <b>٤ ساعات</b>، عدا <b>كتب الكتاب بقاعتي اللوتس والمودة والرحمة: ساعة ونصف</b>.</li><li>المدة تُحسب من موعد البدء في العقد، والتأخر في البدء لا يمد موعد الانتهاء.</li><li>التمديد بموافقة الإدارة المسبقة وحسب توافر القاعة، ويُحسب <b>بالساعة الكاملة</b> (كسر الساعة يُحسب ساعة).</li><li>التأخر في إنهاء الحفل يُستحق عنه مقابل الساعة كاملة بمجرد تجاوز موعد الانتهاء، ويجوز خصمه من التأمين.</li></ul><p><b>سعر الساعة الإضافية حسب المنيوهات:</b></p><table class="dmb-t">${hrs}</table>${lawHTML(tp.a)}${src('rules')}`, [{ t: 'الشروط والأحكام كاملة', go: 'rules' }]);
     chips([{ t: 'مواعيد كتب الكتاب', fn: () => katb() }, ...relatedChips('duration').slice(0, 3)]);
   }
   function countAns(tp, q) {
@@ -1108,17 +1218,17 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     const lead = extra ? '<p><b>عند زيادة العدد عن المتفق عليه</b> تُحتسب كل وجبة إضافية بسعر الوجبة الإضافية للمنيو المختار، وتُسدَّد فوراً قبل السماح بدخول الزيادة، ولا يجوز تجاوز السعة القصوى للقاعة.</p>'
       : less ? '<p><b>العدد المكتوب في العقد هو الحد الأدنى المضمون</b>، وتُستحق قيمة الباكدج كاملة ولو حضر عدد أقل، ولا يترتب على نقص العدد أي تخفيض.</p>'
       : '<p>يلزم <b>تأكيد العدد النهائي للمدعوين كتابةً قبل الحفل بسبعة أيام على الأقل</b>.</p>';
-    bot(`${lead}<ul>${extra ? '' : '<li>زيادة العدد تُحتسب بسعر الوجبة الإضافية وتُسدَّد قبل دخول الزيادة.</li>'}${less ? '' : '<li>العدد المكتوب في العقد حد أدنى مضمون تُستحق قيمته ولو حضر عدد أقل.</li>'}${/نهائي|اكد|ابلغ/.test(q) ? '' : '<li>يُؤكَّد العدد النهائي كتابةً قبل الحفل بـ ٧ أيام على الأقل.</li>'}</ul>${lawHTML([20, 21, 22, 23, 25, 26])}${src('rules', 6)}`, [{ t: 'قراءة اللائحة كاملة', go: 'rules' }]);
+    bot(`${lead}<ul>${extra ? '' : '<li>زيادة العدد تُحتسب بسعر الوجبة الإضافية وتُسدَّد قبل دخول الزيادة.</li>'}${less ? '' : '<li>العدد المكتوب في العقد حد أدنى مضمون تُستحق قيمته ولو حضر عدد أقل.</li>'}${/نهائي|اكد|ابلغ/.test(q) ? '' : '<li>يُؤكَّد العدد النهائي كتابةً قبل الحفل بـ ٧ أيام على الأقل.</li>'}</ul>${lawHTML([20, 21, 22, 23, 25, 26])}${src('rules', 6)}`, [{ t: 'الشروط والأحكام كاملة', go: 'rules' }]);
     chips([{ t: 'سعر الوجبة الإضافية', fn: () => extraMeal() }, ...relatedChips('count').slice(0, 3)]);
   }
   function foodAns(tp, q) {
     const cake = K.addons.find(a => a.s === 'birthday' && norm(a.n).includes('تورته من الخارج'));
     if (cake && (S.event === 'birthday' || / (?:عيد|ميلاد|بيرث)/.test(q || '')) && /تورت|كيك/.test(q || '')) {
-      bot(`<p>يتضمن منيو أعياد الميلاد بند <b>«${A(cake.n)}» بقيمة ${ar(cake.p)}</b>، كما يتضمن بند «رسوم دخول بالونات من الخارج» ٥٠٠ ج.</p><p class="dmb-note">مع العلم بأن اللائحة تحظر إدخال الأطعمة من خارج الدار (م ٣) وتُقدَّم أحكامها عند التعارض (م ٢)؛ لذا يُرجى تأكيد ذلك مع فريق الحفلات قبل التعاقد.</p>${src('birthday', 3)}`);
+      bot(`<p>يتضمن منيو أعياد الميلاد بند <b>«${A(cake.n)}» بقيمة ${ar(cake.p)}</b>، كما يتضمن بند «رسوم دخول بالونات من الخارج» ٥٠٠ ج.</p><p class="dmb-note">ونظراً لأن سياسة الدار لا تسمح عموماً بإدخال الأطعمة من الخارج، يسعد فريق الحفلات تأكيد ذلك معكم قبل التعاقد.</p>${src('birthday', 3)}`);
       chips([{ t: 'أسعار التورت لدى الدار', q: 'اسعار التورت عيد ميلاد' }, { t: 'باكدجات أعياد الميلاد', fn: birthday }]);
       return;
     }
-    bot(`<p>وفقاً لأحكام اللائحة <b>يُحظر إدخال أو تقديم أي أطعمة أو مشروبات من خارج الدار</b> حفاظاً على السلامة الغذائية.</p>${cake ? `<p class="dmb-note">يوجد في منيو أعياد الميلاد بند «${A(cake.n)}» بسعر ${ar(cake.p)}؛ يُرجى تأكيد السماح بها مع فريق الحفلات قبل التعاقد، لأن اللائحة تحظر إدخال الأطعمة من الخارج وتُقدَّم أحكامها عند التعارض (م ٢).</p>` : ''}${lawHTML([3])}${src('rules', 3)}`, [{ t: 'قراءة اللائحة كاملة', go: 'rules' }]);
+    bot(`<p>حرصاً على سلامة ضيوفنا وجودة الضيافة، <b>لا تسمح سياسة الدار بإدخال أو تقديم أطعمة أو مشروبات من خارجها</b>، ويسعدنا أن نقدّم لكم تشكيلة واسعة من التورت والحلويات والمخبوزات من مطابخ الدار.</p>${cake ? `<p class="dmb-note">يوجد في منيو أعياد الميلاد بند «${A(cake.n)}» بسعر ${ar(cake.p)}؛ يُرجى تأكيد السماح بها مع فريق الحفلات قبل التعاقد قبل التعاقد.</p>` : ''}${lawHTML([3])}${src('rules', 3)}`, [{ t: 'الشروط والأحكام كاملة', go: 'rules' }]);
     chips([{ t: 'إضافات البوفيه والتورت', q: 'اسعار التورت' }, ...relatedChips('food').slice(0, 3)]);
   }
   function vendorsAns(tp, q) {
@@ -1130,7 +1240,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     const same = h => ['akhenaten', 'isis', 'lotus'].every(x => { const o = K.addons.find(a => a.s === x && norm(a.n) === norm(h.n)); return o && o.p === h.p; });
     const fee = a => /فنانين/.test(a.n) ? `نسبة ${ar(a.p).replace('%', '٪')} من أجر الفنان أو الفرقة، وفقاً لقائمة الفنانين المعتمدين بالدار` : `«${A(a.n)}» ${ar(a.p)}`;
     const lead = hit.length ? `<p><b>نعم، يُسمح بذلك</b> مقابل ${hit.map(fee).join('، و')}${hit.every(same) ? ' (بجميع القاعات)' : ' — ' + K.scopes[sc]}، بشرط الإخطار الكتابي قبل الحفل بـ ٤٨ ساعة على الأقل والحصول على موافقة الإدارة المسبقة.</p>` : `<p>يُسمح بالاستعانة بجهات من الخارج (فنانين، فرق، صوتيات، إضاءة، تصوير، ديكور، ميك أب) بشرط <b>الإخطار الكتابي قبل الحفل بـ ٤٨ ساعة على الأقل والحصول على موافقة الإدارة المسبقة</b>.</p>`;
-    bot(`${lead}<ul><li>نسبة الدار <b>٢٠٪</b> من إجمالي أجر الفنان أو الفرقة، ورسوم دخول الأجهزة الصوتية الخارجية <b>٥٬٠٠٠ ج</b> بخلاف نسبة الـ ٢٠٪.</li><li>لا تتحمل الدار مسؤولية أعطال أجهزة الجهات الخارجية، ولا ملفات التصوير لدى المصورين من الخارج.</li></ul><details class="dmb-law"><summary>جميع رسوم الدخول — ${K.scopes[sc]}</summary><table class="dmb-t">${fees.map(a => `<tr><td>${A(a.n)}</td><td class="n">${ar(a.p)}</td></tr>`).join('')}</table></details>${lawHTML(tp.a)}${src(K.docOf[sc], fees[0] && fees[0].pg)}`, [{ t: 'قراءة اللائحة كاملة', go: 'rules' }]);
+    bot(`${lead}<ul><li>نسبة الدار <b>٢٠٪</b> من إجمالي أجر الفنان أو الفرقة، ورسوم دخول الأجهزة الصوتية الخارجية <b>٥٬٠٠٠ ج</b> بخلاف نسبة الـ ٢٠٪.</li><li>لا تتحمل الدار مسؤولية أعطال أجهزة الجهات الخارجية، ولا ملفات التصوير لدى المصورين من الخارج.</li></ul><details class="dmb-law"><summary>جميع رسوم الدخول — ${K.scopes[sc]}</summary><table class="dmb-t">${fees.map(a => `<tr><td>${A(a.n)}</td><td class="n">${ar(a.p)}</td></tr>`).join('')}</table></details>${lawHTML(tp.a)}${src(K.docOf[sc], fees[0] && fees[0].pg)}`, [{ t: 'الشروط والأحكام كاملة', go: 'rules' }]);
     chips(['akhenaten', 'isis', 'lotus'].filter(h => h !== sc).map(h => ({ t: 'الرسوم في ' + HALLNAME[h], fn: () => { S.hall = h; S.event = null; vendorsAns(tp, q); } })));
   }
 
@@ -1138,7 +1248,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     const sc = K.halls[S.hall] ? S.hall : 'akhenaten';
     const L = K.addons.filter(a => a.s === sc && a.g === 'السويت والغرف');
     const D = K.addons.filter(a => a.s === sc && /سويت/.test(a.n) && a.g !== 'السويت والغرف');
-    bot(`<p><b>نعم،</b> تشمل باكدجات الأفراح بقاعات أخناتون وإيزيس واللوتس <b>سويت DAY USE للعروسة من ١٢ م حتى ٧ م</b> دون مقابل إضافي.</p><div class="dmb-sec"><b>إضافات السويت والغرف – ${HALLNAME[sc]}:</b></div><table class="dmb-t">${[...L, ...D].map(a => `<tr><td>${A(a.n)}</td><td class="n">${ar(a.p)}</td></tr>`).join('')}</table><p class="dmb-note">يُسدَّد عن السويت الإضافي تأمين ٢٬٠٠٠ ج وعن الغرفة تأمين ١٬٥٠٠ ج يُرد وفق أحكام اللائحة (م ٤٢، ٤٣).</p>${src(sc, L[0].pg)}`);
+    bot(`<p><b>نعم،</b> تشمل باكدجات الأفراح بقاعات أخناتون وإيزيس واللوتس <b>سويت DAY USE للعروسة من ١٢ م حتى ٧ م</b> دون مقابل إضافي.</p><div class="dmb-sec"><b>إضافات السويت والغرف – ${HALLNAME[sc]}:</b></div><table class="dmb-t">${[...L, ...D].map(a => `<tr><td>${A(a.n)}</td><td class="n">${ar(a.p)}</td></tr>`).join('')}</table><p class="dmb-note">يُسدَّد عن السويت الإضافي تأمين ٢٬٠٠٠ ج وعن الغرفة تأمين ١٬٥٠٠ ج يُرد وفق شروط الحجز.</p>${src(sc, L[0].pg)}`);
     chips([{ t: 'السويت في عقد القران', fn: () => { S.event = 'katb'; S.hall = 'lotus'; knowledge(norm('سويت غرفه'), 'سويت'); } }, { t: 'رسوم الميكب والكوافير', q: 'رسوم ميكب وكوافير من بره' }]);
   }
 
@@ -1147,7 +1257,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     chips([{ t: 'مقدم الحجز لكل قاعة', fn: () => topic('deposit') }, { t: 'وسائل الدفع', fn: () => topic('methods') }, { t: 'الإلغاء والاسترداد', fn: () => topic('cancel') }]);
   }
   function avail() {
-    bot(`<p>لا أستطيع الاطلاع على جدول الحجوزات؛ <b>توافر التاريخ يؤكده فريق الحفلات</b>. والمواعيد تُخصَّص بأسبقية استيفاء الحجز (سداد المقدم وتوقيع الاستمارة)، ولا يُحتفظ بأي تاريخ قبل ذلك.</p>${lawHTML([6, 8])}`, [waAct('دار المراسم لضباط الشرطة – أرغب في الاستفسار عن توافر موعد' + (S.date ? ' يوم ' + dateTxt(S.date) : '') + (S.hall ? ' في ' + HALLNAME[S.hall] : ''), 'اسأل عن التاريخ عبر واتساب'), { t: 'تجهيز طلب الحجز', fn: () => startBook() }]);
+    bot(`<p>يسعد فريق الحفلات <b>تأكيد توافر التاريخ المطلوب</b> لحظياً. والمواعيد تُخصَّص بأسبقية استيفاء الحجز (سداد المقدم وتوقيع الاستمارة)، ولا يُحتفظ بأي تاريخ قبل ذلك.</p>${lawHTML([6, 8])}`, [waAct('دار المراسم لضباط الشرطة – أرغب في الاستفسار عن توافر موعد' + (S.date ? ' يوم ' + dateTxt(S.date) : '') + (S.hall ? ' في ' + HALLNAME[S.hall] : ''), 'اسأل عن التاريخ عبر واتساب'), { t: 'تجهيز طلب الحجز', fn: () => startBook() }]);
     chips(MAIN());
   }
   function lawSearch(t) {
@@ -1156,7 +1266,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     let best = null, bs = 0;
     for (const a of K.rules) { const x = norm(a.t + ' ' + a.x); let s = 0; toks.forEach(w => { if (x.includes(w)) s += norm(a.t).includes(w) ? 3 : 1; }); if (s > bs) { bs = s; best = a; } }
     if (!best || bs < 3) return null;
-    return () => { bot(`<p>وفقاً للمادة (${AD(best.n)}) من لائحة تنظيم حجز وإقامة الحفلات — <b>${esc(best.t)}</b>:</p><p>${A(best.x)}</p>${src('rules', best.pg)}`, [{ t: 'قراءة اللائحة كاملة', go: 'rules' }]); chips(relatedChips('')); };
+    return () => { bot(`<p>تنص شروط الحجز بالدار (البند ${AD(best.n)} – <b>${esc(best.t)}</b>) على ما يلي:</p><p>${A(best.x)}</p>${src('rules', best.pg)}`, [{ t: 'الشروط والأحكام كاملة', go: 'rules' }]); chips(relatedChips('')); };
   }
 
 
