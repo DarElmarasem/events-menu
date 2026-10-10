@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>مساعد موظف الحجز – دار المراسم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div id="login">
+  <form class="lg" autocomplete="off">
+    <img src="../bot/img/crest.png" alt="">
+    <h1>مساعد موظف الحجز الذكي</h1>
+    <p>دار المراسم لضباط الشرطة – قسم الحفلات</p>
+    <select id="lgUser" aria-label="اسم الموظف"></select>
+    <input id="lgPin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" aria-label="الرقم السري">
+    <button type="submit">دخول</button>
+    <div class="er" id="lgErr"></div>
+    <small>للاستخدام الداخلي لفريق الحفلات فقط</small>
+  </form>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <img src="../bot/img/crest.png" alt="">
+    <div class="tt"><b>مساعد موظف الحجز الذكي</b><small>دار المراسم لضباط الشرطة – قسم الحفلات</small></div>
+    <div class="me"><b id="meName"></b><small id="meRole"></small></div>
+    <button class="out" id="logout">خروج</button>
+  </header>
+  <div class="wrap">
+    <nav id="nav">
+      <button data-t="quote" class="on"><span>🧾</span>عرض سعر للعميل</button>
+      <button data-t="rec"><span>🏛️</span>ترشيح ومقارنة</button>
+      <button data-t="obj"><span>💬</span>الرد على الاعتراضات</button>
+      <button data-t="plan"><span>📅</span>خطة الدفع والتحضيرات</button>
+      <button data-t="rules"><span>📜</span>الشروط والأحكام</button>
+      <button data-t="call"><span>☎️</span>سكريبت المكالمة</button>
+      <div class="hint">كل الأسعار والشروط محسوبة من نفس قوائم الدار اللي على الموقع، وبتتحدّث معاها تلقائياً.</div>
+    </nav>
+    <main>
+      <!-- عرض سعر -->
+      <section id="t-quote" class="on">
+        <h2>عرض سعر للعميل</h2>
+        <p class="sub">اختار بيانات الحفلة، والعرض بيتحسب على طول على الشمال. بعدها ابعته للعميل على واتساب أو اطبعه أو احفظه صورة.</p>
+        <div class="grid2">
+          <div>
+            <div class="card">
+              <h3>١. بيانات الحفلة</h3>
+              <div class="row">
+                <div class="f"><label>المناسبة</label><select id="qEv"><option value="wedding">حفل زفاف</option><option value="engagement">خطوبة</option><option value="katb">عقد قران</option><option value="birthday">عيد ميلاد</option><option value="aqiqa">عقيقة</option><option value="special">مناسبة خاصة / مؤتمر</option></select></div>
+                <div class="f"><label>عدد المعازيم</label><input id="qN" type="number" min="1" max="1000" value="200"></div>
+                <div class="f"><label>تاريخ الحفلة (لو محدد)</label><input id="qDate" type="date"></div>
+              </div>
+              <div class="f" style="margin-top:10px"><label>اليوم</label><div class="seg" id="qDay"><button data-d="wd" class="on">منتصف الأسبوع (الأحد – الأربعاء)</button><button data-d="we">نهاية الأسبوع / عطلة رسمية</button></div></div>
+            </div>
+            <div class="card"><h3>٢. القاعة</h3><div class="halls" id="qHalls"></div><div id="qHallNote"></div></div>
+            <div class="card"><h3>٣. الباكدج</h3><div class="pk" id="qPk"></div></div>
+            <div class="card"><h3>٤. الإضافات</h3><div id="qAdds"></div></div>
+            <div class="card"><h3>٥. بيانات العميل (للإرسال)</h3>
+              <div class="row"><div class="f"><label>اسم العميل</label><input id="qName" placeholder="مثلاً: أ. أحمد"></div><div class="f"><label>موبايل العميل</label><input id="qPhone" placeholder="01xxxxxxxxx" inputmode="tel" dir="ltr"></div></div>
+            </div>
+          </div>
+          <div class="sticky"><div class="card" id="qOut"></div></div>
+        </div>
+      </section>
+
+      <!-- ترشيح -->
+      <section id="t-rec" hidden>
+        <h2>ترشيح ومقارنة</h2>
+        <p class="sub">اكتب العدد واليوم، وهيظهرلك القاعات المناسبة بس، وتكلفة كل منيو للعدد ده، والأنسب.</p>
+        <div class="card"><div class="row"><div class="f"><label>عدد المعازيم</label><input id="rN" type="number" value="200"></div><div class="f"><label>اليوم</label><div class="seg" id="rDay"><button data-d="wd" class="on">منتصف الأسبوع</button><button data-d="we">نهاية الأسبوع</button></div></div></div></div>
+        <div id="rOut"></div>
+      </section>
+
+      <!-- اعتراضات -->
+      <section id="t-obj" hidden>
+        <h2>الرد على الاعتراضات</h2>
+        <p class="sub">دوس على اعتراض العميل، وهيظهرلك الرد المقترح بالأرقام حسب عرض السعر اللي شغال عليه دلوقتي.</p>
+        <div class="objs" id="oList"></div>
+        <div id="oOut"></div>
+      </section>
+
+      <!-- خطة الدفع -->
+      <section id="t-plan" hidden>
+        <h2>خطة الدفع وجدول التحضيرات</h2>
+        <p class="sub">محسوبة على عرض السعر الحالي. حدّث التاريخ أو القيمة من «عرض سعر للعميل».</p>
+        <div id="pOut"></div>
+      </section>
+
+      <!-- الشروط -->
+      <section id="t-rules" hidden>
+        <h2>الشروط والأحكام</h2>
+        <p class="sub">ابحث بأي كلمة (مثلاً: إلغاء، تأمين، العدد، فنان)، وهيظهرلك نص المادة ورقمها.</p>
+        <div class="card">
+          <div class="f"><input id="sQ" placeholder="اكتب كلمة للبحث…"></div>
+          <div class="chips" id="sChips"></div>
+          <div id="sOut"></div>
+        </div>
+      </section>
+
+      <!-- سكريبت المكالمة -->
+      <section id="t-call" hidden>
+        <h2>سكريبت المكالمة والمعاينة</h2>
+        <p class="sub">الترتيب اللي بيوصل العميل لقرار الحجز من غير ضغط.</p>
+        <div class="card"><ol class="steps" id="cOut"></ol></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script src="../bot/kb.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
