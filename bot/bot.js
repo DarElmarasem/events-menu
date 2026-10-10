@@ -9,16 +9,29 @@
   const PHONES = ['01111117958', '01010107958', '01222227958'];
   const MAP = 'https://maps.app.goo.gl/WXWC2jJhyESubBve9';
   const ADDRESS = 'شارع حديقة الزهرية، أمام برج القاهرة، الزمالك – القاهرة';
-  const DOCNAME = { akhenaten: 'منيو قاعة أخناتون', isis: 'منيو قاعة إيزيس', lotus: 'منيو قاعة اللوتس', mawadda: 'منيو قاعة المودة والرحمة', birthday: 'منيو أعياد الميلاد', special: 'منيو المناسبات الخاصة', photo: 'منيو الفوتو سيشن', rules: 'شروط وأحكام الحجز بالدار' };
+  const DOCNAME_AR = { akhenaten: 'منيو قاعة أخناتون', isis: 'منيو قاعة إيزيس', lotus: 'منيو قاعة اللوتس', mawadda: 'منيو قاعة المودة والرحمة', birthday: 'منيو أعياد الميلاد', special: 'منيو المناسبات الخاصة', photo: 'منيو الفوتو سيشن', rules: 'شروط وأحكام الحجز بالدار' };
+  const DOCNAME_EN = { akhenaten: 'Akhenaten Hall menu', isis: 'Isis Hall menu', lotus: 'Lotus Hall menu', mawadda: 'Al-Mawadda wal-Rahma Hall menu', birthday: 'Birthdays menu', special: 'Special events menu', photo: 'Photo session menu', rules: 'Booking terms & conditions' };
+  const DOCNAME = new Proxy(DOCNAME_AR, { get: (o, k) => (EN() && DOCNAME_EN[k]) || o[k] });
   let K = null;
 
   /* ---------------- text helpers ---------------- */
-  const AD = s => String(s).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
-  const fmt = n => AD(String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '٬'));
-  const money = n => fmt(n) + ' ج';
-  const ar = s => AD(String(s).replace(/(\d),(\d{3})/g, '$1٬$2'));
+  /* language: 'ar' (default) or 'en' — English answers are produced by the EN layer below */
+  let LANG = 'ar'; try { if (localStorage.getItem('dmb-lang') === 'en') LANG = 'en'; } catch (e) { }
+  const EN = () => LANG === 'en';
+  const tr = (a, e) => LANG === 'en' ? e : a;
+  let ENMAP = null;
+  const toLat = s => String(s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/٬/g, ',').replace(/٪/g, '%');
+  const txEN = s => { if (!ENMAP) return String(s); const k = String(s); return ENMAP[k] || ENMAP[toLat(k)] || k; };
+  function enPrice(s) {
+    s = toLat(s).replace(/بيتي بان \((\d+) سم\)/g, 'Petit pain ($1 cm)').replace(/فرنساوي \((\d+) سم\)/g, 'French ($1 cm)');
+    return s.replace(/من ([\d,]+) ج إلى ([\d,]+) ج/g, 'EGP $1 – $2').replace(/(?:يبدأ|تبدأ) من ([\d,]+) ج/g, 'from EGP $1').replace(/([\d,]+) ج للفرد/g, 'EGP $1 per person').replace(/([\d,]+) ج/g, 'EGP $1');
+  }
+  const AD = s => EN() ? String(s) : String(s).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  const fmt = n => { const x = String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, EN() ? ',' : '٬'); return AD(x); };
+  const money = n => EN() ? 'EGP ' + fmt(n) : fmt(n) + ' ج';
+  const ar = s => EN() ? enPrice(txEN(s)) : AD(String(s).replace(/(\d),(\d{3})/g, '$1٬$2'));
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const A = s => ar(esc(s));
+  const A = s => EN() ? esc(enPrice(txEN(s))) : ar(esc(s));
   function norm(s) {
     return ' ' + String(s || '').toLowerCase()
       .replace(/[ً-ْـٰ]/g, '')
@@ -44,7 +57,9 @@
     lulu: ['لولوه', 'اللولو', 'لولو'],
     marasem: ['قاعه المراسم', 'قاعة المراسم']
   };
-  const HALLNAME = { akhenaten: 'قاعة أخناتون', isis: 'قاعة إيزيس', lotus: 'قاعة اللوتس', mawadda: 'قاعة المودة والرحمة', roof: 'الروف توب', glass: 'القاعة الزجاجية (أوبن إير)', lulu: 'قاعة اللؤلؤة', marasem: 'قاعة المراسم' };
+  const HALLNAME_AR = { akhenaten: 'قاعة أخناتون', isis: 'قاعة إيزيس', lotus: 'قاعة اللوتس', mawadda: 'قاعة المودة والرحمة', roof: 'الروف توب', glass: 'القاعة الزجاجية (أوبن إير)', lulu: 'قاعة اللؤلؤة', marasem: 'قاعة المراسم' };
+  const HALLNAME_EN = { akhenaten: 'Akhenaten Hall', isis: 'Isis Hall', lotus: 'Lotus Hall', mawadda: 'Al-Mawadda wal-Rahma Hall', roof: 'Roof Top', glass: 'Glass Hall (Open Air)', lulu: "Al-Lulu'a (Pearl) Hall", marasem: 'Al-Marasem Hall' };
+  const HALLNAME = new Proxy(HALLNAME_AR, { get: (o, k) => (EN() && HALLNAME_EN[k]) || o[k] });
   const HALLRE = Object.fromEntries(Object.entries(HALLS).map(([k, ws]) => [k, wordRe(ws)]));
   function findHalls(t) {
     const out = [];
@@ -61,7 +76,9 @@
     engagement: ['خطوبه', 'خطوبتي', 'خطوبتنا', 'خطبه', 'engagement'],
     wedding: ['فرح', 'افراح', 'الفرح', 'زفاف', 'زواج', 'جواز', 'wedding', 'عرس', 'الدخله']
   };
-  const EVNAME = { wedding: 'حفل زفاف', engagement: 'خطوبة', katb: 'عقد قران', birthday: 'عيد ميلاد', aqiqa: 'عقيقة', special: 'مناسبة خاصة / مؤتمر', photo: 'فوتو سيشن' };
+  const EVNAME_AR = { wedding: 'حفل زفاف', engagement: 'خطوبة', katb: 'عقد قران', birthday: 'عيد ميلاد', aqiqa: 'عقيقة', special: 'مناسبة خاصة / مؤتمر', photo: 'فوتو سيشن' };
+  const EVNAME_EN = { wedding: 'Wedding', engagement: 'Engagement', katb: 'Marriage contract (Katb El-Ketab)', birthday: 'Birthday', aqiqa: 'Aqiqa', special: 'Special event / conference', photo: 'Photo session' };
+  const EVNAME = new Proxy(EVNAME_AR, { get: (o, k) => (EN() && EVNAME_EN[k]) || o[k] });
   const EVRE = Object.fromEntries(Object.entries(EVENTS).map(([k, ws]) => [k, wordRe(ws, true)]));
   function findEvent(t) {
     for (const k of Object.keys(EVENTS)) if (EVRE[k].test(t)) return k;
@@ -103,7 +120,7 @@
     }
     return null;
   }
-  const dateTxt = d => `${DAYS[d.getDay()]} ${AD(d.getDate())} ${MON[d.getMonth()]} ${AD(d.getFullYear())}`;
+  const dateTxt = d => EN() ? d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : `${DAYS[d.getDay()]} ${AD(d.getDate())} ${MON[d.getMonth()]} ${AD(d.getFullYear())}`;
   const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   function findDay(t, date) {
     if (date) return [4, 5, 6].includes(date.getDay()) ? 'we' : 'wd';
@@ -128,7 +145,7 @@
   }
 
   /* ---------------- KB lookups ---------------- */
-  const src = (doc, pg) => `<p class="dmb-src">المصدر: ${DOCNAME[doc]}${pg ? ' – صفحة ' + AD(pg) : ''}</p>`;
+  const src = (doc, pg) => `<p class="dmb-src">${tr('المصدر: ', 'Source: ')}${DOCNAME[doc]}${pg ? tr(' – صفحة ', ' – page ') + AD(pg) : ''}</p>`;
   function contentHTML(c) {
     return c.map(s => {
       let h = s.h ? `<b>${A(s.h)}</b>` : '', ul = [];
@@ -170,7 +187,9 @@ body.printing .dmb-launch,body.printing .dmb-panel{display:none!important}
 .dmb-panel{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:130;width:min(420px,calc(100vw - 32px));height:min(680px,calc(100dvh - 32px));display:flex;flex-direction:column;background:radial-gradient(120% 60% at 50% 0%,#15223A 0%,#0A1120 60%) #0A1120;color:var(--gold2);border-radius:22px;box-shadow:0 0 0 1px rgba(200,164,100,.55),0 30px 70px rgba(0,0,0,.65);overflow:hidden;direction:rtl;font-family:var(--sans);font-size:15.5px;line-height:1.8;animation:dmbIn .28s ease-out}
 @keyframes dmbIn{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
 .dmb-panel[hidden]{display:none}
-@media(max-width:560px){.dmb-panel{left:0;right:0;top:0;bottom:auto;width:auto;height:100dvh;border-radius:0;box-shadow:none;padding-bottom:env(safe-area-inset-bottom,0px)}.dmb-m{max-width:96%}}
+@media(max-width:560px){.dmb-panel{left:0;right:0;top:0;bottom:auto;width:auto;height:var(--dmb-vh,100dvh);transform:translate3d(0,var(--dmb-vt,0px),0);border-radius:0;box-shadow:0 0 0 100vmax #0A1120;animation:none}.dmb-in{padding-bottom:max(13px,env(safe-area-inset-bottom,0px))}.dmb-m{max-width:96%}.dmb-log{-webkit-overflow-scrolling:touch}}
+.dmb-panel button,.dmb-launch,.dmb-chips button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.dmb-panel{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .dmb-hd{position:relative;display:flex;align-items:center;gap:12px;padding:15px 16px 16px;background:linear-gradient(180deg,#0E182B,#0A1120)}
 .dmb-hd:after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:5px;border-top:1px solid rgba(200,164,100,.85);border-bottom:1px solid rgba(200,164,100,.35)}
 .dmb-hd img{width:46px;height:auto;flex:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
@@ -255,9 +274,9 @@ body.printing .dmb-launch,body.printing .dmb-panel{display:none!important}
   launch.innerHTML = '<span class="dmb-ic">' + ICON_CHAT + '</span><span class="dmb-lt"><b class="en">Dar El-Marasem AI</b><small class="ar">مساعد دار المراسم الذكي</small></span>';
   const panel = document.createElement('section');
   panel.className = 'dmb-panel'; panel.hidden = true; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', 'مساعد دار المراسم الذكي');
-  panel.innerHTML = `<div class="dmb-hd"><img src="logo.png" alt=""><div class="dmb-tt"><div class="dmb-nm"><b class="en">Dar El-Marasem AI</b><small><i aria-hidden="true"></i><span class="ar">مساعد دار المراسم الذكي</span></small></div></div><button type="button" class="dmb-rs" aria-label="محادثة جديدة" title="محادثة جديدة">↺</button><button type="button" class="dmb-x" aria-label="إغلاق" title="إغلاق">✕</button></div>
+  panel.innerHTML = `<div class="dmb-hd"><img src="logo.png" alt=""><div class="dmb-tt"><div class="dmb-nm"><b class="en">Dar El-Marasem AI</b><small><i aria-hidden="true"></i><span class="ar">مساعد دار المراسم الذكي</span></small></div></div><button type="button" class="dmb-lg" aria-label="English" title="English">EN</button><button type="button" class="dmb-rs" aria-label="محادثة جديدة" title="محادثة جديدة">↺</button><button type="button" class="dmb-x" aria-label="إغلاق" title="إغلاق">✕</button></div>
 <div class="dmb-log" aria-live="polite"></div><div class="dmb-chips"></div>
-<form class="dmb-in" autocomplete="off"><input type="text" enterkeyhint="send" placeholder="اكتبوا سؤالكم… مثال: سعر قاعة إيزيس لـ ٢٠٠ فرد" aria-label="اكتبوا سؤالكم"><button type="submit" aria-label="إرسال">${ICON_SEND}<span>إرسال</span></button></form>`;
+<form class="dmb-in" autocomplete="off"><input type="text" enterkeyhint="send" placeholder="اكتبوا سؤالكم… مثال: سعر قاعة إيزيس لـ ٢٠٠ فرد" aria-label="اكتبوا سؤالكم"><button type="button" class="dmb-send" aria-label="إرسال">${ICON_SEND}<span>إرسال</span></button></form>`;
   document.body.appendChild(launch); document.body.appendChild(panel);
   const log = panel.querySelector('.dmb-log'), chipsEl = panel.querySelector('.dmb-chips'), form = panel.querySelector('form'), input = form.querySelector('input');
 
@@ -288,67 +307,128 @@ body.printing .dmb-launch,body.printing .dmb-panel{display:none!important}
   function chips(list) {
     ACT = list || [];
     chipsEl.innerHTML = '';
-    ACT.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.textContent = ar(c.t); b.addEventListener('click', () => { addUser(ar(c.t)); chips([]); think(() => c.fn ? c.fn() : respond(c.q || c.t)); }); chipsEl.appendChild(b); });
+    ACT.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.textContent = ar(c.t); b.addEventListener('click', () => { addUser(ar(c.t)); chips([]); think(() => { if (c.fn) { const n0 = log.children.length; c.fn(); try { afterSell(n0); } catch (e) { } } else respond(c.q || c.t); }); }); chipsEl.appendChild(b); });
   }
   function think(fn) {
     const t = document.createElement('div'); t.className = 'dmb-typing'; t.innerHTML = '<i></i><i></i><i></i>'; log.appendChild(t); scroll();
-    setTimeout(() => { t.remove(); try { fn(); } catch (e) { console.error(e); fallback(); } }, 260);
+    setTimeout(() => { t.remove(); try { fn(); } catch (e) { console.error(e); EN() ? enFallback(LASTRAW) : fallback(); } }, 260);
   }
   function goTo(hash) {
     try { history.pushState(null, '', '#' + hash); } catch (e) { location.hash = hash; }
     window.dispatchEvent(new HashChangeEvent('hashchange'));
     if (matchMedia('(max-width:560px)').matches) close();
   }
-  const waURL = msg => `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
-  const waAct = (msg, t) => ({ t: t || 'تواصلوا مع فريق الحفلات عبر واتساب', href: waURL(msg), cls: 'wa' });
+  const waURL = msg => { try { const add = []; if (LEAD.name && !/الاسم:|Name:/.test(msg)) add.push(tr('الاسم: ', 'Name: ') + LEAD.name); if (LEAD.phone && LEAD.phone !== '-' && !/الهاتف:|Phone:/.test(msg)) add.push(tr('الهاتف: ', 'Phone: ') + LEAD.phone); if ((LEAD.src || LEAD.source) && !/عرفنا من خلال|Heard about us/.test(msg)) add.push(tr('عرفنا من خلال: ', 'Heard about us via: ') + srcLabel()); if (add.length) { const i = msg.search(/\n\((?:تم |via )/); msg = i > 0 ? msg.slice(0, i) + '\n' + add.join('\n') + msg.slice(i) : msg + '\n\n' + add.join('\n'); } } catch (e) { } return `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`; };
+  const waAct = (msg, t) => ({ t: t || tr('تواصلوا مع فريق الحفلات عبر واتساب', 'Contact our events team on WhatsApp'), href: waURL(msg), cls: 'wa' });
 
   let KBQ = null;
+  const SCOPES_EN = { akhenaten: 'Akhenaten Hall', isis: 'Isis Hall', lotus: 'Lotus Hall (weddings)', lotusk: 'Marriage contract at Lotus Hall', mawadda: 'Al-Mawadda wal-Rahma Hall (marriage contract)', birthday: 'Birthdays', special: 'Special events', photo: 'Photo session', aqiqa: 'Aqiqa at Lotus Hall' };
+  function kbInit() {
+    if (!K || K.__init) return; K.__init = true;
+    ENMAP = Object.assign({}, K.en || {}, { 'قاعة المودة والرحمة': 'Al-Mawadda wal-Rahma Hall', 'الخيمة VIP': 'VIP Tent' });
+    const sc = K.scopes; K.scopes = new Proxy(sc, { get: (o, k) => (EN() && SCOPES_EN[k]) || o[k] });
+  }
   function loadKB(cb) {
     if (K) return cb();
-    if (window.DMKB) { K = window.DMKB; return cb(); }
+    if (window.DMKB) { K = window.DMKB; kbInit(); return cb(); }
     if (KBQ) { KBQ.push(cb); return; }
     KBQ = [cb];
     const s = document.createElement('script'); s.src = BASE + 'kb.js';
-    s.onload = () => { K = window.DMKB; const q = KBQ; KBQ = null; q.forEach(f => f()); };
+    s.onload = () => { K = window.DMKB; kbInit(); const q = KBQ; KBQ = null; q.forEach(f => f()); };
     s.onerror = () => { const q = KBQ; KBQ = null; if (!panel.hidden || q.length > 1) bot('<p>تعذّر تحميل بيانات المساعد. يُرجى إعادة فتح الصفحة، أو التواصل مع فريق الحفلات.</p>', [waAct('دار المراسم لضباط الشرطة – أرغب في الاستفسار عن حجز حفل')]); };
     document.head.appendChild(s);
   }
 
+  const MOB = () => matchMedia('(max-width:560px)').matches;
+  const TOUCH = matchMedia('(pointer:coarse)').matches;
+  let lockY = 0;
+  function lockPage(on) {
+    const b = document.body.style;
+    if (on) { lockY = window.scrollY || 0; b.position = 'fixed'; b.top = -lockY + 'px'; b.left = '0'; b.right = '0'; b.width = '100%'; }
+    else if (b.position === 'fixed') { b.position = ''; b.top = ''; b.left = ''; b.right = ''; b.width = ''; window.scrollTo({ top: lockY, left: 0, behavior: 'instant' }); }
+  }
   function open() {
-    panel.hidden = false; document.documentElement.classList.add('dmb-open'); fitVV();
+    panel.hidden = false; document.documentElement.classList.add('dmb-open');
+    if (MOB()) lockPage(true);
+    fitVV();
     loadKB(() => { if (!started) { started = true; welcome(); } });
-    setTimeout(() => input.focus({ preventScroll: true }), 60);
+    if (!TOUCH) setTimeout(() => input.focus({ preventScroll: true }), 60);
   }
   const vv = window.visualViewport;
+  let fitRaf = 0;
   function fitVV() {
-    if (!vv || panel.hidden || !matchMedia('(max-width:560px)').matches) { panel.style.height = ''; panel.style.top = ''; return; }
-    panel.style.height = vv.height + 'px'; panel.style.top = vv.offsetTop + 'px'; scroll();
+    cancelAnimationFrame(fitRaf);
+    fitRaf = requestAnimationFrame(() => {
+      if (panel.hidden || !MOB()) { panel.style.removeProperty('--dmb-vh'); panel.style.removeProperty('--dmb-vt'); return; }
+      const h = vv ? vv.height : window.innerHeight, top = vv ? vv.offsetTop : 0;
+      panel.style.setProperty('--dmb-vh', Math.round(h) + 'px');
+      panel.style.setProperty('--dmb-vt', Math.round(top) + 'px');
+      if (document.activeElement === input) scroll();
+    });
   }
   if (vv) { vv.addEventListener('resize', fitVV); vv.addEventListener('scroll', fitVV); }
-  input.addEventListener('focus', () => setTimeout(fitVV, 300));
-  function close() { panel.hidden = true; document.documentElement.classList.remove('dmb-open'); launch.focus({ preventScroll: true }); }
+  window.addEventListener('resize', fitVV);
+  window.addEventListener('orientationchange', () => setTimeout(fitVV, 350));
+  ['focus', 'blur'].forEach(ev => input.addEventListener(ev, () => { fitVV(); [80, 250, 500, 800].forEach(d => setTimeout(fitVV, d)); }));
+  function close() { panel.hidden = true; document.documentElement.classList.remove('dmb-open'); lockPage(false); if (!TOUCH) launch.focus({ preventScroll: true }); }
   launch.addEventListener('click', open);
   const preload = () => loadKB(() => {});
   if ('requestIdleCallback' in window) requestIdleCallback(preload, { timeout: 4000 }); else setTimeout(preload, 2500);
   panel.querySelector('.dmb-x').addEventListener('click', close);
   panel.querySelector('.dmb-rs').addEventListener('click', () => { log.innerHTML = ''; reset(); welcome(); });
+  const lgBtn = panel.querySelector('.dmb-lg');
+  function applyLang() {
+    panel.classList.toggle('dmb-en', EN());
+    input.placeholder = tr('اكتبوا سؤالكم… مثال: سعر قاعة إيزيس لـ ٢٠٠ فرد', 'Type your question… e.g. Isis Hall price for 200 guests');
+    input.setAttribute('aria-label', tr('اكتبوا سؤالكم', 'Type your question'));
+    const sp = form.querySelector('.dmb-send span'); if (sp) sp.textContent = tr('إرسال', 'Send');
+    form.querySelector('.dmb-send').setAttribute('aria-label', tr('إرسال', 'Send'));
+    lgBtn.textContent = EN() ? 'ع' : 'EN'; lgBtn.title = lgBtn.ariaLabel = EN() ? 'العربية' : 'English';
+    const rs = panel.querySelector('.dmb-rs'); rs.title = tr('محادثة جديدة', 'New conversation'); rs.setAttribute('aria-label', rs.title);
+    const x = panel.querySelector('.dmb-x'); x.title = tr('إغلاق', 'Close'); x.setAttribute('aria-label', x.title);
+  }
+  function setLang(l, restart) {
+    if (l === LANG) return;
+    LANG = l; try { localStorage.setItem('dmb-lang', l); } catch (e) { }
+    applyLang();
+    if (restart && K) { log.innerHTML = ''; FLOW = null; Q = null; LSTEP = null; reset(); welcome(); }
+  }
+  lgBtn.addEventListener('click', () => setLang(EN() ? 'ar' : 'en', true));
+  function detectLang(v) {
+    if (['name', 'phone', 'source'].includes(LSTEP)) return;
+    const arab = /[\u0600-\u06FF]/.test(v), lat = (v.match(/[a-zA-Z]/g) || []).length;
+    if (!arab && lat >= 3 && !EN()) setLang('en');
+    else if (arab && EN()) setLang('ar');
+  }
+  applyLang();
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) close(); });
-  form.addEventListener('submit', e => {
-    e.preventDefault(); const v = input.value.trim(); if (!v || !K) return;
-    input.value = ''; addUser(v); chips([]); think(() => respond(v));
-  });
+  function send() {
+    const v = input.value.trim(); if (!v || !K) return;
+    input.value = ''; detectLang(v); addUser(v); chips([]); think(() => respond(v));
+  }
+  form.addEventListener('submit', e => { e.preventDefault(); send(); });
+  const sendBtn = form.querySelector('.dmb-send');
+  // pointerdown keeps the keyboard open on iPhone, so the tap lands on the button instead of just closing the keyboard
+  sendBtn.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') { e.preventDefault(); send(); } });
+  sendBtn.addEventListener('click', e => { if (e.pointerType === 'mouse' || e.detail === 0 || !('PointerEvent' in window)) send(); });
 
   /* ---------------- conversation ---------------- */
-  const MAIN = () => [
+  const MAIN = () => EN() ? enMain() : [
+    { t: 'عرض سعر تفصيلي لحفلكم', fn: () => startQuote() }, { t: 'مقترحات لحفلكم', fn: () => suggestAns() }, { t: 'مميزات الدار والقاعات', fn: whyUs },
     { t: 'أسعار القاعات', q: 'أسعار القاعات' }, { t: 'ترشيح قاعة مناسبة', fn: () => startRec() },
     { t: 'المنيوهات', q: 'المنيوهات' }, { t: 'سياسة الحجز والسداد', q: 'ازاي احجز' },
     { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'العنوان والتواصل', q: 'العنوان والتليفون' }
   ];
-  function welcome() {
-    bot(`<p class="dmb-h">مرحباً بكم في دار المراسم لضباط الشرطة</p><p>أنا <b>مساعد دار المراسم الذكي</b>، وأستطيع مساعدتكم في:</p><ul><li>أسعار القاعات والباكدجات ومحتوى كل منيو</li><li>أي خدمة أو إضافة: هل هي مشمولة في الباكدج وسعرها إن وُجد</li><li>حساب تكلفة تقديرية حسب العدد ويوم الحفل</li><li>اختيار القاعة المناسبة لمناسبتكم</li><li>شروط الحجز والسداد والإلغاء والتأجيل</li><li>تجهيز طلب الحجز أو موعد المعاينة وإرساله لفريق الحفلات</li></ul><p>اكتبوا سؤالكم بأي صيغة، أو اختاروا من الاقتراحات.</p><p class="dmb-src">نتشرف بخدمتكم، ويسعد فريق الحفلات استكمال أي تفاصيل معكم مباشرةً.</p>`);
-    chips(MAIN());
+  function welcome() { if (LEAD.done) return welcomeBack(); if (LEAD.skipped) return EN() ? enWelcome() : welcomeMain(); startLead(); }
+  function welcomeMain() {
+    bot(`<p class="dmb-h">أهلاً بكم في دار المراسم لضباط الشرطة</p><p>يسعدني أن أكون في خدمتكم؛ أنا <b>مساعد دار المراسم الذكي</b>، معكم على مدار الساعة لأساعدكم في التخطيط لمناسبتكم من أول سؤال حتى عرض السعر النهائي:</p><ul><li>ترشيح القاعة والباكدج الأنسب لعددكم وميزانيتكم</li><li>أسعار ومكونات كل منيو، والمقارنة بين القاعات والباكدجات</li><li>إعداد <b>عرض سعر تفصيلي</b> بنداً بنداً، ومقترحات تُكمل حفلكم</li><li>شروط الحجز والسداد، وحجز موعد المعاينة</li></ul><p>لنبدأ معاً: <b>ما مناسبتكم السعيدة؟</b></p>`);
+    chips([
+      ...['wedding', 'engagement', 'katb', 'birthday', 'special'].map(e => ({ t: EVNAME[e], fn: () => { S.event = e; if (e === 'katb') return S.count ? katb() : askCount(() => katb()); S.count ? recommend() : askCount(recommend); } })),
+      { t: 'عرض سعر تفصيلي لحفلكم', fn: () => startQuote() }, { t: 'أسعار القاعات', q: 'أسعار القاعات' }, { t: 'حجز موعد معاينة', fn: () => startVisit() }
+    ]);
   }
   function fallback(t) {
+    logQ(t ? 'unanswered' : 'error', t || LASTRAW);
     bot(`<p>شكراً لاستفساركم الكريم.</p><p>حرصاً على تزويدكم بمعلومة دقيقة ومحدّثة، يسعد فريق الحفلات الرد على هذا الاستفسار مباشرةً، ويمكنكم التواصل معهم عبر واتساب أو الهاتف، أو حجز موعد لزيارة الدار ومعاينة القاعات (يومياً من ١٠ صباحاً حتى ١٠ مساءً).</p>`,
       [waAct('دار المراسم لضباط الشرطة – استفسار' + (t ? ':\n' + t : '')), { t: 'اتصلوا بنا', fn: contact }]);
     chips(MAIN());
@@ -356,6 +436,13 @@ body.printing .dmb-launch,body.printing .dmb-panel{display:none!important}
 
   let LASTT = '';
   function respond(raw, inner) {
+    const n0 = log.children.length;
+    respondCore(raw, inner);
+    if (!inner) try { afterSell(n0); } catch (e) { }
+  }
+  function respondCore(raw, inner) {
+    if (EN()) return enCore(raw);
+    LASTRAW = raw;
     if (!inner && !FLOW) {
       const parts = String(raw).split(/[؟?\n]+|\s+(?:وكمان|وايضا|وأيضاً|وايضاً)\s+/).map(x => x.trim()).filter(x => x.split(/\s+/).length >= 2);
       if (parts.length >= 2) { parts.slice(0, 3).forEach(p => respond(p, true)); return; }
@@ -392,6 +479,19 @@ body.printing .dmb-launch,body.printing .dmb-panel{display:none!important}
     const wantBook = W('احجز', 'نحجز', 'عاوز حجز', 'عايز حجز', 'اريد حجز', 'ابغي احجز', 'حابب احجز', 'ابدا الحجز', 'طلب حجز', 'اعمل حجز');
     if (W('ازاي احجز', 'كيف احجز', 'طريقه الحجز', 'خطوات الحجز', 'الحجز ازاي', 'الحجز بيتم ازاي', 'ازاي الحجز', 'سياسه الحجز', 'اجراءات الحجز', 'تفاصيل الحجز', 'معلومات الحجز', 'نظام الحجز', 'احجز اونلاين', 'الحجز اونلاين')) return topic('howbook');
 
+    // detailed quote builder
+    if (W('عرض سعر', 'عرض اسعار', 'سعر مبدئي', 'سعر مبدءي', 'تسعيره', 'تسعير', 'احسبلي الحفله', 'احسب الحفله', 'احسبلي حفلتي', 'احسب حفلتي', 'احسبلي الفرح', 'احسب الفرح', 'بالاضافات', 'مع الاضافات', 'التكلفه الكامله', 'التكلفه الاجماليه', 'التكلفه النهائيه', 'اجمالي الحفله', 'اجمالي الفرح', 'اجمالي التكلفه', 'الحفله هتتكلف كام', 'الفرح هيتكلف كام', 'هتتكلف كام كلها', 'quote')) {
+      const pre = {};
+      const evq = ev || S.event;
+      if (evq) pre.ev = evq;
+      const hq = halls[0] || S.hall;
+      if (hq) { if (!pre.ev && K.halls[hq]) pre.ev = 'wedding'; pre.hall = hq; }
+      if (count || S.count) pre.n = count || S.count;
+      if (day || S.day) pre.day = day || S.day;
+      if (pre.ev === 'katb' && pre.hall && !['lotus', 'mawadda'].includes(pre.hall)) pre.hall = null;
+      return startQuote(pre);
+    }
+    if (salesRoute(t, raw, { W, halls, ev, count, menuQ, short })) return;
     // regulation topics
     const tp = ruleTopic(t);
     if (tp && !(wantBook && tp === 'deposit' && !W('مقدم', 'عربون'))) return topic(tp);
@@ -429,7 +529,7 @@ body.printing .dmb-launch,body.printing .dmb-panel{display:none!important}
     const budget = findBudget(t);
     if (budget && budget >= 10000 && (W('ميزانيه', 'ميزانيتي', 'ميزانيتنا', 'معايا', 'معانا', 'حدود', 'اقصي', 'مش اكتر', 'budget') || /الف/.test(t))) return budgetAns(budget);
     if (W('يعني ايه', 'ما هو', 'ما هي', 'ايه معني', 'معني', 'تعريف', 'المقصود ب', 'المقصود', 'يعني اي') && defineAns(t)) return;
-    if (halls.length >= 2 && halls.includes('mawadda') && halls.includes('lotus')) { S.event = 'katb'; S.hall = null; return katb(null); }
+    if (halls.length >= 2 && halls.includes('mawadda') && halls.includes('lotus')) { S.event = 'katb'; S.hall = null; return W('الفرق', 'فرق', 'قارن', 'مقارنه', 'احسن', 'افضل', 'ولا', 'محتار', 'انسب', 'اختار') ? katbCompare() : katb(null); }
     if (halls.filter(h => K.halls[h]).length >= 2) return compareHalls(halls[0], halls[1]);
     if (halls.length && W('عرفني', 'حدثني', 'معلومات عن', 'معلومات', 'تفاصيل', 'وصف', 'نبذه', 'ايه هي', 'احكيلي', 'كل حاجه عن', 'اعرف عن', 'شكلها', 'مميزات', 'تفاصيل قاعه')) return hallProfile(halls[0]);
     if (W('كل الاضافات', 'الاضافات كلها', 'قائمه الاضافات', 'ايه الاضافات', 'الخدمات الاضافيه', 'الاضافات المتاحه', 'اضافات', 'الاضافات', 'الخدمات المتاحه', 'الخدمات اللي عندكم', 'خدماتكم') && !(strongItem && hasItemWord(t))) return allAddons(halls[0] && (K.halls[halls[0]] || ['mawadda', 'birthday', 'special', 'photo'].includes(halls[0])) ? halls[0] : ctxScope());
@@ -524,7 +624,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
       tb = `<p>تبدأ الأسعار من <b>${money(h.menus[0].price)}</b> لباكدج ${AD(h.pk.n)} فرد${S.day === 'we' ? `، ويُضاف ${money(h.pk.fee)} لأن اليوم المطلوب من أيام نهاية الأسبوع` : ''}.</p><table class="dmb-t"><tr><th>المنيو</th><th>سعر الباكدج<br><small>${AD(h.pk.n)} فرد</small></th><th>الوجبة الإضافية</th></tr>${h.menus.map(m => `<tr><td>${A(m.name)}</td><td class="n">${money(m.price)}</td><td class="n">${m.tiers ? 'من ' + money(m.tiers[2]) + ' إلى ' + money(m.tiers[0]) : money(m.extra)}</td></tr>`).join('')}</table>`;
       notes = `<p class="dmb-note">يُضاف ${money(h.pk.fee)} رسوم لأيام نهاية الأسبوع (الخميس – الجمعة – السبت) والأعياد والعطلات الرسمية.${h.menus[0].tiers ? ' سعر الوجبة الإضافية متدرج: أول ٥٠ وجبة، ثم من ٥١ إلى ١٠٠، ثم ما زاد عن ١٠٠.' : ''}</p>`;
     }
-    bot(`<p class="dmb-h">${h.name}</p><p>السعة من ${AD(h.min)} حتى ${AD(h.max)} فرد — ${A(h.use)}.</p>${tb}${notes}${src(hid, h.pk.type === 'wk' ? '' : h.pk.pg)}`,
+    bot(`<p class="dmb-h">${h.name}</p><p>السعة من ${AD(h.min)} حتى ${AD(h.max)} فرد — ${A(h.use)}.</p>${tb}${notes}${valueLine(hid)}${src(hid, h.pk.type === 'wk' ? '' : h.pk.pg)}`,
       [{ t: 'عرض منيو ' + h.name, go: h.menu }, { t: 'صور الديكورات', go: h.decor }]);
     const c = h.menus.slice(0, 3).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.slice(0, 2), n: +m.id.slice(2) || 0 }) }));
     chips([...c, { t: 'ما يشمله الباكدج', fn: included }, { t: 'احسب التكلفة لعدد معين', fn: () => askCount() }, ...(hid === 'lotus' ? [{ t: 'كتب الكتاب في اللوتس', fn: () => katb('lotus') }] : [])]);
@@ -578,7 +678,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     else price = `<tr><td>باكدج القاعة (${AD(h.pk.n)} فرد)</td><td class="n">${money(m.price)}</td></tr><tr><td>نهاية الأسبوع والأعياد والعطلات الرسمية</td><td class="n">+ ${money(h.pk.fee)}</td></tr>`;
     const extra = m.tiers ? `<tr><th colspan="2">سعر الوجبة الإضافية</th></tr><tr><td>أول ٥٠ وجبة</td><td class="n">${money(m.tiers[0])}</td></tr><tr><td>من ٥١ إلى ١٠٠ وجبة</td><td class="n">${money(m.tiers[1])}</td></tr><tr><td>ما زاد عن ١٠٠ وجبة</td><td class="n">${money(m.tiers[2])}</td></tr>` : `<tr><td>الوجبة الإضافية (للفرد)</td><td class="n">${money(m.extra)}</td></tr>`;
     const same = hid !== 'lotus' && m.id === 'ob2' ? '<p class="dmb-note">أصناف أوبن بوفيه (٢) مطبوعة في المنيو مطابقة لأوبن بوفيه (١)، والاختلاف في السعر.</p>' : '';
-    bot(`<p class="dmb-h">${A(m.name)} – ${h.name}</p>${contentHTML(m.c)}${same}<table class="dmb-t">${price}${extra}</table>${src(hid, m.pg)}`, [{ t: 'عرض المنيو كاملاً', go: h.menu }]);
+    bot(`<p class="dmb-h">${A(m.name)} – ${h.name}</p>${contentHTML(m.c)}${same}<table class="dmb-t">${price}${extra}</table>${upTier(hid, m, S.count, S.day)}${src(hid, m.pg)}`, [{ t: 'عرض المنيو كاملاً', go: h.menu }]);
     const others = h.menus.filter(x => x.id !== m.id).slice(0, 3);
     chips([{ t: 'احسب التكلفة لعدد معين', fn: () => (count || S.count) ? estimate() : askCount() }, ...others.map(x => ({ t: x.name, fn: () => menuDetail({ k: x.id.slice(0, 2), n: +x.id.slice(2) || 0 }) }))]);
   }
@@ -631,13 +731,13 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
       const r = one(menus[0]);
       rows.push(`<tr><td>${A(r.m.name)} – باكدج ${AD(baseN)} فرد${h.pk.type !== 'wk' && day === 'we' ? ' + رسوم نهاية الأسبوع' : ''}</td><td class="n">${money(r.base)}</td></tr>`);
       r.ec.parts.forEach(p => rows.push(`<tr><td>${AD(p[0])} وجبة × ${money(p[1])} <small>(${p[2]})</small></td><td class="n">${money(p[0] * p[1])}</td></tr>`));
-      rows.push(`<tr class="tot"><td>الإجمالي التقديري لعدد ${AD(Math.max(n, baseN))} فرد</td><td class="n">${money(r.total)}</td></tr>`);
-      bot(`<p class="dmb-h">تكلفة تقديرية – ${h.name}</p><p>${AD(n)} فرد${dayTxt ? ' – ' + dayTxt : ''}${dateNote}</p><table class="dmb-t">${rows.join('')}</table>${notesFor(h, n, baseN, day)}${src(hid, r.m.pg)}`, [{ t: 'تجهيز طلب الحجز', fn: () => startBook(), cls: 'pri' }]);
+      rows.push(`<tr class="tot"><td>الإجمالي التقديري لعدد ${AD(Math.max(n, baseN))} فرد${perHead(r.total, Math.max(n, baseN))}</td><td class="n">${money(r.total)}</td></tr>`);
+      bot(`<p class="dmb-h">تكلفة تقديرية – ${h.name}</p><p>${AD(n)} فرد${dayTxt ? ' – ' + dayTxt : ''}${dateNote}</p><table class="dmb-t">${rows.join('')}</table>${notesFor(h, n, baseN, day)}${upTier(hid, r.m, n, day)}${ctaLine(hid)}${src(hid, r.m.pg)}`, [{ t: 'استكمال عرض السعر بالإضافات', fn: () => startQuote({ ev: ['wedding', 'engagement'].includes(S.event) ? S.event : 'wedding', hall: hid, n, day }), cls: 'pri' }, { t: 'تجهيز طلب الحجز', fn: () => startBook() }]);
     } else {
       menus.forEach(m => { const r = one(m); rows.push(`<tr><td>${A(m.name)}${r.ex ? `<br><small>الباكدج ${money(r.base)} + ${AD(r.ex)} وجبة إضافية</small>` : ''}</td><td class="n">${money(r.total)}</td></tr>`); });
-      bot(`<p class="dmb-h">تكلفة تقديرية – ${h.name}</p><p>${AD(n)} فرد${dayTxt ? ' – ' + dayTxt : ''}${dateNote}</p><table class="dmb-t"><tr><th>المنيو</th><th>الإجمالي التقديري</th></tr>${rows.join('')}</table>${notesFor(h, n, baseN, day)}${src(hid)}`, [{ t: 'تجهيز طلب الحجز', fn: () => startBook(), cls: 'pri' }]);
+      bot(`<p class="dmb-h">تكلفة تقديرية – ${h.name}</p><p>${AD(n)} فرد${dayTxt ? ' – ' + dayTxt : ''}${dateNote}</p><table class="dmb-t"><tr><th>المنيو</th><th>الإجمالي التقديري</th></tr>${rows.join('')}</table>${notesFor(h, n, baseN, day)}${ctaLine(hid)}${src(hid)}`, [{ t: 'عرض سعر تفصيلي بالإضافات', fn: () => startQuote({ ev: ['wedding', 'engagement'].includes(S.event) ? S.event : 'wedding', hall: hid, n, day }), cls: 'pri' }, { t: 'تجهيز طلب الحجز', fn: () => startBook() }]);
     }
-    chips([...h.menus.slice(0, 4).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.slice(0, 2), n: +m.id.slice(2) || 0 }) })), { t: 'تغيير العدد', fn: () => askCount() }, ...(h.pk.type === 'wk' || day ? [{ t: day === 'we' ? 'احسب لمنتصف الأسبوع' : 'احسب لنهاية الأسبوع', fn: () => { S.day = day === 'we' ? 'wd' : 'we'; S.date = null; estimate(); } }] : [])]);
+    chips([{ t: 'مقترحات لحفلكم', fn: () => suggestAns(hid) }, ...h.menus.slice(0, 3).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.slice(0, 2), n: +m.id.slice(2) || 0 }) })), { t: 'تغيير العدد', fn: () => askCount() }, ...(h.pk.type === 'wk' || day ? [{ t: day === 'we' ? 'احسب لمنتصف الأسبوع' : 'احسب لنهاية الأسبوع', fn: () => { S.day = day === 'we' ? 'wd' : 'we'; S.date = null; estimate(); } }] : [])]);
   }
   function notesFor(h, n, baseN, day) {
     const L = [];
@@ -705,7 +805,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
       }).join('');
       html += `<table class="dmb-t"><tr><th>القاعة</th><th>التكلفة التقديرية</th></tr>${rows}</table><p class="dmb-note">الأرقام شاملة الباكدج والوجبات الإضافية لعدد ${AD(n)} فرد، من أقل منيو إلى أعلاه${S.day ? '' : '، ونهاية الأسبوع تشمل رسوم الخميس والجمعة والسبت (إيزيس واللوتس) أو باكدج نهاية الأسبوع (أخناتون)'}${S.day === 'we' ? '، شاملة رسوم نهاية الأسبوع' : ''}.</p>`;
     }
-    bot(html + '<p>يُرجى اختيار القاعة لعرض التفاصيل لكل منيو.</p>');
+    bot(html + recPick(fits, n) + '<p>اضغطوا على القاعة لعرض التفاصيل لكل منيو.</p>');
     chips(fits.map(h => ({ t: 'التفاصيل في ' + HALLNAME[h], fn: () => { S.hall = h; S.menu = null; estimate(); } })));
   }
 
@@ -735,7 +835,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
       return `<p class="dmb-h">عقد القران – ${x.name}</p>${contentHTML(x.c.filter(s => !/مده الحفل/.test(norm(s.h))))}<p><b>المدة:</b> ${x.dur}</p><p><b>المواعيد:</b></p><ul>${x.slots.map(s => `<li>${A(s)}</li>`).join('')}</ul><table class="dmb-t"><tr><td>سعر الباكدج (${AD(x.n)} فرد)</td><td class="n">${money(x.price)}</td></tr><tr><td>الفرد الإضافي</td><td class="n">${money(x.extra)}</td></tr>${tot}</table>${over}${src(x.menu, id === 'mawadda' ? '٢ – ٣' : x.pg)}`;
     }).join('<hr class="dmb-hr">');
     bot(lead + `<details class="dmb-law" ${show.length === 1 ? 'open' : ''}><summary>تفاصيل الباكدج والمواعيد</summary>${html}</details>`, show.map(id => ({ t: 'عرض منيو ' + k[id].name, go: k[id].menu })));
-    chips([...(which ? [{ t: which === 'mawadda' ? 'عقد القران بقاعة اللوتس' : 'قاعة المودة والرحمة', fn: () => { S.hall = which === 'mawadda' ? 'lotus' : 'mawadda'; katb(S.hall); } }] : []), { t: 'مواعيد عقد القران', fn: katbTimes }, { t: 'إضافات عقد القران', fn: () => { const sc = which === 'mawadda' ? 'mawadda' : 'lotusk'; const L = K.addons.filter(a => a.s === sc); bot(`<p class="dmb-h">إضافات عقد القران – ${K.scopes[sc]}</p><table class="dmb-t">${L.map(a => `<tr><td>${A(a.n)}<br><small>${A(a.g)}</small></td><td class="n">${ar(a.p)}</td></tr>`).join('')}</table>${src(K.docOf[sc], sc === 'mawadda' ? '٤ – ٦' : 12)}`); chips([{ t: 'تجهيز طلب الحجز', fn: () => startBook() }]); } }, { t: 'احسب لعدد معين', fn: () => askCount(() => katb(which)) }, { t: 'تجهيز طلب الحجز', fn: () => startBook() }]);
+    chips([...(which ? [{ t: which === 'mawadda' ? 'عقد القران بقاعة اللوتس' : 'قاعة المودة والرحمة', fn: () => { S.hall = which === 'mawadda' ? 'lotus' : 'mawadda'; katb(S.hall); } }] : []), { t: 'مواعيد عقد القران', fn: katbTimes }, { t: 'مقترحات لعقد القران', fn: () => suggestAns(which === 'lotus' ? 'lotusk' : 'mawadda') }, { t: 'إضافات عقد القران', fn: () => { const sc = which === 'mawadda' ? 'mawadda' : 'lotusk'; const L = K.addons.filter(a => a.s === sc); bot(`<p class="dmb-h">إضافات عقد القران – ${K.scopes[sc]}</p><table class="dmb-t">${L.map(a => `<tr><td>${A(a.n)}<br><small>${A(a.g)}</small></td><td class="n">${ar(a.p)}</td></tr>`).join('')}</table>${src(K.docOf[sc], sc === 'mawadda' ? '٤ – ٦' : 12)}`); chips([{ t: 'تجهيز طلب الحجز', fn: () => startBook() }]); } }, { t: 'احسب لعدد معين', fn: () => askCount(() => katb(which)) }, { t: 'تجهيز طلب الحجز', fn: () => startBook() }]);
   }
   function aqiqa() {
     S.event = 'aqiqa';
@@ -756,7 +856,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
       rec = ok.length ? `<p class="dmb-note">لعدد ${AD(n)} فرد، المناسب: ${ok.map(b => b.name).join('، ')}.</p>` : `<p class="dmb-note">العدد ${AD(n)} فرد أكبر من سعات باكدجات أعياد الميلاد المنشورة؛ يُرجى التواصل مع فريق الحفلات.</p>`;
     }
     bot(`<p class="dmb-h">باكدجات أعياد الميلاد</p><p>كل الباكدجات تشمل: حجز القاعة، كراسي + ترابيزات، ساوند سيستم SPEAKERS.</p><table class="dmb-t">${rows}</table>${rec}${src('birthday', 2)}`, [{ t: 'عرض منيو أعياد الميلاد', go: 'birthday' }]);
-    chips([{ t: 'الديكورات والبالونات', q: 'ديكور بالونات عيد ميلاد' }, { t: 'التورت', q: 'اسعار التورت عيد ميلاد' }, { t: 'السندوتشات', q: 'السندوتشات عيد ميلاد' }, { t: 'إدخال تورتة من الخارج', q: 'تورته من بره عيد ميلاد' }, { t: 'تجهيز طلب الحجز', fn: () => startBook() }]);
+    chips([{ t: 'مقترحات لعيد الميلاد', fn: () => suggestAns('birthday') }, { t: 'الديكورات والبالونات', q: 'ديكور بالونات عيد ميلاد' }, { t: 'التورت', q: 'اسعار التورت عيد ميلاد' }, { t: 'السندوتشات', q: 'السندوتشات عيد ميلاد' }, { t: 'إدخال تورتة من الخارج', q: 'تورته من بره عيد ميلاد' }, { t: 'تجهيز طلب الحجز', fn: () => startBook() }]);
   }
   function special() {
     S.event = 'special';
@@ -848,7 +948,8 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     chips([{ t: 'السعر بقاعة إيزيس', fn: () => { S.hall = 'isis'; menuDetail(mq); } }, { t: 'احسب التكلفة لعدد معين', fn: () => askCount() }]);
   }
   function compareMenus(k, a, b) {
-    const hid = K.halls[S.hall] ? S.hall : null;
+    let hid = K.halls[S.hall] ? S.hall : null, both = false;
+    if (!hid && k === 'sm' && Math.max(a, b) <= 5) { hid = 'isis'; both = true; }
     if (k === 'ob' && (!hid || hid === 'lotus') && [a, b].sort().join() === '1,2') return obNoHall({ k: 'ob', n: 0 }, ' 1 و 2 ');
     if (!hid && k !== 'cb' && k !== 'ssm') { bot('<p>يُرجى تحديد القاعة للمقارنة بين المنيوهين:</p>'); chips(['akhenaten', 'isis', 'lotus'].map(h => ({ t: HALLNAME[h], fn: () => { S.hall = h; compareMenus(k, a, b); } }))); return; }
     const get = n => k === 'cb' || k === 'ssm' ? K.special.menus.find(m => m.id === k + n) : hallMenu(hid, { k, n });
@@ -856,8 +957,16 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     if (!m1 || !m2) return menuDetail({ k, n: a });
     const price = m => m.pp ? money(m.pp) + ' للفرد' : m.wd ? money(m.wd) + ' / ' + money(m.we) : money(m.price);
     const same = JSON.stringify(m1.c) === JSON.stringify(m2.c);
-    bot(`<p class="dmb-h">مقارنة: ${A(m1.name)} و${A(m2.name)}${hid ? ' – ' + HALLNAME[hid] : ''}</p>${same ? '<p><b>الأصناف متطابقة كما هي مطبوعة في المنيو، والاختلاف في السعر فقط.</b></p>' : ''}<table class="dmb-t"><tr><th></th><th>${A(m1.name)}</th><th>${A(m2.name)}</th></tr><tr><td>السعر</td><td class="n">${price(m1)}</td><td class="n">${price(m2)}</td></tr>${same ? '' : m1.c.map(s1 => { const s2 = m2.c.find(x => x.h === s1.h); const L = s => s ? s.o.filter(o => o[0] === 'i').map(o => A(o[1])).join('، ') : '—'; return `<tr><td><b>${A(s1.h)}</b></td><td><small>${L(s1)}</small></td><td><small>${L(s2)}</small></td></tr>`; }).join('')}</table>${src(hid || 'special', m1.pg + ' و' + m2.pg)}`);
-    chips([{ t: 'احسب التكلفة لعدد معين', fn: () => askCount() }, { t: 'تجهيز طلب الحجز', fn: () => startBook() }]);
+    bot(`<p class="dmb-h">مقارنة: ${A(m1.name)} و${A(m2.name)}${hid ? ' – ' + HALLNAME[hid] : ''}</p>${same ? '<p><b>الأصناف متطابقة كما هي مطبوعة في المنيو، والاختلاف في السعر فقط.</b></p>' : ''}<table class="dmb-t"><tr><th></th><th>${A(m1.name)}</th><th>${A(m2.name)}</th></tr><tr><td>السعر</td><td class="n">${price(m1)}</td><td class="n">${price(m2)}</td></tr>${same ? '' : m1.c.map(s1 => { const s2 = m2.c.find(x => x.h === s1.h); const L = s => { if (!s) return '—'; const i = s.o.filter(o => o[0] === 'i'); return (i.length ? i : s.o).map(o => A(o[1])).join('، '); }; return `<tr><td><b>${A(s1.h)}</b></td><td><small>${L(s1)}</small></td><td><small>${L(s2)}</small></td></tr>`; }).join('')}</table>${same ? '' : menuUpg(m1, m2, hid)}${both ? `<p class="dmb-note">الأصناف واحدة في قاعتي أخناتون وإيزيس، والأسعار أعلاه لقاعة إيزيس (${AD(K.halls.isis.pk.n)} فرد). وفي قاعة أخناتون: ${A(m1.name)} ${money(K.halls.akhenaten.menus.find(x => x.id === m1.id).wd)} و${A(m2.name)} ${money(K.halls.akhenaten.menus.find(x => x.id === m2.id).wd)} (منتصف الأسبوع).</p>` : ''}${src(hid || 'special', m1.pg + ' و' + m2.pg)}`);
+    chips([{ t: 'احسب التكلفة لعدد معين', fn: () => askCount() }, { t: 'عرض سعر تفصيلي', fn: () => startQuote(hid && K.halls[hid] ? quotePre(hid) : undefined) }, { t: 'أي منيو يناسبني؟', fn: () => bestMenuAns(hid && K.halls[hid] ? hid : null) }]);
+  }
+  function menuUpg(m1, m2, hid) {
+    const items = m => m.c.flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1]));
+    const n1 = new Set(items(m1).map(x => norm(x))), add = items(m2).filter(x => !n1.has(norm(x)));
+    const pv = m => m.pp || (m.wd || m.price || 0);
+    const gap = pv(m2) - pv(m1);
+    if (!add.length) return '';
+    return `<p>يضيف <b>${A(m2.name)}</b> عن ${A(m1.name)}: ${add.slice(0, 10).map(A).join('، ')}${add.length > 10 ? '…' : ''}${gap > 0 ? `، بفارق <b>${money(gap)}</b>${m2.pp ? ' للفرد' : ' على الباكدج'}${hid && K.halls[hid] && K.halls[hid].pk.type === 'wk' ? ' (منتصف الأسبوع)' : ''}` : ''}.</p>`;
   }
   function katbTimes() {
     const k = K.katb;
@@ -901,8 +1010,8 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
 <tr><td>الأسعار</td><td class="n">من ${money(lo)}<br><small>حتى ${money(hi)}</small></td></tr>
 ${ex ? `<tr><td>الساعة الإضافية</td><td class="n">${ar(ex.p)}</td></tr>` : ''}
 ${dep ? `<tr><td>مقدم الحجز / التأمين</td><td class="n">${money(dep[1])}<br><small>تأمين ${money(dep[2])}</small></td></tr>` : ''}
-</table><div class="dmb-sec"><b>يشمل الباكدج:</b><ul class="dmb-cols">${h.inc.flatMap(sec => sec.o.filter(o => o[0] === 'i').map(o => `<li>${A(o[1])}</li>`)).join('')}</ul></div>${d.kosha ? `<p class="dmb-note">الكوشة: ${A(d.kosha)}.</p>` : ''}${src(hid, '١ – ٣')}`, [{ t: 'عرض منيو ' + h.name, go: h.menu }, { t: 'صور الديكورات', go: h.decor }]);
-    chips([{ t: 'أسعار كل المنيوهات', fn: () => hallPrices(hid) }, { t: 'كل الإضافات وأسعارها', fn: () => allAddons(hid) }, { t: 'احسب التكلفة لعدد معين', fn: () => askCount() }, { t: 'مقارنة بقاعة أخرى', fn: () => compareHalls(hid, hid === 'isis' ? 'akhenaten' : 'isis') }]);
+</table><div class="dmb-sec"><b>يشمل الباكدج:</b><ul class="dmb-cols">${h.inc.flatMap(sec => sec.o.filter(o => o[0] === 'i').map(o => `<li>${A(o[1])}</li>`)).join('')}</ul></div>${d.kosha ? `<p class="dmb-note">الكوشة: ${A(d.kosha)}.</p>` : ''}${ctaLine(hid)}${src(hid, '١ – ٣')}`, [{ t: 'عرض منيو ' + h.name, go: h.menu }, { t: 'صور الديكورات', go: h.decor }]);
+    chips([{ t: 'أسعار كل المنيوهات', fn: () => hallPrices(hid) }, { t: 'مقترحات لحفلكم', fn: () => suggestAns(hid) }, { t: 'أي منيو يناسبني؟', fn: () => bestMenuAns(hid) }, { t: 'احسب التكلفة لعدد معين', fn: () => askCount() }, { t: 'مقارنة بقاعة أخرى', fn: () => compareHalls(hid, hid === 'isis' ? 'akhenaten' : 'isis') }]);
   }
   function allAddons(sc) {
     sc = sc || ctxScope();
@@ -930,8 +1039,8 @@ ${row('نهاية الأسبوع', h => h.pk.type === 'wk' ? 'باكدج مست�
 ${row('المنيوهات', h => AD(h.menus.length) + ' اختيارات' + (h.menus.some(m => m.id.startsWith('ob')) ? ' (منها أوبن بوفيه)' : ''))}
 ${row('الساعة الإضافية', (h, id) => exh(id))}
 ${row('مقدم الحجز', h => dep(h))}
-</table>${d1.length || d2.length ? `<div class="dmb-sec"><b>فروق ما يشمله الباكدج:</b><ul>${d1.length ? `<li>${HALLNAME[H[0]]}: ${d1.map(A).join('، ')}</li>` : ''}${d2.length ? `<li>${HALLNAME[H[1]]}: ${d2.map(A).join('، ')}</li>` : ''}</ul></div>` : ''}${src(H[0], '١ – ٣')}`);
-    chips([...H.map(h => ({ t: 'تفاصيل ' + HALLNAME[h], fn: () => hallProfile(h) })), { t: 'احسب التكلفة لعدد معين', fn: () => askCount(recommend) }]);
+</table>${d1.length || d2.length ? `<div class="dmb-sec"><b>فروق ما يشمله الباكدج:</b><ul>${d1.length ? `<li>${HALLNAME[H[0]]}: ${d1.map(A).join('، ')}</li>` : ''}${d2.length ? `<li>${HALLNAME[H[1]]}: ${d2.map(A).join('، ')}</li>` : ''}</ul></div>` : ''}${hallAdvice(H[0], H[1])}${src(H[0], '١ – ٣')}`, [{ t: 'حجز موعد معاينة للقاعتين', cls: 'pri', fn: () => startVisit() }]);
+    chips([...H.map(h => ({ t: 'تفاصيل ' + HALLNAME[h], fn: () => hallProfile(h) })), { t: 'احسب التكلفة لعدد معين', fn: () => askCount(() => compareHalls(a, b)) }, { t: 'عرض سعر تفصيلي', fn: () => startQuote({ ev: 'wedding', n: S.count || null }) }]);
   }
   function findBudget(t) {
     let m = t.match(/(\d{2,4}) ?(?:الف|الاف|ك ج|k)/);
@@ -1270,60 +1379,1546 @@ ${row('مقدم الحجز', h => dep(h))}
   }
 
 
+  /* ---------------- lead intake: name, count, hall, month, date, source, phone ---------------- */
+  const LKEY = 'dmb-lead-v1';
+  let LEAD = {}, LSTEP = null;
+  try { LEAD = JSON.parse(localStorage.getItem(LKEY) || '{}') || {}; } catch (e) { LEAD = {}; }
+  const saveLead = () => { try { localStorage.setItem(LKEY, JSON.stringify(LEAD)); } catch (e) { } };
+  const MNAMES = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  const MNAMES_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const SOURCES = [['fb', 'فيسبوك', 'Facebook'], ['ig', 'إنستجرام', 'Instagram'], ['google', 'بحث جوجل / خرائط جوجل', 'Google search / Maps'], ['friends', 'ترشيح من الأهل أو الأصدقاء', 'Family or friends'], ['attended', 'حضرت مناسبة بالدار', 'Attended an event here'], ['site', 'موقع المنيوهات', 'The menus website'], ['other', 'أخرى', 'Other']];
+  const srcLabel = () => { const s = SOURCES.find(x => x[0] === LEAD.src); return s ? tr(s[1], s[2]) : (LEAD.source || ''); };
+  const hon = () => LEAD.name ? tr('أ. ', '') + esc(LEAD.name.split(' ')[0]) : '';
+  const monthTxt = m => { const [y, mm] = m.split('-').map(Number); return tr(MNAMES[mm - 1], MNAMES_EN[mm - 1]) + ' ' + AD(y); };
+  function leadToState() {
+    if (LEAD.count) S.count = LEAD.count;
+    if (LEAD.hall && LEAD.hall !== '-' && LEAD.hall !== 'rec') { S.hall = LEAD.hall; if (LEAD.hall === 'mawadda') S.event = 'katb'; }
+    if (LEAD.date) { const [y, m, d] = LEAD.date.split('-').map(Number); S.date = new Date(y, m - 1, d); const w = S.date.getDay(); S.day = (w === 4 || w === 5 || w === 6) ? 'we' : 'wd'; }
+  }
+  function leadBlock() {
+    const L = [];
+    if (LEAD.name) L.push(tr('الاسم: ', 'Name: ') + LEAD.name);
+    if (LEAD.phone && LEAD.phone !== '-') L.push(tr('الهاتف: ', 'Phone: ') + LEAD.phone);
+    if (LEAD.count) L.push(tr('العدد المتوقع: ', 'Expected guests: ') + AD(LEAD.count) + tr(' فرد', ''));
+    if (LEAD.hall && HALLNAME[LEAD.hall]) L.push(tr('القاعة: ', 'Hall: ') + HALLNAME[LEAD.hall]);
+    if (LEAD.date) { const [y, m, d] = LEAD.date.split('-').map(Number); L.push(tr('التاريخ: ', 'Date: ') + dateTxt(new Date(y, m - 1, d))); }
+    else if (LEAD.month && LEAD.month !== '-') L.push(tr('الشهر: ', 'Month: ') + monthTxt(LEAD.month));
+    if (LEAD.src || LEAD.source) L.push(tr('عرفنا من خلال: ', 'Heard about us via: ') + srcLabel());
+    return L;
+  }
+  function phoneOk(raw) {
+    let d = String(raw).replace(/[٠-٩]/g, c => '٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/[^\d+]/g, '');
+    d = d.replace(/^\+?20(?=1)/, '0').replace(/^0020(?=1)/, '0');
+    if (/^01[0125]\d{8}$/.test(d)) return d;
+    if (/^0[2-9]\d{7,8}$/.test(d)) return d;
+    if (/^(\+|00)[1-9]\d{9,14}$/.test(d)) return d;
+    return null;
+  }
+  const skipChip = () => ({ t: tr('تخطي والانتقال للأسئلة', 'Skip to my questions'), fn: () => { LEAD.skipped = true; LSTEP = null; FLOW = null; saveLead(); leadDone(true); } });
+  function leadAsk(html, opts, step) {
+    bot(html);
+    FLOW = { wantCount: LSTEP === 'count', step: (raw, t, e) => {
+      const r = step(raw.trim(), t, e);
+      if (r === true) { FLOW = null; saveLead(); leadNext(); return true; }
+      if (r === 'retry') return true;
+      LSTEP = null; FLOW = null; return false; // a real question: pause the intake and answer it
+    } };
+    chips([...opts.map(o => ({ t: o.t, fn: () => { o.fn(); saveLead(); leadNext(); } })), skipChip()]);
+  }
+  const isQuestion = raw => /[?؟]/.test(raw) || /^(ايه|إيه|كام|بكام|هل|ممكن|فين|امتى|إمتى|ازاي|إزاي|عاوز|عايز|سعر|اسعار|أسعار|what|how|where|when|which|is|are|do|does|can|could|price|prices|cost)\b/i.test(raw.trim());
+  const notYet = t => /لسه|لم احدد|مش عارف|مش محدد|معرفش|not sure|not yet|dont know|undecided|no idea|tbd/.test(t);
+  function startLead() {
+    if (LEAD.done) return welcomeBack();
+    bot(tr(`<p class="dmb-h">أهلاً بكم في دار المراسم لضباط الشرطة</p>${phHTML(['venue'])}<p>يسعدني أن أكون في خدمتكم؛ أنا <b>مساعد دار المراسم الذكي</b>، معكم على مدار الساعة من أول سؤال حتى عرض السعر النهائي.</p><p>لنخدمكم على أكمل وجه ونقدّم لكم ترشيحات وأسعاراً دقيقة، نود التعرف عليكم ببعض الأسئلة السريعة.</p>`,
+      `<p class="dmb-h">Welcome to Dar El-Marasem</p>${phHTML(['venue'])}<p>It is my pleasure to assist you. I am the <b>Dar El-Marasem AI assistant</b>, here around the clock from your first question to your final quote.</p><p>To serve you best and give you accurate recommendations and prices, may I ask a few quick questions?</p>`));
+    leadNext();
+  }
+  function leadNext() {
+    if (!LEAD.name) {
+      LSTEP = 'name';
+      return leadAsk(tr('<p><b>الاسم الكريم؟</b></p>', '<p><b>May I have your name?</b></p>'), [], (raw, t, e) => {
+        if (isQuestion(raw) || /\d/.test(raw) || raw.split(/\s+/).length > 5 || e.halls.length || e.ev || e.count || (EN() ? enMenuQ(t) : findMenu(t)) || /(^| )(شكرا|اهلا|السلام|مرحبا|هاي|hi|hello|hey|thanks|سعر|اسعار|منيو|قاعه|القاعات|فرح|حفله|خطوبه|كتب|عيد|باكدج|عرض|عاوز|عايز|محتاج|لو سمحت|price|menu|hall|wedding|quote|book)( |$)/.test(t)) return false;
+        LEAD.name = raw.replace(/^(انا|أنا|اسمي|إسمي|my name is|i am|im|this is)\s+/i, '').slice(0, 40); return true;
+      });
+    }
+    if (LEAD.count == null) {
+      LSTEP = 'count';
+      return leadAsk(tr(`<p>تشرفنا يا ${hon()}. <b>كم عدد المدعوين المتوقع؟</b></p>`, `<p>Lovely to meet you, ${hon()}. <b>How many guests are you expecting?</b></p>`), [...[100, 150, 200, 250, 300, 400].map(n => ({ t: AD(n), fn: () => { LEAD.count = n; } })), { t: tr('لم أحدد بعد', 'Not decided yet'), fn: () => { LEAD.count = 0; } }], (raw, t, e) => {
+        const n = e.count || (EN() ? enCount(t, true) : findCount(t, true));
+        if (n) { LEAD.count = n; return true; }
+        if (notYet(t)) { LEAD.count = 0; return true; }
+        if (isQuestion(raw)) return false;
+        bot(tr('<p>يُرجى كتابة العدد بالأرقام (مثال: ٢٥٠).</p>', '<p>Please type the number of guests (e.g. 250).</p>')); return 'retry';
+      });
+    }
+    if (!LEAD.hall) {
+      LSTEP = 'hall';
+      const n = LEAD.count;
+      const hs = ['akhenaten', 'isis', 'lotus', 'mawadda'].filter(h => !n || n <= (h === 'mawadda' ? 150 : K.halls[h].max));
+      return leadAsk(tr(`<p><b>أي قاعة تفضّلون؟</b>${n ? ` <small>(المناسبة لعدد ${AD(n)} فرد)</small>` : ''}</p>`, `<p><b>Which hall do you prefer?</b>${n ? ` <small>(suitable for ${n} guests)</small>` : ''}</p>`), [...hs.map(h => ({ t: HALLNAME[h] + (h === 'mawadda' ? tr(' (عقد القران)', ' (marriage contract)') : ''), fn: () => { LEAD.hall = h; } })), { t: tr('رشّحوا لي الأنسب', 'Recommend one for me'), fn: () => { LEAD.hall = 'rec'; } }, { t: tr('لم أحدد بعد', 'Not decided yet'), fn: () => { LEAD.hall = '-'; } }], (raw, t, e) => {
+        if (e.halls.length) { LEAD.hall = e.halls[0]; return true; }
+        if (/رشح|انسب|recommend|suggest|best/.test(t)) { LEAD.hall = 'rec'; return true; }
+        if (notYet(t)) { LEAD.hall = '-'; return true; }
+        return false;
+      });
+    }
+    if (!LEAD.month) {
+      LSTEP = 'month';
+      const now = new Date(), opts = [];
+      for (let i = 0; i < 12; i++) { const d = new Date(now.getFullYear(), now.getMonth() + i, 1); const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); opts.push({ t: monthTxt(k), fn: () => { LEAD.month = k; } }); }
+      return leadAsk(tr('<p><b>في أي شهر تخططون لإقامة المناسبة؟</b></p>', '<p><b>Which month are you planning the event for?</b></p>'), [...opts, { t: tr('لم أحدد بعد', 'Not decided yet'), fn: () => { LEAD.month = '-'; } }], (raw, t) => {
+        let i = MNAMES.findIndex(m => t.includes(' ' + norm(m).trim()));
+        if (i < 0) i = MNAMES_EN.findIndex(m => t.includes(' ' + m.toLowerCase().slice(0, 3)));
+        if (i >= 0) { const now = new Date(); let y = now.getFullYear(); if (i < now.getMonth()) y++; LEAD.month = y + '-' + String(i + 1).padStart(2, '0'); return true; }
+        if (notYet(t)) { LEAD.month = '-'; return true; }
+        return false;
+      });
+    }
+    if (LEAD.month !== '-' && LEAD.date == null) {
+      LSTEP = 'date';
+      const [y, m] = LEAD.month.split('-').map(Number);
+      const first = new Date(y, m - 1, 1), last = new Date(y, m, 0), today = new Date();
+      dateInput(dt => { LEAD.date = ymd(dt); saveLead(); leadNext(); }, tr(`<b>هل حددتم اليوم؟</b> اختاروه من تقويم ${monthTxt(LEAD.month)}:`, `<b>Have you chosen the day?</b> Pick it from the ${monthTxt(LEAD.month)} calendar:`), { min: first > today ? first : today, max: last });
+      FLOW = { step: (raw, t) => { if (notYet(t) || /(^| )(لا|no)( |$)/.test(t)) { LEAD.date = ''; FLOW = null; saveLead(); leadNext(); return true; } LSTEP = null; FLOW = null; return false; } };
+      chips([{ t: tr('لم أحدد اليوم بعد', 'Day not decided yet'), fn: () => { LEAD.date = ''; saveLead(); leadNext(); } }, skipChip()]);
+      return;
+    }
+    if (!LEAD.src && !LEAD.source) {
+      LSTEP = 'source';
+      return leadAsk(tr('<p><b>كيف تعرّفتم على دار المراسم؟</b></p>', '<p><b>How did you hear about Dar El-Marasem?</b></p>'), SOURCES.map(s => ({ t: tr(s[1], s[2]), fn: () => { LEAD.src = s[0]; } })), (raw, t) => {
+        if (isQuestion(raw) || raw.split(/\s+/).length > 7) return false;
+        const hit = [['فيس', 'fb'], ['face', 'fb'], ['انست', 'ig'], ['insta', 'ig'], ['جوجل', 'google'], ['google', 'google'], ['map', 'google'], ['صاحب', 'friends'], ['صديق', 'friends'], ['قراي', 'friends'], ['اهل', 'friends'], ['friend', 'friends'], ['family', 'friends'], ['حضرت', 'attended'], ['فرح', 'attended'], ['attended', 'attended'], ['wedding', 'attended']].find(([k]) => t.includes(k));
+        if (hit) LEAD.src = hit[1]; else LEAD.source = raw.slice(0, 40);
+        return true;
+      });
+    }
+    if (!LEAD.phone) {
+      LSTEP = 'phone';
+      return leadAsk(tr(`<p>وأخيراً يا ${hon()}، <b>رقم الهاتف أو الواتساب</b> ليتواصل معكم فريق الحفلات بعرض السعر وتأكيد التوافر:</p><p class="dmb-note">بياناتكم تُستخدم فقط للتواصل معكم بخصوص مناسبتكم.</p>`, `<p>Finally, ${hon()}, your <b>phone or WhatsApp number</b> so our events team can send your quote and confirm availability:</p><p class="dmb-note">Your details are used only to contact you about your event.</p>`), [{ t: tr('أفضّل عدم المشاركة الآن', 'I prefer not to share it now'), fn: () => { LEAD.phone = '-'; } }], (raw, t) => {
+        const p = phoneOk(raw);
+        if (p) { LEAD.phone = p; return true; }
+        if (/(^| )(لا|مش عاوز|بلاش|بعدين|no|later|skip)( |$)/.test(t) && !/\d/.test(raw)) { LEAD.phone = '-'; return true; }
+        if (isQuestion(raw)) return false;
+        bot(tr('<p>يُرجى كتابة رقم صحيح (مثال: ٠١٠١٢٣٤٥٦٧٨).</p>', '<p>Please enter a valid number (e.g. 01012345678 or +44 7700 900123).</p>')); return 'retry';
+      });
+    }
+    LSTEP = null; LEAD.done = true; saveLead(); leadDone(false);
+  }
+  function leadDone(skipped) {
+    leadToState();
+    if (skipped) { bot(tr(`<p>بكل سرور${hon() ? ' يا ' + hon() : ''}، تفضّلوا بأي سؤال، ويسعدنا خدمتكم.</p>`, `<p>With pleasure${hon() ? ', ' + hon() : ''}. Please ask me anything; we are happy to help.</p>`)); chips(MAIN()); return; }
+    const L = leadBlock();
+    const phone = LEAD.phone && LEAD.phone !== '-' ? LEAD.phone : '';
+    bot(tr(`<p class="dmb-h">شكراً لكم يا ${hon()}</p><p style="white-space:pre-line">${esc(L.join('\n'))}</p><p>بالضغط على الزر تصل بياناتكم لفريق الحفلات عبر واتساب${phone ? ' ليتواصلوا معكم على رقمكم' : ''}.</p>`, `<p class="dmb-h">Thank you, ${hon()}</p><p style="white-space:pre-line">${esc(L.join('\n'))}</p><p>Tap the button to send your details to our events team on WhatsApp${phone ? ' so they can reach you on your number' : ''}.</p>`),
+      [waAct([tr('دار المراسم لضباط الشرطة – عميل جديد', 'Dar El-Marasem – new client'), '', ...L, '', tr('(تم التسجيل عبر مساعد دار المراسم الذكي)', '(via the Dar El-Marasem AI assistant)')].join('\n'), tr('إرسال بياناتي لفريق الحفلات', 'Send my details to the team')), { t: tr('تعديل بياناتي', 'Edit my details'), fn: () => { LEAD = {}; saveLead(); leadNext(); } }]);
+    setTimeout(() => {
+      if (EN()) {
+        if (LEAD.hall === 'mawadda') return enKatb('mawadda');
+        if (K.halls[LEAD.hall] && LEAD.count) return enEstimate(LEAD.hall);
+        if (K.halls[LEAD.hall]) return enHall(LEAD.hall);
+        if (LEAD.count) return enRecommend();
+        return chips(MAIN());
+      }
+      if (LEAD.hall === 'mawadda') return katb('mawadda');
+      if (K.halls[LEAD.hall] && LEAD.count) return estimate();
+      if (K.halls[LEAD.hall]) return hallProfile(LEAD.hall);
+      if (LEAD.count) return recommend();
+      chips(MAIN());
+    }, 350);
+  }
+  function welcomeBack() {
+    leadToState();
+    bot(tr(`<p class="dmb-h">أهلاً بعودتكم يا ${hon() || 'ضيفنا الكريم'}</p><p>سعداء بتواصلكم مجدداً مع دار المراسم. كيف يمكنني خدمتكم اليوم؟</p>`, `<p class="dmb-h">Welcome back${hon() ? ', ' + hon() : ''}</p><p>We are delighted to hear from you again. How may I help you today?</p>`) + (leadBlock().length ? `<p class="dmb-note">${esc(leadBlock().join(' · '))}</p>` : ''), [{ t: tr('تعديل بياناتي', 'Edit my details'), fn: () => { LEAD = {}; saveLead(); leadNext(); } }]);
+    chips(MAIN());
+  }
+
+  /* ---------------- venue features, parking, discount ---------------- */
+  const PARKING = 'يتوفر بالدار <b>جراج داخلي</b> لسيارات الضيوف، مع <b>خدمة فاليه</b> لاستقبال سياراتكم وصفّها';
+  function parkingAns() {
+    bot(`<p class="dmb-h">انتظار السيارات</p><p>${PARKING}، لتستمتعوا أنتم وضيوفكم بالمناسبة دون عناء البحث عن مكان للانتظار.</p><p class="dmb-note">الدار في ${A(ADDRESS)}، ويسعد فريق الحفلات تنسيق ترتيبات استقبال سيارات ضيوفكم يوم الحفل.</p>`, [{ t: 'الموقع على الخريطة', href: 'https://maps.app.goo.gl/WXWC2jJhyESubBve9' }]);
+    chips([{ t: 'مميزات الدار', fn: whyUs }, { t: 'مميزات القاعات', fn: hallsFeatures }, { t: 'حجز موعد معاينة', fn: () => startVisit() }]);
+  }
+  function hallsFeatures() {
+    const card = (hid) => {
+      const H = K.halls[hid], d = K.desc[hid] || {};
+      const inc = H.inc.flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1].replace(/\s*—.*$/, ''))).filter(x => !/حجز القاعة|كراسي/.test(x));
+      return `<div class="dmb-sg"><b>${H.name} · ${AD(H.min)} – ${AD(H.max)} فرد</b>${A(d.desc || '')}${K.p2[hid] ? ' ' + A(K.p2[hid]) : ''}<ul><li>الكوشة: ${A(d.kosha || 'من تشكيلة كوشات القاعة')}</li><li>${H.menus.length} ${H.menus.some(m => m.id.startsWith('ob')) ? 'اختيارات بين ست منيو وأوبن بوفيه' : 'اختيارات منيو'}</li><li>يشمل الباكدج: ${inc.slice(0, 9).map(A).join('، ')}</li></ul></div>`;
+    };
+    bot(`<p class="dmb-h">قاعات دار المراسم</p><p>لكل قاعة طابعها الفرعوني الملكي الخاص، لتختاروا ما يليق بمناسبتكم:</p>${['akhenaten', 'isis', 'lotus'].map(card).join('')}<div class="dmb-sg"><b>قاعة المودة والرحمة · ${AD(K.katb.mawadda.min)} – ${AD(K.katb.mawadda.max)} فرد</b>مخصصة لعقد القران، بباكدج يبدأ من ${money(K.katb.mawadda.price)}.</div><div class="dmb-sg"><b>للمناسبات الأصغر</b>الروف توب والقاعة الزجاجية (أوبن إير) لأعياد الميلاد، وقاعتا اللؤلؤة والمراسم للمؤتمرات والمناسبات الخاصة.</div><p class="dmb-note">${PARKING}.</p>`, [{ t: 'حجز موعد معاينة', cls: 'pri', fn: () => startVisit() }, { t: 'صور ديكورات أخناتون', go: 'decor-akhenaten' }]);
+    chips([{ t: 'مقارنة أخناتون وإيزيس', fn: () => compareHalls('akhenaten', 'isis') }, { t: 'ترشيح قاعة حسب العدد', fn: () => startRec() }, { t: 'مميزات الدار', fn: whyUs }]);
+  }
+  function objDiscount() {
+    const n = S.count, L = [];
+    const best = (h, d) => Math.min(...K.halls[h].menus.map(m => estTotal(K.halls[h], m, n, d)));
+    if (n) {
+      const fit = ['lotus', 'isis', 'akhenaten'].filter(h => n <= K.halls[h].max);
+      if (fit.length) {
+        const v = fit.map(h => [h, best(h, 'wd')]).sort((a, b) => a[1] - b[1]);
+        L.push(`لعدد ${AD(n)} فرد، أقل تكلفة متاحة <b>${money(v[0][1])}</b> في ${HALLNAME[v[0][0]]} بمنتصف الأسبوع.`);
+        if (K.halls[S.hall] && S.hall !== v[0][0]) L.push(`وفي ${HALLNAME[S.hall]} تبدأ من ${money(best(S.hall, 'wd'))} في منتصف الأسبوع.`);
+        if (S.day === 'we') { const h = K.halls[S.hall] ? S.hall : v[0][0]; const g = best(h, 'we') - best(h, 'wd'); if (g > 0) L.push(`نقل الحفل من نهاية الأسبوع إلى منتصفه يوفّر لكم <b>${money(g)}</b>.`); }
+      }
+    } else {
+      L.push(`إقامة الحفل من الأحد إلى الأربعاء توفّر رسوم نهاية الأسبوع، وفي قاعة أخناتون يبدأ باكدج منتصف الأسبوع من ${money(K.halls.akhenaten.menus[0].wd)} مقابل ${money(K.halls.akhenaten.menus[0].we)} لنهاية الأسبوع.`);
+      L.push(`اختيار القاعة على قدر العدد؛ فباكدجات قاعة اللوتس تبدأ من ${money(K.halls.lotus.menus[0].price)}.`);
+    }
+    L.push('المنيو الأول في كل قاعة متكامل الأصناف، ويمكنكم البدء به ثم إضافة ما يهمكم فقط من الإضافات.');
+    bot(`<p>نقدّر اهتمامكم${hon() ? ' يا ' + hon() : ''}، ويسعدنا أن نساعدكم في الوصول إلى أنسب تكلفة.</p><p>أسعار الدار معلنة وموحّدة لجميع عملائنا حرصاً على الشفافية والعدالة بينهم، ولذلك لا نتعامل بالخصومات، لكن يمكننا معاً خفض التكلفة بالاختيار الأنسب:</p><ul>${L.map(x => `<li>${x}</li>`).join('')}</ul><p>أخبرونا بالميزانية التي تناسبكم، ونرشّح لكم أفضل اختيار في حدودها.</p>`);
+    chips([{ t: 'رشّحوا لي حسب ميزانيتي', fn: () => { bot('<p>اكتبوا الميزانية التقريبية وعدد المدعوين (مثال: ميزانيتي ٢٠٠ ألف لـ ٢٠٠ فرد).</p>'); chips([]); } }, ...(S.count ? [] : [{ t: 'ترشيح قاعة حسب العدد', fn: () => startRec() }]), { t: 'عرض سعر تفصيلي', fn: () => startQuote() }]);
+  }
+
+  /* ---------------- professional sales persona ---------------- */
+  // value framing: what every package already includes
+  function valueLine(hid) {
+    const H = K.halls[hid]; if (!H) return '';
+    const inc = H.inc.flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1].replace(/\s*—.*$/, ''))).filter(x => !/حجز القاعة|كراسي/.test(x));
+    return `<div class="dmb-sg"><b>قيمة متكاملة في كل باكدج</b>إلى جانب الوجبات، يشمل الباكدج: ${inc.map(A).join('، ')}.</div>`;
+  }
+  const perHead = (total, n) => n ? `<br><small>بما يعادل نحو ${money(Math.round(total / n / 5) * 5)} للفرد</small>` : '';
+  // upsell to the next menu of the same type, priced at the client's count
+  function upTier(hid, m, n, day) {
+    const H = K.halls[hid]; if (!H || !m) return '';
+    const typ = m.id.replace(/\d+$/, ''), num = +m.id.slice(typ.length) || 0;
+    const nx = H.menus.find(x => x.id === typ + (num + 1)) || (m.id === 'ht' ? H.menus.find(x => x.id === 'sm1') : null);
+    if (!nx) return '';
+    const items = mm => mm.c.flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1]));
+    const have = new Set(items(m).map(x => norm(x))), add = items(nx).filter(x => !have.has(norm(x))).slice(0, 4);
+    const cnt = n || (H.pk.type === 'wk' ? H.pk.wd.n : H.pk.n);
+    const d = day || 'wd';
+    const gap = estTotal(H, nx, cnt, d) - estTotal(H, m, cnt, d);
+    if (gap <= 0) return '';
+    if (EN()) return `<div class="dmb-cta">✦ <b>Suggested upgrade:</b> for ${money(gap)} more${n ? ` for ${n} guests (about ${money(Math.round(gap / n / 5) * 5)} per guest)` : ' on the package'} you move up to <b>${A(nx.name)}</b>${add.length ? `, which adds: ${add.map(A).join(', ')}` : ''}.</div>`;
+    return `<div class="dmb-cta">✦ <b>ترقية مقترحة:</b> بفارق ${money(gap)}${n ? ` لعدد ${AD(n)} فرد (نحو ${money(Math.round(gap / n / 5) * 5)} للفرد)` : ' على الباكدج'} تنتقلون إلى <b>${A(nx.name)}</b>${add.length ? `، ويضيف: ${add.map(A).join('، ')}` : ''}.</div>`;
+  }
+  // best fit pick under a recommendation table
+  function recPick(fits, n) {
+    if (!n || fits.length < 2) return '';
+    const day = S.day || 'wd';
+    const v = fits.map(h => [h, Math.min(...K.halls[h].menus.map(m => estTotal(K.halls[h], m, n, day)))]).sort((a, b) => a[1] - b[1]);
+    if (EN()) return `<div class="dmb-cta">✦ <b>Our pick for ${n} guests:</b> ${HALLNAME[v[0][0]]}, the best value for this number (from ${money(v[0][1])}). For more space and an even grander setting, ${HALLNAME[v[v.length - 1][0]]} is a distinguished choice.</div>`;
+    return `<div class="dmb-cta">✦ <b>ترشيحنا لعدد ${AD(n)} فرد:</b> ${HALLNAME[v[0][0]]}، فهي الأوفر لهذا العدد (من ${money(v[0][1])}). وإذا رغبتم في مساحة أرحب وطابع أفخم، ف${HALLNAME[v[v.length - 1][0]]} اختيار مميز.</div>`;
+  }
+
+  // ---- objection handling ----
+  function objPrice() {
+    const n = S.count, L = [];
+    if (K.halls[S.hall] && n) {
+      const H = K.halls[S.hall], cur = Math.min(...H.menus.map(m => estTotal(H, m, n, S.day || 'wd')));
+      if (S.day === 'we') L.push(`إقامة الحفل في <b>منتصف الأسبوع</b> بقاعة ${H.name.replace('قاعة ', '')} تبدأ من ${money(Math.min(...H.menus.map(m => estTotal(H, m, n, 'wd'))))} لعدد ${AD(n)} فرد.`);
+      const alt = ['lotus', 'isis', 'akhenaten'].filter(h => h !== S.hall && n <= K.halls[h].max).map(h => [h, Math.min(...K.halls[h].menus.map(m => estTotal(K.halls[h], m, n, 'wd')))]).filter(x => x[1] < cur).sort((a, b) => a[1] - b[1])[0];
+      if (alt) L.push(`<b>${HALLNAME[alt[0]]}</b> تتسع لعددكم، وتبدأ من ${money(alt[1])}.`);
+      L.push(`أقل منيو في ${H.name} لعدد ${AD(n)} فرد يبدأ من ${money(cur)} في منتصف الأسبوع.`);
+    } else {
+      L.push(`باكدجات الأفراح تبدأ من ${money(K.halls.lotus.menus[0].price)} بقاعة اللوتس لـ ${AD(K.halls.lotus.pk.n)} فرد.`);
+      L.push('الحفل في منتصف الأسبوع (الأحد – الأربعاء) يوفّر رسوم نهاية الأسبوع، وفي أخناتون له باكدج مستقل أقل سعراً.');
+      L.push('اختيار القاعة على قدر عدد المدعوين يجنّبكم دفع حد أدنى أكبر من احتياجكم.');
+    }
+    bot(`<p>نتفهّم تماماً حرصكم على الميزانية، ومهمتنا أن نصل معكم إلى أفضل قيمة ممكنة:</p><ul>${L.map(x => `<li>${x}</li>`).join('')}</ul><p class="dmb-note">والباكدج شامل لخدمات تُحتسب منفصلة في أماكن كثيرة، مثل الدي جي وتصوير الفيديو والشاشات والإضاءة والكوشة وسويت العروسة.</p><p>أخبرونا بالميزانية المتاحة وعدد المدعوين، ونرشّح لكم أفضل اختيار في حدودها.</p>`);
+    chips([{ t: 'رشّحوا لي حسب ميزانيتي', fn: () => { bot('<p>اكتبوا الميزانية التقريبية (مثال: ميزانيتي ٢٠٠ ألف).</p>'); chips([]); } }, { t: 'العروض وطرق التوفير', fn: offersAns }, { t: 'عرض سعر تفصيلي', fn: () => startQuote() }]);
+  }
+  function objThink() {
+    const pre = [S.event && EVNAME[S.event], S.hall && HALLNAME[S.hall], S.count && AD(S.count) + ' فرد'].filter(Boolean).join(' – ');
+    bot(`<p>بكل تأكيد، خذوا وقتكم في اتخاذ القرار؛ فهي مناسبة تستحق.</p><p>ولتسهيل الأمر عليكم:</p><ul><li>يمكنكم <b>زيارة الدار ومعاينة القاعات</b> يومياً من ١٠ صباحاً حتى ١٠ مساءً.</li><li>يمكننا <b>إرسال ملخص طلبكم</b> لفريق الحفلات عبر واتساب ليتواصلوا معكم بالتفاصيل.</li></ul><p class="dmb-note">ونود التنويه بأن المواعيد تُثبَّت بأسبقية سداد مقدم الحجز وتوقيع التعاقد، ولا يُحتفظ بالتاريخ قبل ذلك، لذا ننصح بعدم التأخر إذا كان لديكم موعد مفضّل.</p>`,
+      [waAct('دار المراسم لضباط الشرطة – أرغب في التواصل بخصوص حفل' + (pre ? ':\n' + pre : ''), 'إرسال طلبي لفريق الحفلات'), { t: 'حجز موعد معاينة', cls: 'pri', fn: () => startVisit() }]);
+    chips([{ t: 'عرض سعر تفصيلي', fn: () => startQuote() }, { t: 'لماذا دار المراسم؟', fn: whyUs }]);
+  }
+  function objCompetitor() {
+    bot(`<p>نحترم حرصكم على المقارنة، ويسعدنا أن تكون قراراتكم عن قناعة. ما يميّز دار المراسم:</p><ul><li><b>باكدج متكامل</b> يشمل القاعة والوجبات والدي جي وتصوير الفيديو والشاشات والإضاءة والكوشة وسويت العروسة، فقارنوا الإجمالي لا سعر القاعة وحده.</li><li><b>أسعار معلنة وواضحة</b> دون مفاجآت، وعرض سعر تفصيلي فوري هنا.</li><li><b>موقع متميز</b> بالزمالك، وقاعات بطابع ملكي فريد.</li></ul><p>ندعوكم لزيارة الدار ومعاينة القاعات بأنفسكم، ونثق أنكم ستلمسون الفرق.</p>`, [{ t: 'حجز موعد معاينة', cls: 'pri', fn: () => startVisit() }]);
+    chips([{ t: 'عرض سعر تفصيلي', fn: () => startQuote() }, { t: 'لماذا دار المراسم؟', fn: whyUs }, { t: 'العروض وطرق التوفير', fn: offersAns }]);
+  }
+  function objRoute(t, W, halls) {
+    if (W('خصم', 'خصومات', 'تخفيض', 'تخفيضات', 'تفاوض', 'نتفاوض', 'سعر خاص', 'اقل من كده', 'ينزل', 'تنزلوا', 'تنزل', 'نزلوا', 'نزل السعر', 'اخر سعر', 'آخر سعر', 'اخر كلام', 'discount', 'تراعونا', 'تراعوني', 'مراعاه')) { objDiscount(); return true; }
+    if (W('باركينج', 'بارking', 'parking', 'جراج', 'جراش', 'اركن', 'هركن', 'نركن', 'يركنوا', 'ركن العربيات', 'ركنه', 'مواقف', 'موقف سيارات', 'موقف عربيات', 'فاليه', 'valet', 'انتظار السيارات', 'انتظار العربيات', 'سيارات الضيوف', 'عربيات الضيوف', 'اركن العربيه', 'هركن فين') && !W('كارفن', 'شو فاير', 'سياره الشو')) { parkingAns(); return true; }
+    if (W('مميزات القاعات', 'مميزات قاعاتكم', 'ايه اللي يميز القاعات', 'وصف القاعات', 'عرفني بالقاعات', 'اشرحلي القاعات', 'اشرح القاعات', 'شكل القاعات', 'القاعات عامله ازاي', 'تفاصيل القاعات', 'ايه القاعات اللي عندكم', 'القاعات المتاحه')) { hallsFeatures(); return true; }
+    if (W('غالي', 'غاليه', 'غاليين', 'غالي اوي', 'غالي جدا', 'مكلف', 'مكلفه', 'السعر عالي', 'الاسعار عاليه', 'اسعاركم عاليه', 'فوق الميزانيه', 'فوق ميزانيتي', 'مش في الميزانيه', 'مش قادر', 'مش هقدر', 'كتير اوي', 'كتير جدا', 'expensive', 'مبالغ', 'نار') && !W('اغلي', 'الاغلي', 'ايه الغالي')) { objPrice(); return true; }
+    if (W('مكان تاني', 'مكان ارخص', 'قاعه تانيه', 'قاعات تانيه', 'لقيت ارخص', 'في ارخص', 'فيه ارخص', 'عند غيركم', 'غيركم', 'المنافسين', 'فنادق تانيه', 'برا ارخص', 'بره ارخص', 'اماكن تانيه')) { objCompetitor(); return true; }
+    if (halls.length < 2 && W('هفكر', 'هنفكر', 'افكر', 'نفكر', 'هرجعلك', 'هرجعلكم', 'هرد عليك', 'هرد عليكم', 'لسه بفكر', 'مش متاكد', 'مش متاكده', 'هستشير', 'هتشاور', 'هنتشاور', 'هشوف واقولك', 'هبلغكم', 'بعدين', 'مش دلوقتي', 'لسه بدري', 'محتاج وقت')) { objThink(); return true; }
+    return false;
+  }
+
+  // ---- closing: every product answer ends with a next step ----
+  let lastClose = '';
+  function closeLine() {
+    if (EN()) {
+      if (!S.event && !S.hall && !S.count) return 'May I know <b>your occasion and guest count</b>? I will recommend the best option and calculate the full cost.';
+      if (!S.count) return 'How many <b>guests</b> are you expecting? I can calculate the full cost right away.';
+      if (!S.date) return 'Have you set <b>your event date</b>? We recommend securing it early, as dates are booked on a first-come basis once the deposit is paid.';
+      return 'Shall I prepare a <b>detailed quote</b> with add-ons, or book you a <b>viewing of the hall</b>?';
+    }
+    if (!S.event && !S.hall && !S.count) return 'يسعدني معرفة <b>نوع مناسبتكم وعدد المدعوين</b>، لأرشّح لكم الأنسب وأحسب التكلفة الكاملة.';
+    if (!S.count) return 'كم <b>عدد المدعوين</b> المتوقع؟ أحسب لكم التكلفة الكاملة فوراً.';
+    if (!S.date) return 'هل حددتم <b>موعد الحفل</b>؟ ننصح بتثبيته مبكراً، فالمواعيد تُحجز بأسبقية سداد مقدم الحجز.';
+    return 'هل أُعدّ لكم <b>عرض سعر تفصيلي</b> بالإضافات، أو نحجز لكم <b>موعداً لمعاينة القاعة</b>؟';
+  }
+  function afterSell(n0) {
+    if (FLOW || Q) return;
+    const kids = [...log.children].slice(n0).filter(x => x.classList.contains('dmb-b'));
+    const last = kids[kids.length - 1];
+    if (!last || last.classList.contains('dmb-q') || last.querySelector('.dmb-form')) return;
+    const txt = last.textContent;
+    if (/لا تخضع للتفاوض أو التخفيض/.test(txt)) {
+      const p = document.createElement('p'); p.className = 'dmb-close'; p.innerHTML = '✦ ويسعدنا مساعدتكم في الوصول إلى <b>أفضل قيمة</b> ضمن الأسعار المعلنة، باختيار اليوم والقاعة والمنيو الأنسب لعددكم.';
+      last.appendChild(p); chips([{ t: 'العروض وطرق التوفير', fn: offersAns }, { t: 'رشّحوا لي حسب ميزانيتي', fn: () => { bot('<p>اكتبوا الميزانية التقريبية وعدد المدعوين (مثال: ميزانيتي ٢٠٠ ألف لـ ٢٠٠ فرد).</p>'); chips([]); } }, ...ACT].slice(0, 6)); scroll(); return;
+    }
+    if (/شكراً لاستفساركم|العفو، يسعدنا|أهلاً وسهلاً|تم إلغاء|نتفهّم تماماً|خذوا وقتكم|نحترم حرصكم|ملخص طلبك|يُرجى اختيار|يُرجى تحديد|ما العدد المتوقع|ما نوع المناسبة|ما يوم الحفل|الاسم الكريم|التاريخ المطلوب|اكتبوا/.test(txt)) return;
+    if (last.querySelector('.dmb-close') || /هل تودّون|هل أُعدّ|أخبرونا بعدد|Would you like a|Tell me your guest count|Share your budget|Tell me the budget|How many guests are you|Thank you for your question|You are most welcome|Welcome to Dar|cancelled|take your time|We respect your|Please choose|Please type|Which hall|Which day|Your request|Viewing appointment|What is the occasion/.test(txt)) return;
+    let c = closeLine();
+    if (LEAD.name && Math.random() < 0.6) c = hon() + '، ' + c.replace(/^يسعدني/, 'يسعدني');
+    if (c === lastClose && kids.length && Math.random() < 0.5) return;
+    lastClose = c;
+    const p = document.createElement('p'); p.className = 'dmb-close'; p.innerHTML = '✦ ' + c;
+    const acts = last.querySelector('.dmb-acts');
+    acts ? last.insertBefore(p, acts) : last.appendChild(p);
+    const add = [];
+    if (S.count && !ACT.some(a => /عرض سعر|quote/i.test(a.t))) add.push({ t: tr('عرض سعر تفصيلي', 'Detailed quote'), fn: () => startQuote(quotePre(defaultScope() || 'akhenaten')) });
+    if (S.count && !ACT.some(a => /معاينة|viewing/i.test(a.t))) add.push({ t: tr('حجز موعد معاينة', 'Book a viewing'), fn: () => startVisit() });
+    if (!LEAD.done && !LEAD.skipped && !LSTEP && !ACT.some(a => /بياناتي|my details/i.test(a.t))) add.unshift({ t: tr('استكمال بياناتي', 'Complete my details'), fn: () => leadNext() });
+    if (add.length) chips([...ACT, ...add].slice(0, 7));
+    scroll();
+  }
+  { const st = document.createElement('style'); st.textContent = '.dmb-close{margin-top:10px;padding-top:9px;border-top:1px dashed var(--line);color:#2A3350;font-size:13.5px}.dmb-close b{color:var(--wine)}'; document.head.appendChild(st); }
+
+  /* ---------------- sales consultant layer ---------------- */
+  const SCSS = `
+.dmb-tag.top{background:linear-gradient(180deg,#7A2638,#5E1B2C);color:#F4E6C4}.dmb-tag{display:inline-block;margin-inline-start:6px;padding:1px 8px;border-radius:20px;background:linear-gradient(180deg,#F4E6C4,#E9D3A1);color:#5A4210;font:700 11px/1.6 var(--sans);font-style:normal;vertical-align:middle}
+.dmb-sg{border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px 12px;margin:8px 0}
+.dmb-sg>b{display:block;color:var(--goldD);font:700 14px/1.5 var(--serif);margin-bottom:4px}
+.dmb-sg ul{margin:0;padding-inline-start:18px}
+.dmb-sg li{margin:3px 0}
+.dmb-sg li span{color:#0E1628;font-weight:700;white-space:nowrap}
+.dmb-cta{margin-top:10px;padding:10px 12px;border-radius:12px;background:linear-gradient(180deg,#FBF4E2,#F5EBD2);border:1px solid var(--line);font-size:13.5px}
+.dmb-cta b{color:var(--wine)}
+`;
+  { const st = document.createElement('style'); st.textContent = SCSS; document.head.appendChild(st); }
+
+  // curated, data-backed suggestion themes per scope (patterns are matched against the real add-on names)
+  const SUG = {
+    wed: [
+      ['لدخلة لا تُنسى', ['زفه دمياطي', 'شو فاير كلاسيك', 'فاير ورك', 'هيفي فوج']],
+      ['لتوثيق كل لحظة', ['full day', 'برومو فيديو', 'media coverage', 'البوم 30 80']],
+      ['للمسة ديكور فاخرة', ['ترقيه الكوشه', 'ديكور كات ووك', 'فوتو بوز', 'welcome board']],
+      ['لراحة العروسين', ['ديكور سويت العروسه', 'استلام مبكر', 'تاخير تسليم']],
+      ['لضيافة أرقى', ['عصير فريش', 'بوفيه مشروبات ساخن', 'تورته 5 دور', 'تشيز كيك']]
+    ],
+    katb: [
+      ['لمراسم عقد القران', ['منديل كتب الكتاب', 'صينيه شربات', 'ديكور جيست بوك']],
+      ['لتوثيق اللحظة', ['تصوير فوتوغرافي', 'مصوره فوتوغرافيه']],
+      ['لاستقبال مبهج', ['زفه دمياطي', 'فاير ورك']],
+      ['للعروس', ['ديكور سويت العروسه', ' سويت ']],
+      ['للضيافة', ['شربات', 'بوفيه مشروبات ساخن', 'جاتوه سواريه', 'تورته 3 دور']]
+    ],
+    birthday: [
+      ['لأجواء احتفالية', ['ديكور بالونات', 'ارك بالون', 'دي جي', 'ليزر']],
+      ['للتورتة', ['تورته 30 40', 'اضافه صوره']],
+      ['للتوثيق', ['تصوير فوتوغرافي', 'تصوير فيديو كاميرا مونو']],
+      ['للضيافة', ['طبق سناكس', 'عصير فريش', 'ميني بيتزا']]
+    ],
+    special: [
+      ['لتجهيز احترافي', ['ساوند سيستم', 'مايك', 'بوديوم', 'شاشات عرض ثابته']],
+      ['للتوثيق', ['تصوير فوتوغرافي', 'تصوير فيديو 2 كاميرا']],
+      ['للمسة أنيقة', ['سنتربيس', 'صالون قاعه']]
+    ],
+    photo: [
+      ['لجلسة متكاملة', ['full day', 'ديكور سويت العروسه', 'مصوره فوتوغرافيه']]
+    ],
+    aqiqa: []
+  };
+  const sugKey = sc => ['akhenaten', 'isis', 'lotus'].includes(sc) ? 'wed' : ['lotusk', 'mawadda'].includes(sc) ? 'katb' : sc;
+  // most requested by clients (per the events department): fire show, zaffa, extra suite/room, photography, performances
+  const TOPF = [['شو فاير'], ['زفه دمياطي'], ['سويت اضافي', 'سويت لمده'], ['غرفه اضافيه', 'غرفه لمده'], ['تصوير فوتوغرافي'], ['شو تورته']];
+  const isTop = a => TOPF.some(f => f.some(p => norm(a.n).includes(p)));
+  const topTag = () => `<em class="dmb-tag top">${tr('الأكثر طلباً', 'Most requested')}</em>`;
+  const TOPTITLE = 'الأكثر طلباً من عملائنا';
+  function topPick(sc) { const L = K.addons.filter(a => a.s === sc); return TOPF.map(f => L.find(a => f.some(p => norm(a.n).includes(p)))).filter(Boolean); }
+  function sugItems(sc) {
+    const L = K.addons.filter(a => a.s === sc), used = new Set();
+    const top = [...new Set(TOPF.flatMap(f => L.filter(a => f.some(p => norm(a.n).includes(p)))))]; top.forEach(a => used.add(a));
+    return (top.length ? [[TOPTITLE, top]] : []).concat((SUG[sugKey(sc)] || []).map(([why, pats]) => [why, pats.map(p => { const pp = p.startsWith(' ') ? norm(p) : norm(p).trim(); return L.find(a => !used.has(a) && norm(a.n).includes(pp)); }).filter(a => a && used.add(a))]).filter(x => x[1].length));
+  }
+  const sugSet = sc => new Set(sugItems(sc).flatMap(x => x[1]).map(a => a.s + '|' + a.n));
+  const pShort = a => EN() ? ar(a.p).replace(/^EGP ([\d,]+) – [\d,]+$/, 'from EGP $1') : ar(a.p).replace(/^من (.+?) إلى .+$/, 'من $1');
+  const nameShort = a => EN() ? esc(txEN(a.n).replace(/\s*\((?:placemats|served|one drink|preparations)[^)]*\)/i, '')) : A(a.n.replace(/\s*\((?:بلاس|يُقدَّم|تُقدَّم|مشروب واحد)[^)]*\)/, ''));
+
+  function defaultScope(ev, n) {
+    const sc = ctxScope(); if (sc) return sc;
+    ev = ev || S.event;
+    if (ev === 'katb') return 'mawadda';
+    if (!n && ['wedding', 'engagement'].includes(ev)) return 'akhenaten';
+    if (['birthday', 'special', 'photo', 'aqiqa'].includes(ev)) return ev;
+    n = n || S.count;
+    if (n) return ['lotus', 'isis', 'akhenaten'].find(h => n <= K.halls[h].max) || 'akhenaten';
+    return null;
+  }
+  // inline one-line upsell used under estimates / profiles
+  function ctaLine(sc) {
+    const top = topPick(sc).slice(0, 4);
+    const it = top.length >= 2 ? top : sugItems(sc).map(x => x[1][0]).filter(Boolean).slice(0, 3);
+    if (!it.length) return '';
+    return `<div class="dmb-cta">✦ <b>${top.length >= 2 ? tr('الأكثر طلباً لدى عملائنا:', 'Most requested by our clients:') : tr('لإكمال حفلكم نقترح:', 'To complete your event we suggest:')}</b> ${it.map(a => `${nameShort(a)} (${pShort(a)})`).join(tr('، ', ', '))}.</div>`;
+  }
+  function suggestAns(sc, opt) {
+    opt = opt || {};
+    sc = sc || defaultScope();
+    if (!sc) {
+      bot('<p>يسعدنا اقتراح ما يُكمل مناسبتكم. ما نوع المناسبة؟</p>');
+      chips([['wedding', 'akhenaten'], ['katb', 'mawadda'], ['birthday', 'birthday'], ['special', 'special'], ['photo', 'photo']].map(([e, s]) => ({ t: EVNAME[e], fn: () => { S.event = e; suggestAns(s); } })));
+      return;
+    }
+    const G = sugItems(sc);
+    if (!G.length) { allAddons(sc); return; }
+    const isWed = sugKey(sc) === 'wed';
+    bot(`<p class="dmb-h">مقترحاتنا – ${K.scopes[sc]}</p><p>${opt.lead || 'اخترنا لكم من قائمة خدمات الدار ما يُضفي على مناسبتكم تميّزاً، مع أسعاره المعتمدة:'}</p>${G.map(([why, L]) => `<div class="dmb-sg"><b>${why}</b><ul>${L.map(a => `<li>${A(a.n)} – <span>${ar(a.p)}</span></li>`).join('')}</ul></div>`).join('')}${isWed ? `<p class="dmb-note">الأسعار الواردة خاصة بـ${K.scopes[sc]}، وأغلبها موحّد في قاعات الأفراح الثلاث.</p>` : ''}<div class="dmb-cta">هل تودّون أن نُعدّ لكم <b>عرض سعر تفصيلي</b> يجمع الباكدج مع ما يعجبكم من هذه الإضافات؟</div>${src(K.docOf[sc] || sc)}`,
+      [{ t: 'عرض سعر تفصيلي بالإضافات', cls: 'pri', fn: () => startQuote(quotePre(sc)) }]);
+    const others = isWed ? ['akhenaten', 'isis', 'lotus'].filter(h => h !== sc).map(h => ({ t: 'مقترحات ' + HALLNAME[h], fn: () => { S.hall = h; suggestAns(h); } })) : [];
+    chips([{ t: 'كل الإضافات وأسعارها', fn: () => allAddons(sc) }, ...others, { t: 'حجز موعد معاينة', fn: () => startVisit() }]);
+  }
+  function quotePre(sc) {
+    const pre = {};
+    if (['akhenaten', 'isis', 'lotus'].includes(sc)) { pre.ev = ['wedding', 'engagement'].includes(S.event) ? S.event : 'wedding'; pre.hall = sc; }
+    else if (sc === 'lotusk') { pre.ev = 'katb'; pre.hall = 'lotus'; }
+    else if (sc === 'mawadda') { pre.ev = 'katb'; pre.hall = 'mawadda'; }
+    else pre.ev = sc;
+    if (S.count) pre.n = S.count;
+    if (S.day && pre.hall && K.halls[pre.hall]) pre.day = S.day;
+    return pre;
+  }
+
+  // ---- set menu vs open buffet, and "what is in the set menu" ----
+  const secItems = (m, re) => m.c.filter(s => re.test(s.h)).flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1]));
+  const itemCount = m => m.c.reduce((x, s) => x + s.o.filter(o => o[0] === 'i').length, 0);
+  function menuTypesAns(focus) {
+    const hid = K.halls[S.hall] && S.hall !== 'lotus' ? S.hall : 'isis';
+    const H = K.halls[hid];
+    const sm = H.menus.filter(m => m.id.startsWith('sm')), ob = H.menus.filter(m => m.id.startsWith('ob'));
+    const pr = m => H.pk.type === 'wk' ? money(m.wd) : money(m.price);
+    const smRows = sm.map(m => `<tr><td><b>${A(m.name)}</b><br><small>${secItems(m, /الرئيسي/).map(A).join('، ')}</small></td><td class="n">${pr(m)}</td></tr>`).join('');
+    const obRows = ob.map(m => `<tr><td><b>${A(m.name)}</b><br><small>${AD(itemCount(m))} صنفاً، منها ${AD(secItems(m, /الساخن/).length)} أصناف ساخنة وركن ${A(secItems(m, /كارفن/)[0] || 'كارفن')}</small></td><td class="n">${pr(m)}</td></tr>`).join('');
+    const diff = ob.length ? ob[0][H.pk.type === 'wk' ? 'wd' : 'price'] - sm[0][H.pk.type === 'wk' ? 'wd' : 'price'] : 0;
+    const showSm = focus !== 'ob', showOb = focus !== 'sm';
+    bot(`<p class="dmb-h">${focus === 'sm' ? 'الست منيو' : focus === 'ob' ? 'الأوبن بوفيه' : 'الست منيو والأوبن بوفيه'}</p>
+${showSm ? `<div class="dmb-sg"><b>الست منيو (Set Menu)</b>وجبة متكاملة محددة الأصناف تُقدَّم لكل ضيف على ترابيزته: سلطات ومقبلات وطبق رئيسي وحلو ومشروبات. تمنح ضيوفكم خدمة منظمة وراقية، وتتدرج من (١) إلى (٥) بزيادة أصناف المقبلات والطبق الرئيسي.</div>` : ''}
+${showOb ? `<div class="dmb-sg"><b>الأوبن بوفيه (Open Buffet)</b>بوفيه مفتوح بتشكيلة أوسع يختار منها الضيوف بحرية: سلطات ومقبلات شرقية وفواتح شهية باردة ومخبوزات وبوفيه ساخن وركن كارفن وحلويات ومشروبات. مثالي لمن يفضّل التنوع والأجواء الاحتفالية المفتوحة.</div>` : ''}
+${showSm ? `<p><b>الطبق الرئيسي في كل ست منيو</b> – ${H.name}:</p><table class="dmb-t">${smRows}</table>` : ''}
+${showOb && ob.length ? `<p><b>الأوبن بوفيه</b> – ${H.name}:</p><table class="dmb-t">${obRows}</table>` : ''}
+${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">ينتقل بكم أوبن بوفيه (١) من ست منيو (١) بفارق ${money(diff)} على الباكدج في ${H.name}.</p>` : ''}
+<p class="dmb-note">الأصناف واحدة في قاعتي أخناتون وإيزيس (عدا اختلافات طفيفة في أوبن بوفيه ٢ و٣)، وقاعة اللوتس تقدّم هاي تي وست منيو (١ – ٣) دون أوبن بوفيه.</p>${src(hid)}`,
+      [{ t: 'عرض المنيو كاملاً', go: H.menu }]);
+    chips([{ t: 'أي منيو يناسبني؟', fn: () => bestMenuAns(hid) }, ...H.menus.slice(0, 2).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.slice(0, 2), n: +m.id.slice(2) || 0 }) })), ...(ob.length ? [{ t: 'محتوى أوبن بوفيه (٣)', fn: () => menuDetail({ k: 'ob', n: 3 }) }] : []), { t: 'عرض سعر تفصيلي', fn: () => startQuote(quotePre(hid)) }]);
+  }
+
+  // ---- which menu suits me: objective guide built from the data ----
+  function bestMenuAns(hid) {
+    hid = hid || (K.halls[S.hall] ? S.hall : null);
+    if (!hid) { bot('<p>يسعدنا مساعدتكم في اختيار المنيو الأنسب. في أي قاعة؟</p>'); chips(['akhenaten', 'isis', 'lotus'].map(h => ({ t: HALLNAME[h], fn: () => { S.hall = h; bestMenuAns(h); } }))); return; }
+    S.hall = hid;
+    const H = K.halls[hid], pr = m => H.pk.type === 'wk' ? m.wd : m.price;
+    const rows = H.menus.map(m => `<tr><td><b>${A(m.name)}</b><br><small>${AD(itemCount(m))} صنفاً · الرئيسي: ${secItems(m, /الرئيسي|الساخن/).slice(0, 4).map(A).join('، ')}${secItems(m, /الرئيسي|الساخن/).length > 4 ? '…' : ''}</small></td><td class="n">${money(pr(m))}</td></tr>`).join('');
+    const sm = H.menus.filter(m => m.id.startsWith('sm')), ob = H.menus.filter(m => m.id.startsWith('ob'));
+    const richSm = sm.slice().sort((a, b) => secItems(b, /الرئيسي/).length - secItems(a, /الرئيسي/).length || pr(a) - pr(b))[0];
+    const top = H.menus.slice().sort((a, b) => itemCount(b) - itemCount(a) || pr(b) - pr(a))[0];
+    const L = [`<li><b>الأنسب للميزانية:</b> ${A(H.menus[0].name)} بـ${money(pr(H.menus[0]))}، بأصناف متكاملة وتكلفة اقتصادية.</li>`];
+    if (richSm && richSm !== H.menus[0]) L.push(`<li><b>لطبق رئيسي أغنى:</b> ${A(richSm.name)} – ${secItems(richSm, /الرئيسي/).map(A).join('، ')}.</li>`);
+    if (ob.length) L.push(`<li><b>للتنوع والأجواء المفتوحة:</b> الأوبن بوفيه، ويضم ${A(top.name)} أكبر تشكيلة (${AD(itemCount(top))} صنفاً).</li>`);
+    else L.push(`<li><b>لحفل خفيف بأسلوب الضيافة:</b> ${A((H.menus.find(m => m.id === 'ht') || H.menus[0]).name)}.</li>`);
+    bot(`<p class="dmb-h">أي منيو يناسبكم في ${H.name}؟</p><p>كل منيوهاتنا متكاملة، والاختيار يعتمد على أولويتكم:</p><ul>${L.join('')}</ul><table class="dmb-t"><tr><th>المنيو</th><th>الباكدج${H.pk.type === 'wk' ? ' (منتصف الأسبوع)' : ''}</th></tr>${rows}</table><div class="dmb-cta">أخبرونا بعدد المدعوين، ونحسب لكم التكلفة الكاملة لأي منيو مع الإضافات التي تختارونها.</div>${src(hid)}`, [{ t: 'عرض سعر تفصيلي', cls: 'pri', fn: () => startQuote(quotePre(hid)) }]);
+    const sms = H.menus.filter(m => m.id.startsWith('sm'));
+    chips([{ t: 'الفرق بين الست منيو والأوبن بوفيه', fn: () => menuTypesAns() }, ...(sms.length >= 2 ? [{ t: `مقارنة ${sms[0].name} و${sms[sms.length - 1].name}`, fn: () => compareMenus('sm', 1, sms.length) }] : []), ...H.menus.slice(0, 2).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.slice(0, 2), n: +m.id.slice(2) || 0 }) }))]);
+  }
+
+  // ---- difference between two add-on items (e.g. HALF DAY vs FULL DAY) ----
+  const DFILL = new Set('ايه ايش شو ما هو هي الفرق فرق بين قارن قارنلي مقارنه احسن افضل انهي اختار انا عاوز عايز اعرف يعني في ف كام السعر سعر هل اللي ده دي دا وبين من عن'.split(' '));
+  const stripAl = w => w.length > 3 && w.startsWith('ال') ? w.slice(2) : w;
+  function itemMatch(words, pool) {
+    if (!words.length) return null;
+    let best = null, bs = 0;
+    pool.forEach(a => {
+      const nm = norm(a.n);
+      const hit = words.filter(w => nm.includes(' ' + w) || nm.includes(' ال' + w) || (/^\d+$/.test(w) && nm.includes(' ' + w + ' '))).length;
+      const sc = hit / words.length - nm.length / 10000;
+      if (hit >= Math.min(2, words.length) && sc > bs) { bs = sc; best = a; }
+    });
+    return bs >= 0.74 ? best : null;
+  }
+  function diffItems(t) {
+    let body = t.replace(/(\d) ?[x×*] ?(\d)/g, '$1 $2').replace(/[?؟]/g, ' ').trim().split(' ').filter(w => !DFILL.has(w)).join(' ');
+    let parts = body.split(/ (?:ولا|او|vs) | و /).map(s => s.trim()).filter(Boolean);
+    const all = K.addons;
+    if (parts.length < 2) {
+      const ws = body.split(' ');
+      const i = ws.findIndex((w, j) => j > 0 && w.length > 3 && w[0] === 'و' && all.some(a => norm(a.n).includes(' ' + w.slice(1))) && !all.some(a => norm(a.n).includes(' ' + w)));
+      if (i > 0) parts = [ws.slice(0, i).join(' '), [ws[i].slice(1), ...ws.slice(i + 1)].join(' ')];
+    }
+    if (parts.length !== 2) return false;
+    const w1 = parts[0].split(' ').map(stripAl);
+    let w2 = parts[1].split(' ').map(stripAl);
+    if (w2.length === 1 && /^\d+$/.test(w2[0]) && w1.some(w => /^\d+$/.test(w))) w2 = w1.map(w => /^\d+$/.test(w) ? w2[0] : w).filter(w => !/^افراد|فرد$/.test(w));
+    else if (w2.length < w1.length) w2 = [...w1.slice(0, w1.length - w2.length), ...w2];
+    const sc = ctxScope();
+    const scopes = sc ? [sc, ...new Set(all.map(a => a.s))] : [...new Set(all.map(a => a.s))];
+    for (const s of scopes) {
+      const pool = all.filter(a => a.s === s);
+      const a = itemMatch(w1, pool), b = itemMatch(w2, pool);
+      if (a && b && a !== b) { diffShow(a, b); return true; }
+    }
+    return false;
+  }
+  function diffShow(a, b) {
+    const val = x => { const n = (x.p.match(/\d[\d,]*/) || ['0'])[0]; return +n.replace(/,/g, ''); };
+    const inner = x => { const m = x.n.match(/\(([^)]*)\)/); return m ? m[1].split(/\s*[+\-]\s*/).map(s => s.trim()).filter(Boolean) : []; };
+    const ia = inner(a), ib = inner(b);
+    const plusB = ib.filter(x => !ia.some(y => norm(y) === norm(x))), plusA = ia.filter(x => !ib.some(y => norm(y) === norm(x)));
+    const [lo, hi] = val(a) <= val(b) ? [a, b] : [b, a];
+    const gap = val(hi) - val(lo);
+    const extra = hi === b ? plusB : plusA;
+    const sameBase = a.n.replace(/\s*\([^)]*\)/, '') === b.n.replace(/\s*\([^)]*\)/, '');
+    const base = x => A(sameBase ? x.n : x.n.replace(/\s*\([^)]*\)/, ''));
+    if (EN()) {
+      const nA = txEN(a.n), nB = txEN(b.n);
+      const innE = x => { const m = x.match(/\(([^)]*)\)/); return m ? m[1].split(/\s*\+\s*|\s+-\s+/).map(z => z.trim()).filter(Boolean) : []; };
+      const eA = innE(nA), eB = innE(nB);
+      const plus = (hi === b ? eB.filter(x => !eA.includes(x)) : eA.filter(x => !eB.includes(x)));
+      const bs = x => esc(sameBase ? txEN(x.n) : txEN(x.n).replace(/\s*\([^)]*\)/, ''));
+      bot(`<p class="dmb-h">${bs(a)} vs ${bs(b)}</p><table class="dmb-t"><tr><th>Item</th><th>Price</th></tr><tr><td><b>${A(a.n)}</b></td><td class="n">${ar(a.p)}</td></tr><tr><td><b>${A(b.n)}</b></td><td class="n">${ar(b.p)}</td></tr></table>${sameBase || (eA.length && eB.length && !eA.some(x => eB.includes(x))) ? `<p><b>${A(hi.n)}</b> versus ${A(lo.n)}${gap ? `, a difference of <b>${money(gap)}</b>` : ''}.</p>` : plus.length ? `<p><b>${bs(hi)}</b> adds over ${bs(lo)}: ${plus.map(esc).join(', ')}${gap ? `, for <b>${money(gap)}</b> more` : ''}.</p>` : gap ? `<p>The price difference is <b>${money(gap)}</b>; our events team will gladly explain each option and show you samples during your viewing.</p>` : '<p>The price is the same; the choice depends on your taste and the style of your event.</p>'}${src(K.docOf[a.s] || a.s, a.pg)}`);
+      chips([{ t: 'Add it to a detailed quote', fn: () => startQuote(quotePre(a.s)) }, { t: 'Suggestions for your event', fn: () => enSuggest(a.s) }]);
+      return;
+    }
+    if (false) {
+      bot(`<p class="dmb-h">${base(a)} vs ${base(b)}</p><table class="dmb-t"><tr><th>Item</th><th>Price</th></tr><tr><td><b>${A(a.n)}</b></td><td class="n">${ar(a.p)}</td></tr><tr><td><b>${A(b.n)}</b></td><td class="n">${ar(b.p)}</td></tr></table>${sameBase || (ia.length && ib.length && !ia.some(x => ib.some(y => norm(y) === norm(x)))) ? `<p><b>${A(hi.n)}</b> versus ${A(lo.n)}${gap ? `, a difference of <b>${money(gap)}</b>` : ''}.</p>` : extra.length ? `<p><b>${base(hi)}</b> adds over ${base(lo)}: ${extra.map(A).join(', ')}${gap ? `, for <b>${money(gap)}</b> more` : ''}.</p>` : gap ? `<p>The price difference is <b>${money(gap)}</b>; our events team will gladly explain each option and show you samples during your viewing.</p>` : '<p>The price is the same; the choice depends on your taste and the style of your event.</p>'}${src(K.docOf[a.s] || a.s, a.pg)}`);
+      chips([{ t: 'Add it to a detailed quote', fn: () => startQuote(quotePre(a.s)) }, { t: 'All add-ons in this category', fn: () => enAddons(a.s, new RegExp(a.g.replace(/[()]/g, '.'))) }, { t: 'Suggestions for your event', fn: () => enSuggest(a.s) }]);
+      return;
+    }
+    bot(`<p class="dmb-h">الفرق بين ${base(a)} و${base(b)}</p><table class="dmb-t"><tr><th>البند</th><th>السعر</th></tr><tr><td><b>${A(a.n)}</b></td><td class="n">${ar(a.p)}</td></tr><tr><td><b>${A(b.n)}</b></td><td class="n">${ar(b.p)}</td></tr></table>${sameBase || (ia.length && ib.length && !ia.some(x => ib.some(y => norm(y) === norm(x)))) ? `<p><b>${A(hi.n)}</b> مقابل ${A(lo.n)}${gap ? `، بفارق <b>${money(gap)}</b>` : ''}.</p>` : extra.length ? `<p>يضيف <b>${base(hi)}</b> عن ${base(lo)}: ${extra.map(A).join('، ')}${gap ? `، بفارق <b>${money(gap)}</b>` : ''}.</p>` : gap ? `<p>الفارق في السعر <b>${money(gap)}</b>، ويسعد فريق الحفلات شرح تفاصيل كل اختيار ومشاهدة نماذج منه خلال المعاينة.</p>` : '<p>السعر واحد، والاختيار حسب ذوقكم وطبيعة الحفل.</p>'}${extra.length && /تصوير|فيديو|برومو/.test(a.n) ? '<p class="dmb-note">نصيحتنا: إذا كانت تحضيرات العروس ولحظة الـ First Look مهمة لكم، فالاختيار الأشمل يوثّق اليوم كاملاً.</p>' : ''}${src(K.docOf[a.s] || a.s, a.pg)}`);
+    chips([{ t: 'أضفها في عرض سعر تفصيلي', fn: () => startQuote(quotePre(a.s)) }, { t: 'كل إضافات ' + a.g.replace(/\s*\(.*\)/, ''), fn: () => groupShow(a.s, a.g) }, { t: 'مقترحات لحفلكم', fn: () => suggestAns(a.s) }]);
+  }
+
+  // ---- browse an add-on category (desserts, drinks, photography, ...) ----
+  const GROUPS = [
+    [['حلويات', 'الحلويات', 'حلو', 'الحلو', 'تورت', 'تورته', 'التورت', 'تورتات', 'ديزرت'], /حلويات|التورت|حلو/],
+    [['مشروبات', 'المشروبات', 'مشروب', 'عصاير', 'عصير'], /المشروبات|البوفيه \(/],
+    [['تصوير', 'التصوير', 'فوتوغرافي', 'فيديو'], /التصوير/],
+    [['شاشات', 'الشاشات', 'شاشه'], /الشاشات|الصوت والشاشات/],
+    [['مؤثرات', 'المؤثرات', 'شو', 'شوهات', 'فقرات', 'الفقرات'], /العروض|الزفة|المؤثرات/],
+    [['سويت', 'سويتات', 'الغرف', 'غرف', 'جناح'], /السويت/],
+    [['اكل زياده', 'سرفيس', 'السرفيس', 'اطباق اضافيه', 'اكل اضافي', 'سفنديش', 'مرايات', 'فواتح'], /السرفيس|السفنديش|المرايات|فواتح|الضيافة|المخبوزات|السندوتشات|سناكس/],
+    [['سندوتشات', 'ساندوتشات', 'سناكس', 'مخبوزات'], /السندوتشات|سناكس|المخبوزات/],
+    [['بالونات', 'بالون'], /البالونات/],
+    [['تجهيزات', 'التجهيزات', 'معدات', 'صوت'], /التجهيزات|الصوت/],
+    [['ضيافه', 'الضيافه'], /الضيافة|المخبوزات|المشروبات/]
+  ];
+  function groupIntent(t, W) {
+    if (!W('اضيف', 'نضيف', 'اضافه', 'اضافات', 'الاضافات', 'ممكن', 'عندكم', 'متاح', 'متاحه', 'انواع', 'اختيارات', 'خيارات', 'اسعار', 'ايه', 'ايش', 'قائمه', 'كل')) return null;
+    for (const [ws, re] of GROUPS) if (W(...ws)) return re;
+    return null;
+  }
+  function groupShow(sc, gName, re) {
+    sc = sc || ctxScope() || defaultScope();
+    if (!sc) { bot('<p>يُرجى اختيار القاعة أو المناسبة لعرض البنود وأسعارها:</p>'); chips(['akhenaten', 'isis', 'lotus', 'mawadda', 'birthday', 'special'].map(s => ({ t: K.scopes[s], fn: () => { groupShow(s, gName, re); } }))); return; }
+    const L = K.addons.filter(a => a.s === sc && (gName ? a.g === gName : re.test(a.g)));
+    if (!L.length) { suggestAns(sc); return; }
+    const sg = sugSet(sc), groups = [];
+    L.forEach(a => { let g = groups.find(x => x.g === a.g); if (!g) groups.push(g = { g: a.g, L: [] }); g.L.push(a); });
+    bot(`<p class="dmb-h">${groups.map(g => A(g.g)).join(' · ')} – ${K.scopes[sc]}</p>${groups.map(g => `<table class="dmb-t">${groups.length > 1 ? `<tr><th colspan="2">${A(g.g)}</th></tr>` : ''}${g.L.map(a => `<tr><td>${A(a.n)}${isTop(a) ? topTag() : sg.has(a.s + '|' + a.n) ? '<em class="dmb-tag">مقترح</em>' : ''}</td><td class="n">${ar(a.p)}</td></tr>`).join('')}</table>`).join('')}<div class="dmb-cta">يمكنكم اختيار ما يناسبكم من هذه البنود وإضافته مباشرةً في <b>عرض سعر تفصيلي</b>.</div>${src(K.docOf[sc] || sc, L[0].pg)}`, [{ t: 'عرض سعر تفصيلي', cls: 'pri', fn: () => startQuote(quotePre(sc)) }]);
+    chips([{ t: 'مقترحات لحفلكم', fn: () => suggestAns(sc) }, { t: 'كل الإضافات وأسعارها', fn: () => allAddons(sc) }]);
+  }
+
+  // ---- why Dar El-Marasem ----
+  function whyUs() {
+    const ak = K.halls.akhenaten, inc = ak.inc.flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1]));
+    bot(`<p class="dmb-h">لماذا دار المراسم؟</p><div class="dmb-sg"><b>موقع متميز</b>${A(ADDRESS)}، في قلب القاهرة.</div><div class="dmb-sg"><b>جراج داخلي وخدمة فاليه</b>${PARKING}، لراحة ضيوفكم من لحظة الوصول.</div><div class="dmb-sg"><b>مرافق متكاملة في مكان واحد</b>تضم الدار فندقاً، ومطعمي الفيروز وروزيتا، وكوفي شوب، وجيم، إلى جانب أجنحة مجهّزة لتحضيرات العروسين.</div><div class="dmb-sg"><b>قاعات بطابع ملكي فريد</b><ul><li><b>أخناتون</b>: ${A(K.desc.akhenaten.desc)}</li><li><b>إيزيس</b>: ${A(K.desc.isis.desc)}</li><li><b>اللوتس</b>: ${A(K.desc.lotus.desc)}</li></ul></div><div class="dmb-sg"><b>باكدجات متكاملة</b>في قاعة أخناتون مثلاً يشمل الباكدج: ${inc.slice(0, 12).map(A).join('، ')}، إلى جانب الوجبات.</div><div class="dmb-sg"><b>لكل مناسبة مكانها</b>أفراح وخطوبة، وعقد قران بقاعة المودة والرحمة، وأعياد ميلاد بالروف توب والقاعة الزجاجية، ومؤتمرات ومناسبات خاصة، وفوتو سيشن.</div><div class="dmb-sg"><b>أسعار واضحة ومعلنة</b>كل الأسعار منشورة بالمنيو، ويمكنكم الحصول على عرض سعر تفصيلي فوري هنا قبل زيارتكم.</div><div class="dmb-cta">نتشرف بزيارتكم لمعاينة القاعات يومياً من ١٠ صباحاً حتى ١٠ مساءً.</div>`, [{ t: 'حجز موعد معاينة', cls: 'pri', fn: () => startVisit() }]);
+    chips([{ t: 'مميزات القاعات', fn: hallsFeatures }, { t: 'عرض سعر تفصيلي', fn: () => startQuote() }, { t: 'ترشيح قاعة مناسبة', fn: () => startRec() }, { t: 'انتظار السيارات', fn: parkingAns }]);
+  }
+
+  // ---- offers & ways to save (from published prices only) ----
+  function offersAns() {
+    const ak = K.halls.akhenaten, is = K.halls.isis, lo = K.halls.lotus;
+    bot(`<p class="dmb-h">العروض وطرق التوفير</p><p>أسعار القاعات والباكدجات والإضافات المعلنة بقوائم الدار أسعار نهائية لا تخضع للتخفيض، ويمكنكم الحصول على أفضل قيمة لحفلكم من خلال الاختيارات التالية:</p><div class="dmb-sg"><b>وفّروا باختيار اليوم المناسب</b><ul><li>في قاعة أخناتون يبدأ باكدج منتصف الأسبوع من ${money(ak.menus[0].wd)} (${AD(ak.pk.wd.n)} فرد) مقابل ${money(ak.menus[0].we)} لباكدج نهاية الأسبوع (${AD(ak.pk.we.n)} فرد).</li><li>في قاعتي إيزيس واللوتس توفّرون رسوم نهاية الأسبوع (${money(is.pk.fee)} و${money(lo.pk.fee)}) بإقامة الحفل من الأحد إلى الأربعاء.</li></ul></div><div class="dmb-sg"><b>اختاروا القاعة على قدر العدد</b>الباكدج محسوب على حد أدنى من الأفراد، فاختيار القاعة المناسبة للعدد يوفّر عليكم. ابدأ من ${money(lo.menus[0].price)} في قاعة اللوتس لـ ${AD(lo.pk.n)} فرد.</div><div class="dmb-sg"><b>وجبات إضافية بسعر متدرج</b>في أخناتون وإيزيس يقل سعر الوجبة الإضافية كلما زاد العدد (أول ٥٠، ثم ٥١ – ١٠٠، ثم ما زاد).</div>`, [{ t: 'عرض سعر تفصيلي', cls: 'pri', fn: () => startQuote() }]);
+    chips([{ t: 'العروض الفنية (شو فاير – زفة)', fn: () => groupShow(defaultScope() || 'akhenaten', null, /العروض|الزفة/) }, { t: 'ترشيح قاعة حسب العدد', fn: () => startRec() }, { t: 'عرض سعر تفصيلي', fn: () => startQuote() }]);
+  }
+
+  // ---- weekday vs weekend ----
+  function weekDiff(hid) {
+    hid = K.halls[hid] ? hid : (K.halls[S.hall] ? S.hall : null);
+    if (!hid) { bot('<p>في قاعة أخناتون يوجد باكدج مستقل لكل من منتصف الأسبوع ونهايته، وفي قاعتي إيزيس واللوتس تُضاف رسوم ثابتة لأيام الخميس والجمعة والسبت والعطلات. أي قاعة تهمكم؟</p>'); chips(['akhenaten', 'isis', 'lotus'].map(h => ({ t: HALLNAME[h], fn: () => weekDiff(h) }))); return; }
+    S.hall = hid; const H = K.halls[hid];
+    if (H.pk.type === 'wk') {
+      const rows = H.menus.map(m => `<tr><td>${A(m.name)}</td><td class="n">${money(m.wd)}</td><td class="n">${money(m.we)}</td></tr>`).join('');
+      bot(`<p class="dmb-h">منتصف الأسبوع ونهايته – ${H.name}</p><ul><li><b>منتصف الأسبوع</b> (${A(H.pk.wd.days)}): الباكدج لـ <b>${AD(H.pk.wd.n)} فرد</b>.</li><li><b>نهاية الأسبوع</b> (${A(H.pk.we.days)}): الباكدج لـ <b>${AD(H.pk.we.n)} فرد</b>.</li></ul><table class="dmb-t"><tr><th>المنيو</th><th>منتصف الأسبوع</th><th>نهاية الأسبوع</th></tr>${rows}</table><p class="dmb-note">باكدج نهاية الأسبوع يشمل ${AD(H.pk.we.n - H.pk.wd.n)} فرداً أكثر، فإذا كان عددكم ${AD(H.pk.wd.n)} فرداً أو أقل فمنتصف الأسبوع هو الاختيار الأوفر.</p>${src(hid, '٣ – ٤')}`);
+    } else {
+      bot(`<p class="dmb-h">منتصف الأسبوع ونهايته – ${H.name}</p><p>الباكدج واحد طوال الأسبوع لعدد ${AD(H.pk.n)} فرد، ويُضاف <b>${money(H.pk.fee)}</b> فقط للحفلات أيام الخميس والجمعة والسبت والأعياد والعطلات الرسمية.</p>${src(hid, 3)}`);
+    }
+    chips([{ t: 'احسب التكلفة لعدد معين', fn: () => askCount() }, { t: 'عرض سعر تفصيلي', fn: () => startQuote(quotePre(hid)) }]);
+  }
+
+  // ---- katb: Mawadda vs Lotus side by side ----
+  function katbCompare() {
+    const m = K.katb.mawadda, l = K.katb.lotus;
+    const inc = k => k.c.flatMap(x => x.o.filter(o => o[0] === 'i').map(o => o[1])).filter(x => !/^من \d|^يوم|^الساعه/.test(norm(x).trim()));
+    const im = inc(m), il = inc(l);
+    const onlyL = il.filter(x => !im.some(y => norm(y) === norm(x)) && !/^حجز القاعة|كراسي/.test(x));
+    bot(`<p class="dmb-h">عقد القران: قاعة المودة والرحمة أم قاعة اللوتس؟</p><table class="dmb-t"><tr><th></th><th>المودة والرحمة</th><th>اللوتس</th></tr><tr><td><b>الباكدج</b></td><td class="n">${money(m.price)}<br><small>${AD(m.n)} فرد</small></td><td class="n">${money(l.price)}<br><small>${AD(l.n)} فرد</small></td></tr><tr><td><b>الفرد الإضافي</b></td><td class="n">${money(m.extra)}</td><td class="n">${money(l.extra)}</td></tr><tr><td><b>السعة</b></td><td>${AD(m.min)} – ${AD(m.max)} فرد</td><td>حتى ${AD(K.halls.lotus.max)} فرد</td></tr><tr><td><b>المدة</b></td><td>${m.dur}</td><td>${l.dur}</td></tr><tr><td><b>المواعيد</b></td><td><small>${m.slots.join('<br>')}</small></td><td><small>${l.slots.join('<br>')}</small></td></tr></table>${onlyL.length ? `<p>يتميّز باكدج <b>اللوتس</b> بأنه يشمل: ${onlyL.map(A).join('، ')}، مقابل فارق ${money(l.price - m.price)}.</p>` : ''}<p class="dmb-note">نصيحتنا: <b>المودة والرحمة</b> الاختيار الأوفر لعقد قران حتى ${AD(m.max)} فرد، و<b>اللوتس</b> لمن يرغب في باكدج أشمل أو عدد أكبر.</p>${src('mawadda', 3)}`);
+    chips([{ t: 'مقترحات لعقد القران', fn: () => suggestAns('mawadda') }, { t: 'عرض سعر تفصيلي', fn: () => startQuote({ ev: 'katb' }) }, { t: 'مواعيد عقد القران', fn: katbTimes }]);
+  }
+  // ---- generic side-by-side for two menus of different types (e.g. high tea vs set menu) ----
+  function cmpMenus(m1, m2, hid) {
+    const H = K.halls[hid], pr = m => H.pk.type === 'wk' ? money(m.wd) : money(m.price);
+    const heads = [...new Set([...m1.c, ...m2.c].map(x => x.h).filter(Boolean))];
+    const L = (m, h) => { const x = m.c.find(y => y.h === h); return x ? x.o.filter(o => o[0] === 'i').map(o => A(o[1])).join('، ') : '—'; };
+    bot(`<p class="dmb-h">مقارنة: ${A(m1.name)} و${A(m2.name)} – ${H.name}</p><table class="dmb-t"><tr><th></th><th>${A(m1.name)}</th><th>${A(m2.name)}</th></tr><tr><td>السعر</td><td class="n">${pr(m1)}</td><td class="n">${pr(m2)}</td></tr><tr><td>الوجبة الإضافية</td><td class="n">${m1.extra ? money(m1.extra) : '—'}</td><td class="n">${m2.extra ? money(m2.extra) : '—'}</td></tr>${heads.map(h => `<tr><td><b>${A(h)}</b></td><td><small>${L(m1, h)}</small></td><td><small>${L(m2, h)}</small></td></tr>`).join('')}</table>${m1.id === 'ht' ? `<p class="dmb-note">الهاي تي ضيافة خفيفة أنيقة من المخبوزات والسواريه والحلو، بينما الست منيو وجبة عشاء متكاملة بطبق رئيسي.</p>` : ''}${src(hid, m1.pg + ' و' + m2.pg)}`);
+    chips([{ t: 'عرض سعر تفصيلي', fn: () => startQuote(quotePre(hid)) }, { t: 'أي منيو يناسبني؟', fn: () => bestMenuAns(hid) }]);
+  }
+  // ---- sales advice under a hall comparison ----
+  function hallAdvice(a, b) {
+    const H1 = K.halls[a], H2 = K.halls[b];
+    const n = S.count;
+    const cheap = (H, n) => Math.min(...H.menus.map(m => estTotal(H, m, n, 'wd')));
+    if (n) {
+      const ok = [a, b].filter(h => n <= K.halls[h].max && n >= 1);
+      if (!ok.length) return '';
+      if (ok.length === 1 && EN()) return `<div class="dmb-cta">For ${n} guests, the right choice is <b>${HALLNAME[ok[0]]}</b> (from ${money(cheap(K.halls[ok[0]], n))} on a weekday).</div>`;
+      if (ok.length === 1) return `<div class="dmb-cta">لعدد ${AD(n)} فرد، الأنسب <b>${HALLNAME[ok[0]]}</b> (من ${money(cheap(K.halls[ok[0]], n))} منتصف الأسبوع).</div>`;
+      const v = ok.map(h => [h, cheap(K.halls[h], n)]).sort((x, y) => x[1] - y[1]);
+      if (EN()) return `<div class="dmb-cta">For ${n} guests: <b>${HALLNAME[v[0][0]]}</b> from ${money(v[0][1])}, and ${HALLNAME[v[1][0]]} from ${money(v[1][1])} (weekday, lowest menu), a difference of ${money(v[1][1] - v[0][1])}.</div>`;
+      return `<div class="dmb-cta">لعدد ${AD(n)} فرد: <b>${HALLNAME[v[0][0]]}</b> من ${money(v[0][1])}، و${HALLNAME[v[1][0]]} من ${money(v[1][1])} (منتصف الأسبوع، أقل منيو). الفارق ${money(v[1][1] - v[0][1])}.</div>`;
+    }
+    const [sm, lg] = H1.max <= H2.max ? [a, b] : [b, a];
+    const cap = K.halls[sm].max;
+    if (EN()) return `<div class="dmb-cta">✦ <b>Our advice:</b> up to ${cap} guests both halls work, and ${HALLNAME[sm]} is the better value (for ${cap} guests: from ${money(cheap(K.halls[sm], cap))} versus ${money(cheap(K.halls[lg], cap))} at ${HALLNAME[lg]}). Beyond ${cap} guests, ${HALLNAME[lg]} is the choice.</div>`;
+    return `<div class="dmb-cta">✦ <b>نصيحتنا:</b> لعدد حتى ${AD(cap)} فرد تناسبكم القاعتان، و${HALLNAME[sm]} الأوفر (لعدد ${AD(cap)} فرد: من ${money(cheap(K.halls[sm], cap))} مقابل ${money(cheap(K.halls[lg], cap))} في ${HALLNAME[lg]}). ولأكثر من ${AD(cap)} فرد، ${HALLNAME[lg]} هي الاختيار.</div>`;
+  }
+  // ---- router for sales intents; returns true when handled ----
+  function salesRoute(t, raw, e) {
+    const { W, halls, ev, count, menuQ } = e;
+    if (objRoute(t, W, halls)) return true;
+    const hallsK = halls.filter(h => K.halls[h]);
+    if (W('ليه اختار', 'ليه اختاركم', 'ليه احجز عندكم', 'ليه احجز معاكم', 'ايه اللي يميزكم', 'بتتميزوا', 'مميزاتكم', 'مميزات الدار', 'ايه يميز الدار', 'ليه دار المراسم', 'ليه انتم', 'ليه انتو', 'افضل من غيركم', 'why you', 'ايه اللي يميز الدار', 'عرفني بالدار', 'عرفني عن الدار', 'نبذه عن الدار')) { whyUs(); return true; }
+    if (W('عروض', 'العروض', 'عرض خاص', 'اوفر', 'اوفرز', 'offer', 'offers', 'ازاي اوفر', 'نوفر', 'اوفر فلوس', 'توفير', 'اوفر حاجه', 'اقل تكلفه ممكنه') && !W('شو', 'فاير', 'زفه', 'ليزر', 'عروض فنيه', 'المؤثرات', 'عرض سعر', 'عرض اسعار', 'خصم', 'تخفيض', 'تفاوض', 'سعر خاص')) { offersAns(); return true; }
+    const weekW = W('وسط الاسبوع', 'منتصف الاسبوع', 'اخر الاسبوع', 'نهايه الاسبوع', 'ويك اند', 'weekend', 'الويك اند');
+    if (weekW && W('الفرق', 'فرق', 'ليه', 'اختلاف', 'مقارنه', 'قارن', 'يفرق', 'بيفرق')) { weekDiff(hallsK[0]); return true; }
+    const difW = W('الفرق', 'فرق', 'قارن', 'قارنلي', 'مقارنه', 'يفرق', 'بيفرق', 'ولا', 'احسن', 'افضل', 'vs');
+    const smW = /ست ?منيو|سيت ?منيو|set ?menu/.test(t), obW = /اوبن ?بوفيه|بوفيه مفتوح|open ?buffet/.test(t);
+    if (smW && obW && !/(منيو|بوفيه) ?\d/.test(t)) { menuTypesAns(); return true; }
+    if (/هاي ?تي(?!ب| ?تابل)/.test(t) && smW && difW) { const lo = K.halls.lotus, n = (t.match(/ست ?منيو ?(\d)/) || [])[1]; S.hall = 'lotus'; cmpMenus(lo.menus.find(m => m.id === 'ht'), lo.menus.find(m => m.id === 'sm' + (n || 1)) || lo.menus[1], 'lotus'); return true; }
+    if (menuQ && (menuQ.k === 'sm' || menuQ.k === 'ob') && !menuQ.n && !count && W('ايه', 'ايش', 'فيه', 'فيها', 'مكونات', 'يعني', 'بيتكون', 'عباره', 'اشرح', 'شرح', 'نظام', 'ازاي', 'مكوناته', 'محتوي')) { if (hallsK.length) S.hall = hallsK[0]; menuTypesAns(menuQ.k); return true; }
+    if (menuQ && menuQ.n) {
+      const m2 = t.match(/(\d) .{0,30}?(?:زياده عن|عن|مقارنه ب|مقارنه مع|بالنسبه ل|من|ب) (?:ال)?(?:ست منيو |اوبن بوفيه |منيو |بوفيه )?(\d) /);
+      if (m2 && +m2[1] !== +m2[2] && menuQ.k !== 'pk') { compareMenus(menuQ.k, Math.min(+m2[1], +m2[2]), Math.max(+m2[1], +m2[2])); return true; }
+    }
+    if (W('احسن', 'افضل', 'انسب', 'تنصح', 'تنصحني', 'ترشح', 'ترشحلي', 'اختار ايه', 'اختار انهي', 'يناسبني', 'تقترح') && W('منيو', 'المنيو', 'باكدج', 'الباكدج', 'باقه', 'منيوهات', 'اكل', 'الاكل', 'بوفيه') && !menuQ?.n && !count) { bestMenuAns(hallsK[0]); return true; }
+    if (difW && !menuQ && hallsK.length < 2 && !(halls.length >= 2) && diffItems(t)) return true;
+    const sugW = W('اقترح', 'اقترحي', 'اقترحلي', 'اقتراح', 'اقتراحات', 'مقترحات', 'تقترح', 'تقترحوا', 'تقترحي', 'تقترحها', 'تقترحوها', 'تقترحه', 'ترشحها', 'مقترحه', 'تنصحني باضافات', 'ايه اللي ناقص', 'يبقي مميز', 'تبقي مميزه', 'مميز اكتر', 'لمسه', 'افكار', 'فكره', 'ابهار', 'مبهر', 'مبهره', 'wow', 'نكمل ايه', 'نزود ايه', 'اضيف ايه', 'نضيف ايه', 'ايه اللي يحلي', 'يحلي الفرح', 'يفرق في الفرح', 'حاجه مختلفه', 'upsell');
+    if (sugW && !(halls.length && W('مميزات'))) {
+      if (ev === 'birthday' && count && !S.hall) { birthday(); }
+      const sc = (hallsK[0]) || defaultScope(ev, count);
+      suggestAns(sc);
+      return true;
+    }
+    const gre = groupIntent(t, W);
+    if (gre && !hasSpecific(t)) { groupShow(halls.length ? (K.halls[halls[0]] ? halls[0] : null) : null, null, gre); return true; }
+    return false;
+  }
+  function hasSpecific(t) {
+    return K.addons.some(a => { const b = norm(a.n.replace(/\([^)]*\)/g, '')).trim(); return b.length >= 6 && b.split(' ').length >= 2 && t.includes(' ' + b + ' '); });
+  }
+
+  /* ---------------- detailed quote builder (عرض سعر مبدئي تفصيلي) ---------------- */
+  const QCSS = `
+.dmb-q{max-width:100%;width:100%;align-self:stretch}
+.dmb-qp{height:5px;border-radius:5px;background:#EFE5CC;overflow:hidden;margin:2px 0 10px}
+.dmb-qp i{display:block;height:100%;background:linear-gradient(90deg,var(--goldD),var(--gold));border-radius:5px}
+.dmb-ql{display:flex;flex-direction:column;gap:7px;margin:10px 0}
+.dmb-qr{border:1px solid var(--line);border-radius:13px;background:#fff;overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.dmb-qr.on{border-color:var(--gold);box-shadow:0 0 0 2px rgba(200,164,100,.22)}
+.dmb-qc{all:unset;box-sizing:border-box;display:flex;align-items:flex-start;gap:10px;width:100%;padding:11px 12px;cursor:pointer;font:500 14px/1.5 var(--sans);color:#0E1628;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.dmb-qc .bx{flex:0 0 22px;height:22px;border-radius:7px;border:1.5px solid var(--gold);display:grid;place-items:center;margin-top:1px;background:#fff;transition:all .15s}
+.dmb-qr.on .bx{background:linear-gradient(180deg,#16233D,#0B1424);border-color:#0B1424}
+.dmb-qr.on .bx:after{content:"";width:6px;height:11px;border:solid var(--gold2);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.dmb-qc .nm{flex:1;min-width:0}
+.dmb-qc .nm small{display:block;color:#7A8090;font-size:12px;margin-top:1px}
+.dmb-qc .pr{flex:0 0 auto;font-weight:700;color:var(--goldD);white-space:nowrap;font-variant-numeric:tabular-nums;max-width:45%;white-space:normal;text-align:left}
+.dmb-qq{display:flex;align-items:center;gap:6px;padding:0 12px 11px 12px;flex-wrap:wrap}
+.dmb-qq[hidden]{display:none}
+.dmb-qq button{all:unset;box-sizing:border-box;width:38px;height:38px;border-radius:10px;border:1px solid var(--gold);display:grid;place-items:center;font:700 20px/1 var(--sans);color:#0E1628;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;background:var(--paper)}
+.dmb-qq input{width:76px;height:38px;box-sizing:border-box;border-radius:10px;border:1px solid var(--gold);text-align:center;font:700 16px var(--sans);color:#0E1628;background:#fff;-moz-appearance:textfield}
+.dmb-qq input::-webkit-outer-spin-button,.dmb-qq input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.dmb-qq .ut{color:#7A8090;font-size:12.5px}
+.dmb-qq .st{margin-inline-start:auto;font-weight:700;color:#0E1628;font-variant-numeric:tabular-nums}
+.dmb-qs{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:linear-gradient(180deg,#14203A,#0B1424);color:var(--gold2);font:600 13px/1.5 var(--sans)}
+.dmb-qs b{color:#F1D9A0;font-size:15px;white-space:nowrap}
+.dmb-qb{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.dmb-qb .dmb-btn{width:100%;justify-content:center;min-height:46px;font-size:15px;border-radius:13px}
+.dmb-qk{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.dmb-qk .row{border:1px solid var(--line);border-radius:13px;background:#fff;overflow:hidden}
+.dmb-qk .pick{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;gap:10px;width:100%;padding:12px 13px;cursor:pointer;font:700 14.5px/1.45 var(--sans);color:#0E1628;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.dmb-qk .pick span:last-child{color:var(--goldD);white-space:nowrap;font-variant-numeric:tabular-nums}
+.dmb-qk .pick small{display:block;font:500 12px var(--sans);color:#7A8090}
+.dmb-qk details{border-top:1px dashed var(--line);padding:6px 13px 8px;font-size:13px}
+.dmb-qk summary{cursor:pointer;color:var(--goldD);font-weight:700;font-size:12.5px}
+.dmb-qk .row.on{border-color:var(--gold);box-shadow:0 0 0 2px rgba(200,164,100,.25)}
+.dmb-q.lock .dmb-qc,.dmb-q.lock .dmb-qq button,.dmb-q.lock .pick{cursor:default}
+.dmb-q.lock .dmb-qr:not(.on),.dmb-q.lock .row:not(.on){opacity:.45}
+.dmb-q.lock .dmb-qb{display:none}
+.dmb-t tr.grp th{padding-top:12px}
+`;
+  { const st = document.createElement('style'); st.textContent = `
+.dmb-panel.dmb-en .dmb-log,.dmb-panel.dmb-en .dmb-chips,.dmb-panel.dmb-en .dmb-in,.dmb-panel.dmb-en .dmb-lb{direction:ltr}
+.dmb-en .dmb-t th,.dmb-en .dmb-t td{text-align:left}.dmb-en .dmb-t td.n{text-align:right}
+.dmb-en .dmb-qc .pr{text-align:right}.dmb-en .dmb-m ul,.dmb-en .dmb-m ol{padding-left:20px;padding-right:0}
+.dmb-en .dmb-t tr.tot td:first-child{border-radius:10px 0 0 10px}.dmb-en .dmb-t tr.tot td:last-child{border-radius:0 10px 10px 0}
+.dmb-en .dmb-in button svg{transform:none}
+.dmb-hd .dmb-lg{font:700 13px/1 var(--latin);letter-spacing:.04em}
+`; document.head.appendChild(st); }
+  { const st = document.createElement('style'); st.textContent = QCSS; document.head.appendChild(st); }
+
+  let Q = null;
+  const QSCOPE = q => q.ev === 'katb' ? (q.hall === 'mawadda' ? 'mawadda' : 'lotusk') : ['birthday', 'special', 'aqiqa', 'photo'].includes(q.ev) ? q.ev : q.hall;
+  const QDOC = q => K.docOf[QSCOPE(q)] || q.hall;
+  const SPCAP = { lotus: 200, isis: 300, akhenaten: 600 };
+  const UNIT = u => u === 'عدد' ? '' : tr(u, u === 'فرد' ? 'guests' : 'kg');
+  const EVFOR_EN = { wedding: 'for weddings', engagement: 'for engagements', katb: 'for marriage contracts', birthday: 'for birthdays', aqiqa: 'for aqiqa', special: 'for special events', photo: 'for photo sessions' };
+  const EVFOR = { wedding: 'لحفل الزفاف', engagement: 'للخطوبة', katb: 'لعقد القران', birthday: 'لعيد الميلاد', aqiqa: 'للعقيقة', special: 'للمناسبات الخاصة', photo: 'للفوتو سيشن' };
+  const toN = s => +String(s).replace(/,/g, '');
+  const qNum = s => +String(s).replace(/[٠-٩]/g, c => '٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/[^\d]/g, '') || 0;
+  const qTop = d => setTimeout(() => { log.scrollTop += d.getBoundingClientRect().top - log.getBoundingClientRect().top - 10; }, 80);
+
+  function qHalls(ev, n) {
+    if (ev === 'wedding' || ev === 'engagement') return ['lotus', 'isis', 'akhenaten'].filter(h => !n || n <= K.halls[h].max);
+    if (ev === 'katb') return ['mawadda', 'lotus'].filter(h => !n || n <= (h === 'mawadda' ? K.katb.mawadda.max : K.halls.lotus.max));
+    if (ev === 'birthday') return K.birthday.filter(b => !n || n <= (b.id === 'lotus' ? K.halls.lotus.max : b.max)).map(b => b.id);
+    if (ev === 'special') return K.special.halls.filter(h => !n || n <= h.n || (SPCAP[h.id] && n <= SPCAP[h.id])).map(h => h.id);
+    if (ev === 'aqiqa') return ['lotus'];
+    return [];
+  }
+  function qHallInfo(ev, h, n) {
+    if (ev === 'wedding' || ev === 'engagement') { const H = K.halls[h]; return `${AD(H.min)} – ${AD(H.max)}${tr(' فرد', ' guests')}`; }
+    if (ev === 'katb') { const k = K.katb[h]; return tr(`باكدج ${AD(k.n)} فرد – ${money(k.price)}`, `package for ${k.n} – ${money(k.price)}`); }
+    if (ev === 'birthday') { const b = K.birthday.find(x => x.id === h); return `${A(b.cap)} – ${money(b.price)}`; }
+    if (ev === 'special') { const s = K.special.halls.find(x => x.id === h); return tr(`باكدج ${AD(s.n)} فرد – ${money(s.price)}`, `package for ${s.n} – ${money(s.price)}`); }
+    return '';
+  }
+
+  // turn one add-on into selectable rows
+  function qRows(a) {
+    const p = a.p, nums = (p.match(/\d[\d,]*/g) || []).map(toN), n = Q.n || 1;
+    if (/بيتي بان|فرنساوي/.test(p)) {
+      return p.split(/\s+–\s+/).map((v, i) => { const m = v.match(/^(.+?):\s*(\d[\d,]*)/); return { key: a.s + '|' + a.n + '|' + i, g: a.g, n: a.n + ' – ' + m[1], u: toN(m[2]), lbl: money(toN(m[2])), q0: 1, unit: 'عدد' }; });
+    }
+    const r = { key: a.s + '|' + a.n, g: a.g, n: a.n, u: nums[0] || 0, lbl: ar(p), raw: p, unit: 'عدد', q0: 1 };
+    r.top = isTop(a);
+    if (/%/.test(p)) { r.pct = true; r.u = 0; r.lbl = ar(p) + tr(' من الأجر', ' of the fee'); }
+    if (/^من .+ إلى/.test(p) || /^(يبدأ|تبدأ) من/.test(p)) r.from = true;
+    r.perP = /للفرد/.test(p) || /للفرد/.test(a.g);
+    if (r.perP) { r.unit = 'فرد'; r.q0 = n; }
+    if (/للكيلو|حسب الوزن/.test(a.n)) r.unit = 'كيلو';
+    if (/\(قطعة\)|^بولة|^تشيز كيك|^شوكليت فادج|^جمبري/.test(a.n)) { r.unit = 'فرد'; r.q0 = n; }
+    if (/^فرد إضافي/.test(a.n)) { r.unit = 'فرد'; r.q0 = Math.max(Q.exN || 0, 1); }
+    if (/^(كرسي|ترابيزة)/.test(a.n)) r.unit = 'عدد';
+    return [r];
+  }
+  const qSub = s => s.r.pct ? 0 : s.r.u * s.q;
+  const qAddTotal = () => Object.values(Q.sel).reduce((x, s) => x + qSub(s), 0);
+  const qBaseTotal = () => Q.pk ? Q.pk.lines.reduce((x, l) => x + l[1], 0) : 0;
+  const qFrom = () => Object.values(Q.sel).some(s => s.r.from);
+
+  function startQuote(pre) {
+    Q = Object.assign({ ev: null, hall: null, n: null, day: null, pk: null, sel: {}, gi: 0, groups: null }, pre || {});
+    FLOW = null;
+    bot(tr(`<p class="dmb-h">عرض سعر مبدئي تفصيلي</p><p>يسعدنا إعداد عرض سعر تقديري متكامل لحفلكم. سنحدد معاً المناسبة والعدد والقاعة والباكدج، ثم نعرض عليكم <b>جميع الخدمات والإضافات المتاحة قسماً قسماً</b>، ونختار منها ما ترغبون فيه، وفي النهاية نعرض لكم الإجمالي بنداً بنداً.</p>`, `<p class="dmb-h">Detailed preliminary quote</p><p>We would be delighted to prepare a complete estimated quote for your event. Together we will set the occasion, guest count, hall and package, then go through <b>all available services and add-ons, section by section</b>, so you can pick what you like. At the end you get the total, item by item.</p>`));
+    qNext();
+  }
+  function qAsk(html, opts, flow) {
+    bot(html);
+    FLOW = flow ? { wantCount: !!flow.wantCount, step: flow.step } : null;
+    chips([...opts, { t: tr('إلغاء عرض السعر', 'Cancel the quote'), fn: () => { Q = null; FLOW = null; bot(tr('<p>تم إلغاء عرض السعر. نحن في خدمتكم لأي استفسار آخر.</p>', '<p>The quote has been cancelled. We remain at your service for anything else.</p>')); chips(MAIN()); } }]);
+  }
+  function qNext() {
+    if (!Q) return;
+    if (!Q.ev) return qAsk(tr('<p>ما نوع المناسبة؟</p>', '<p>What is the occasion?</p>'), ['wedding', 'engagement', 'katb', 'birthday', 'aqiqa', 'special', 'photo'].map(e => ({ t: EVNAME[e], fn: () => { Q.ev = e; qNext(); } })),
+      { step: (raw, t, e) => { if (e.ev) { Q.ev = e.ev; if (e.count) Q.n = e.count; FLOW = null; qNext(); return true; } return false; } });
+    if (Q.ev !== 'photo' && !Q.n) return qAsk(tr('<p>ما العدد المتوقع للمدعوين؟ اكتبوا العدد بالأرقام (مثال: ٢٥٠).</p>', '<p>How many guests are you expecting? Please type the number (e.g. 250).</p>'), [100, 150, 200, 250, 300, 400].map(x => ({ t: AD(x) + tr(' فرد', ' guests'), fn: () => { Q.n = x; qNext(); } })),
+      { wantCount: true, step: (raw, t, e) => { const c = e.count || (EN() ? enCount(t, true) : findCount(t, true)); if (!c) { if (/\d|[٠-٩]/.test(raw)) { bot(tr('<p>يُرجى كتابة العدد بالأرقام (مثال: ٢٥٠).</p>', '<p>Please type the number of guests (e.g. 250).</p>')); return true; } return false; } Q.n = c; FLOW = null; qNext(); return true; } });
+    if (Q.ev === 'photo') { Q.hall = null; }
+    else {
+      const opts = qHalls(Q.ev, Q.n);
+      if (Q.hall && !opts.includes(Q.hall)) Q.hall = null;
+      if (!opts.length) {
+        bot(tr(`<p>العدد ${AD(Q.n)} فرد يتجاوز السعات المنشورة ${EVFOR[Q.ev]}، ويسعد فريق الحفلات دراسة طلبكم وإفادتكم بأنسب الحلول.</p>`, `<p>${Q.n} guests exceeds our published capacities ${EVFOR_EN[Q.ev]}; our events team will gladly study your request and advise the best solution.</p>`), [waAct(tr(`دار المراسم لضباط الشرطة – أرغب في عرض سعر لـ${EVNAME[Q.ev]} لعدد ${AD(Q.n)} فرد`, `Dar El-Marasem – I would like a quote: ${EVNAME[Q.ev]}, ${Q.n} guests`))]);
+        Q = null; FLOW = null; chips(MAIN()); return;
+      }
+      if (!Q.hall && opts.length === 1) Q.hall = opts[0];
+      if (!Q.hall) return qAsk(tr(`<p>القاعات المتاحة ${EVFOR[Q.ev]} لعدد ${AD(Q.n)} فرد:</p>`, `<p>Halls available ${EVFOR_EN[Q.ev]} for ${Q.n} guests:</p>`) + `<table class="dmb-t">${opts.map(h => `<tr><td>${HALLNAME[h]}</td><td class="n">${qHallInfo(Q.ev, h, Q.n)}</td></tr>`).join('')}</table>` + tr('<p>يُرجى اختيار القاعة:</p>', '<p>Please choose the hall:</p>'),
+        opts.map(h => ({ t: HALLNAME[h], fn: () => { Q.hall = h; qNext(); } })),
+        { step: (raw, t, e) => { const h = e.halls.find(x => opts.includes(x)); if (h) { Q.hall = h; FLOW = null; qNext(); return true; } const o = e.halls.find(x => qHalls(Q.ev, null).includes(x)); if (o) { bot(tr(`<p>نعتذر، ${HALLNAME[o]} لا تناسب عدد ${AD(Q.n)} فرد ${EVFOR[Q.ev]} وفق المنيو المنشور. يُرجى الاختيار من القاعات المتاحة أعلاه، أو تعديل العدد.</p>`, `<p>We are sorry, ${HALLNAME[o]} does not suit ${Q.n} guests ${EVFOR_EN[Q.ev]} per the published menu. Please choose from the halls above, or change the guest count.</p>`)); return true; } return false; } });
+    }
+    const H = K.halls[Q.hall];
+    if ((Q.ev === 'wedding' || Q.ev === 'engagement') && !Q.day) {
+      const fee = EN() ? (H.pk.type === 'fee' ? `<p class="dmb-note">At ${HALLNAME[Q.hall]}, ${money(H.pk.fee)} is added for Thursday, Friday, Saturday, feasts and public holidays.</p>` : `<p class="dmb-note">At ${HALLNAME[Q.hall]}, the weekday package is for ${H.pk.wd.n} guests and the weekend package for ${H.pk.we.n} guests.</p>`) : H.pk.type === 'fee' ? `<p class="dmb-note">في ${H.name} يُضاف ${money(H.pk.fee)} لحفلات الخميس والجمعة والسبت والأعياد والعطلات الرسمية.</p>` : `<p class="dmb-note">في ${H.name} باكدج منتصف الأسبوع لـ ${AD(H.pk.wd.n)} فرد، وباكدج نهاية الأسبوع لـ ${AD(H.pk.we.n)} فرد.</p>`;
+      return qAsk(tr('<p>ما يوم الحفل؟</p>', '<p>Which day is the event?</p>') + fee, [{ t: tr('منتصف الأسبوع (الأحد – الأربعاء)', 'Weekday (Sun – Wed)'), fn: () => { Q.day = 'wd'; qNext(); } }, { t: tr('نهاية الأسبوع أو عطلة رسمية', 'Weekend or public holiday'), fn: () => { Q.day = 'we'; qNext(); } }],
+        { step: (raw, t, e) => { const d = e.day || (EN() ? null : findDay(t, e.date)); if (d) { Q.day = d; FLOW = null; qNext(); return true; } return false; } });
+    }
+    if (!Q.pk) return qPackage();
+    if (!Q.groups) {
+      const sc = QSCOPE(Q), seen = {};
+      let list = K.addons.filter(a => a.s === sc);
+      if (sc === 'photo') list = list.slice(1);
+      Q.groups = [];
+      list.forEach(a => { if (!seen[a.g]) { seen[a.g] = { g: a.g, rows: [], pg: a.pg }; Q.groups.push(seen[a.g]); } seen[a.g].rows.push(...qRows(a)); });
+    }
+    if (Q.gi < Q.groups.length) return qGroup();
+    qFinish();
+  }
+
+  // ---- package step ----
+  function qPackage() {
+    const n = Q.n, ev = Q.ev;
+    let opts = [], head = '';
+    if (ev === 'wedding' || ev === 'engagement') {
+      const H = K.halls[Q.hall], day = Q.day;
+      const baseN = H.pk.type === 'wk' ? H.pk[day].n : H.pk.n;
+      Q.exN = Math.max(n - baseN, 0);
+      head = tr(`<p>الباكدجات المتاحة في <b>${H.name}</b> لعدد ${AD(n)} فرد – ${day === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'} (الأسعار شاملة الوجبات الإضافية فوق ${AD(baseN)} فرد):</p>`, `<p>Packages at <b>${HALLNAME[Q.hall]}</b> for ${n} guests – ${day === 'we' ? 'weekend' : 'weekday'} (prices include extra meals above ${baseN} guests):</p>`);
+      opts = H.menus.map(m => {
+        const lines = [];
+        if (H.pk.type === 'wk') lines.push([tr(`${m.name} – باكدج ${AD(baseN)} فرد (${day === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'})`, `${txEN(m.name)} – package for ${baseN} (${day === 'we' ? 'weekend' : 'weekday'})`), m[day]]);
+        else { lines.push([tr(`${m.name} – باكدج ${AD(baseN)} فرد`, `${txEN(m.name)} – package for ${baseN}`), m.price]); if (day === 'we') lines.push([tr('رسوم نهاية الأسبوع / العطلات الرسمية', 'Weekend / public holiday fee'), H.pk.fee]); }
+        const ex = Q.exN;
+        if (ex) { if (m.tiers) tierCost(ex, m.tiers).parts.forEach(p => lines.push([tr(`${AD(p[0])} وجبة إضافية × ${money(p[1])} (${p[2]})`, `${p[0]} extra meals × ${money(p[1])} (${{ 'أول ٥٠ وجبة': 'first 50', 'من ٥١ إلى ١٠٠ وجبة': 'meals 51 – 100', 'ما زاد عن ١٠٠ وجبة': 'beyond 100' }[p[2]] || p[2]})`), p[0] * p[1]])); else lines.push([tr(`${AD(ex)} وجبة إضافية × ${money(m.extra)}`, `${ex} extra meals × ${money(m.extra)}`), ex * m.extra]); }
+        return { id: m.id, name: m.name, lines, c: contentHTML(m.c), pg: m.pg, inc: contentHTML(H.inc) };
+      });
+    } else if (ev === 'katb') {
+      const k = K.katb[Q.hall], ex = Math.max(n - k.n, 0);
+      const lines = [[tr(`باكدج عقد القران – ${k.name} (${AD(k.n)} فرد)`, `Marriage-contract package – ${HALLNAME[Q.hall]} (${k.n} guests)`), k.price]];
+      if (ex) lines.push([tr(`${AD(ex)} فرد إضافي × ${money(k.extra)}`, `${ex} extra guests × ${money(k.extra)}`), ex * k.extra]);
+      opts = [{ id: 'k', name: tr(`باكدج عقد القران – ${k.name}`, `Marriage-contract package – ${HALLNAME[Q.hall]}`), lines, c: contentHTML(k.c), pg: k.pg }];
+      head = tr(`<p>باكدج عقد القران في <b>${k.name}</b> لعدد ${AD(n)} فرد (مدة الحفل ${k.dur}):</p>`, `<p>Marriage-contract package at <b>${HALLNAME[Q.hall]}</b> for ${n} guests (1.5 hours):</p>`);
+    } else if (ev === 'birthday') {
+      const b = K.birthday.find(x => x.id === Q.hall);
+      opts = [{ id: 'b', name: tr(`باكدج عيد الميلاد – ${b.name}`, `Birthday package – ${HALLNAME[b.id]}`), lines: [[tr(`باكدج عيد الميلاد – ${b.name}`, `Birthday package – ${HALLNAME[b.id]}`), b.price]], c: tr('<ul><li>حجز القاعة</li><li>كراسي + ترابيزات</li><li>ساوند سيستم SPEAKERS</li></ul>', '<ul><li>Hall booking</li><li>Chairs + tables</li><li>SPEAKERS sound system</li></ul>'), pg: 2, note: b.id === 'lotus' && n > b.max ? tr(`باكدج قاعة اللوتس لأعياد الميلاد محسوب على ${AD(b.max)} فرد، ويؤكد فريق الحفلات تكلفة العدد الزائد.`, `The Lotus Hall birthday package covers ${b.max} guests; our events team will confirm the cost of additional guests.`) : '' }];
+      head = tr(`<p>باكدج عيد الميلاد في <b>${b.name}</b> (${b.cap}). الطعام والتورت والديكورات تُختار من الإضافات في الخطوات التالية.</p>`, `<p>Birthday package at <b>${HALLNAME[b.id]}</b> (${A(b.cap)}). Food, cakes and décor are chosen from the add-ons in the next steps.</p>`);
+    } else if (ev === 'special') {
+      const h = K.special.halls.find(x => x.id === Q.hall), ex = Math.max(n - h.n, 0);
+      const hallLines = [[tr(`حجز ${h.name} للمناسبات الخاصة (${AD(h.n)} فرد)`, `${HALLNAME[h.id]} booking for special events (${h.n} guests)`), h.price]];
+      if (ex) hallLines.push([tr(`${AD(ex)} ترابيزة + كرسي إضافي × ${money(50)}`, `${ex} extra tables + chairs × ${money(50)}`), ex * 50]);
+      head = tr(`<p>حجز <b>${h.name}</b> شامل الكراسي والترابيزات${ex ? `، مع ${AD(ex)} ترابيزة وكرسي إضافي` : ''}. يُرجى اختيار المنيو (السعر بالفرد × ${AD(n)} فرد):</p>`, `<p><b>${HALLNAME[h.id]}</b> booking, tables and chairs included${ex ? `, with ${ex} extra tables and chairs` : ''}. Please choose the menu (price per person × ${n} guests):</p>`);
+      opts = K.special.menus.map(m => ({ id: m.id, name: m.name, lines: [...hallLines, [tr(`${m.name} – ${money(m.pp)} × ${AD(n)} فرد`, `${txEN(m.name)} – ${money(m.pp)} × ${n} guests`), m.pp * n]], c: contentHTML(m.c), pg: m.pg }));
+      opts.push({ id: 'none', name: tr('بدون منيو (حجز القاعة فقط)', 'No menu (hall booking only)'), lines: hallLines, c: '', pg: 2 });
+    } else if (ev === 'aqiqa') {
+      head = tr(`<p>باكدجات العقيقة في قاعة اللوتس لعدد ${AD(n)} فرد:</p>`, `<p>Aqiqa packages at Lotus Hall for ${n} guests:</p>`);
+      opts = K.aqiqa.map(a => { const ex = Math.max(n - a.n, 0); const lines = [[tr(`عقيقة – ${a.name} (${AD(a.n)} فرد)`, `Aqiqa – ${txEN(a.name)} (${a.n} guests)`), a.price]]; if (ex) lines.push([tr(`${AD(ex)} فرد إضافي × ${money(a.extra)}`, `${ex} extra guests × ${money(a.extra)}`), ex * a.extra]); return { id: a.id, name: a.name, lines, c: `<ul>${a.i.map(x => `<li>${A(x)}</li>`).join('')}</ul>`, pg: 11 }; });
+    } else if (ev === 'photo') {
+      const f = K.addons.find(a => a.s === 'photo');
+      opts = [{ id: 'p', name: A(f.n), lines: [[f.n, toN(f.p.match(/\d[\d,]*/)[0])]], c: '', pg: f.pg }];
+      head = tr(`<p>رسوم جلسة الفوتو سيشن بالدار:</p>`, `<p>The venue's photo-session fee:</p>`);
+    }
+    const tot = o => o.lines.reduce((x, l) => x + l[1], 0);
+    const d = bot(`<p class="dmb-h">${tr('الخطوة الأولى: الباكدج', 'Step one: the package')}</p>${head}<div class="dmb-qk">${opts.map((o, i) => `<div class="row" data-i="${i}"><button type="button" class="pick"><span>${A(o.name)}${o.lines.length > 1 ? `<small>${o.lines.slice(1).map(l => A(l[0])).join(' · ')}</small>` : ''}</span><span>${money(tot(o))}</span></button>${o.c ? `<details><summary>${tr('محتوى ' + (opts.length > 1 ? 'المنيو' : 'الباكدج'), opts.length > 1 ? 'Menu contents' : 'Package contents')}</summary>${o.c}</details>` : ''}</div>`).join('')}</div>${opts.length === 1 ? tr('<p>اضغطوا على الباكدج للتأكيد والمتابعة.</p>', '<p>Tap the package to confirm and continue.</p>') : tr('<p>اضغطوا على الباكدج المطلوب لاختياره.</p>', '<p>Tap a package to choose it.</p>')}${src(QDOC(Q))}`);
+    d.classList.add('dmb-q'); qTop(d);
+    const flowPick = (i, typed) => {
+      if (d.classList.contains('lock')) return;
+      const o = opts[i]; d.classList.add('lock'); d.querySelector(`.row[data-i="${i}"]`).classList.add('on');
+      Q.pk = o; if (!typed) addUser(ar(o.name)); chips([]);
+      think(() => {
+        bot(`<p>${tr('تم اختيار', 'You chose')} <b>${A(o.name)}</b> – ${money(tot(o))}.</p>${o.note ? `<p class="dmb-note">${o.note}</p>` : ''}${o.inc ? `<details class="dmb-law"><summary>${tr('ما يشمله الباكدج', 'What the package includes')}</summary>${o.inc}</details>` : ''}${tr('<p>والآن نستعرض معاً جميع الخدمات والإضافات المتاحة قسماً قسماً، لتختاروا منها ما ترغبون فيه.</p>', '<p>Now let us go through all available services and add-ons, section by section, so you can choose what you like.</p>')}`);
+        qNext();
+      });
+    };
+    d.querySelectorAll('.pick').forEach((b, i) => b.addEventListener('click', () => flowPick(i)));
+    FLOW = { step: (raw, t, e) => {
+      const mq = EN() ? enMenuQ(t) : findMenu(t);
+      if (mq) { const id = (mq.k === 'pk' ? 'sm' : mq.k) + (mq.n || ''); const i = opts.findIndex(o => o.id === id); if (i >= 0) { flowPick(i, true); return true; } }
+      if (opts.length === 1 && /^(نعم|ايوه|اه|تمام|موافق|اوك|ok|ماشي|كمل|yes|sure|okay|confirm|continue)/.test(t.trim())) { flowPick(0, true); return true; }
+      return false;
+    } };
+    chips([{ t: tr('إلغاء عرض السعر', 'Cancel the quote'), fn: () => { Q = null; FLOW = null; bot(tr('<p>تم إلغاء عرض السعر. نحن في خدمتكم لأي استفسار آخر.</p>', '<p>The quote has been cancelled. We remain at your service for anything else.</p>')); chips(MAIN()); } }]);
+  }
+
+  // ---- add-on groups, one by one ----
+  function qGroup() {
+    const G = Q.groups[Q.gi], total = Q.groups.length, SG = sugSet(QSCOPE(Q));
+    const pct = Math.round(Q.gi / total * 100);
+    const rowHTML = (r, i) => {
+      const s = Q.sel[r.key];
+      return `<div class="dmb-qr${s ? ' on' : ''}" data-i="${i}"><button type="button" class="dmb-qc" aria-pressed="${s ? 'true' : 'false'}"><span class="bx"></span><span class="nm">${A(r.n)}${r.top ? topTag() : SG.has(r.key) ? `<em class="dmb-tag">${tr('مقترح', 'Suggested')}</em>` : ''}${r.perP ? `<small>${tr('يُحتسب لكل فرد', 'charged per guest')}</small>` : r.from ? `<small>${tr('السعر النهائي يحدده فريق الحفلات حسب الاختيار', 'final price set by the events team per your choice')}</small>` : r.pct ? `<small>${tr('نسبة من أجر الفنان، تُحتسب عند التعاقد', 'a share of the artist fee, set at contracting')}</small>` : ''}</span><span class="pr">${r.lbl}</span></button>${r.pct ? '' : `<div class="dmb-qq"${s ? '' : ' hidden'}><button type="button" data-d="-1" aria-label="${tr('أقل', 'Less')}">−</button><input type="text" inputmode="numeric" pattern="[0-9]*" value="${AD(s ? s.q : r.q0)}" aria-label="${tr('الكمية', 'Quantity')}"><button type="button" data-d="1" aria-label="${tr('أكثر', 'More')}">+</button><span class="ut">${UNIT(r.unit)}</span><b class="st"></b></div>`}</div>`;
+    };
+    const d = bot(`<p class="dmb-h">${AD(Q.gi + 1)} / ${AD(total)} · ${A(G.g)}</p><div class="dmb-qp"><i style="width:${pct}%"></i></div><p>${tr('هل ترغبون في إضافة أي من البنود التالية؟ اضغطوا على البند لاختياره', 'Would you like to add any of the following? Tap an item to select it')}${G.rows.some(r => !r.pct) ? tr('، ويمكن تعديل الكمية', ', and adjust the quantity') : ''}.</p><div class="dmb-ql">${G.rows.map(rowHTML).join('')}</div><div class="dmb-qs"><span>${tr('الإجمالي التقديري حتى الآن', 'Estimated total so far')}</span><b class="qt"></b></div><div class="dmb-qb"><button type="button" class="dmb-btn pri" data-a="next"></button><button type="button" class="dmb-btn" data-a="end">${tr('إنهاء الاختيار وعرض الإجمالي', 'Finish and show the total')}</button></div>`);
+    d.classList.add('dmb-q'); qTop(d);
+    const nextB = d.querySelector('[data-a="next"]'), qt = d.querySelector('.qt');
+    const last = Q.gi === total - 1;
+    const refresh = () => {
+      const anyHere = G.rows.some(r => Q.sel[r.key]);
+      nextB.textContent = anyHere ? (last ? tr('تأكيد الاختيار وعرض الإجمالي', 'Confirm and show the total') : tr('تأكيد الاختيار – القسم التالي', 'Confirm – next section')) : (last ? tr('لا أرغب – عرض الإجمالي', 'None – show the total') : tr('لا أرغب – القسم التالي', 'None – next section'));
+      qt.textContent = (qFrom() ? tr('يبدأ من ', 'from ') : '') + money(qBaseTotal() + qAddTotal());
+      d.querySelectorAll('.dmb-qr').forEach(el => { const r = G.rows[+el.dataset.i], s = Q.sel[r.key], st = el.querySelector('.st'); if (st) st.textContent = s ? (r.from ? tr('من ', 'from ') : '') + money(qSub(s)) : ''; });
+    };
+    d.querySelectorAll('.dmb-qr').forEach(el => {
+      const r = G.rows[+el.dataset.i], qq = el.querySelector('.dmb-qq'), inp = el.querySelector('input');
+      el.querySelector('.dmb-qc').addEventListener('click', () => {
+        if (d.classList.contains('lock')) return;
+        if (Q.sel[r.key]) { delete Q.sel[r.key]; el.classList.remove('on'); if (qq) qq.hidden = true; }
+        else { Q.sel[r.key] = { r, q: inp ? Math.max(1, qNum(inp.value) || r.q0) : 1 }; el.classList.add('on'); if (qq) qq.hidden = false; }
+        el.querySelector('.dmb-qc').setAttribute('aria-pressed', Q.sel[r.key] ? 'true' : 'false');
+        refresh();
+      });
+      if (!qq) return;
+      const setQ = v => { v = Math.min(9999, Math.max(1, Math.round(v) || 1)); inp.value = AD(v); if (Q.sel[r.key]) Q.sel[r.key].q = v; refresh(); };
+      qq.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { if (!d.classList.contains('lock')) setQ(qNum(inp.value) + (+b.dataset.d)); }));
+      inp.addEventListener('input', () => { const v = qNum(inp.value); if (v >= 1 && Q.sel[r.key]) { Q.sel[r.key].q = Math.min(9999, v); refresh(); } });
+      inp.addEventListener('change', () => setQ(qNum(inp.value)));
+    });
+    const done = (end, typed) => {
+      if (d.classList.contains('lock')) return;
+      d.classList.add('lock'); d.querySelectorAll('input').forEach(x => { x.disabled = true; });
+      const picked = G.rows.filter(r => Q.sel[r.key]);
+      if (!typed) addUser(picked.length ? tr('اخترت: ', 'I chose: ') + picked.map(r => ar(r.n) + (Q.sel[r.key].q > 1 ? ` (${AD(Q.sel[r.key].q)})` : '')).join(tr('، ', ', ')) : tr('لا أرغب في إضافات من هذا القسم', 'Nothing from this section'));
+      chips([]); FLOW = null;
+      Q.gi = end ? Q.groups.length : Q.gi + 1;
+      think(qNext);
+    };
+    nextB.addEventListener('click', () => done(false));
+    d.querySelector('[data-a="end"]').addEventListener('click', () => done(true));
+    refresh();
+    FLOW = { step: (raw, t) => {
+      const x = t.trim();
+      if (/^(لا|لأ|لاء|مش عاوز|مش عايز|لا شكرا|لا اشكرك|التالي|اللي بعده|تخطي|كمل|نكمل|next|skip|no|none|nothing|no thanks|continue)( |$)/.test(x)) { done(false, true); return true; }
+      if (/(احسب|الاجمالي|الإجمالي|خلاص|كفايه|انهي|إنهاء|اعرض الاجمالي|total|finish|done|thats all|calculate)/.test(x) && x.split(' ').length <= 5) { done(true, true); return true; }
+      return false;
+    } };
+    chips([{ t: tr('إلغاء عرض السعر', 'Cancel the quote'), fn: () => { Q = null; FLOW = null; bot(tr('<p>تم إلغاء عرض السعر. نحن في خدمتكم لأي استفسار آخر.</p>', '<p>The quote has been cancelled. We remain at your service for anything else.</p>')); chips(MAIN()); } }]);
+  }
+
+  function qMissing(q) {
+    const sc = QSCOPE(q), tp = topPick(sc).filter(a => !q.sel[a.s + '|' + a.n]);
+    const it = (tp.length ? tp : sugItems(sc).map(x => x[1].find(a => !q.sel[a.s + '|' + a.n])).filter(Boolean)).slice(0, 3);
+    return it.length ? `<div class="dmb-cta">✦ <b>${tr('قد يُكمل حفلكم أيضاً:', 'You may also like:')}</b> ${it.map(a => `${nameShort(a)} (${pShort(a)})`).join(tr('، ', ', '))}. ${tr('ويمكنكم إضافتها بزر «مراجعة الإضافات وتعديلها».', 'You can add them with “Review & edit add-ons”.')}</div>` : '';
+  }
+  // ---- final quote ----
+  function qFinish() {
+    FLOW = null;
+    const q = Q, base = qBaseTotal(), add = qAddTotal(), from = qFrom();
+    const sels = Object.values(q.sel);
+    const hallName = q.ev === 'photo' ? tr('الدار', 'the venue') : HALLNAME[q.hall];
+    const cur = n => EN() ? 'EGP ' + fmt(n) : fmt(n) + ' ج';
+    const rows = [], txt = [];
+    rows.push(`<tr class="grp"><th colspan="2">${tr('الباكدج', 'Package')}</th></tr>`);
+    q.pk.lines.forEach(l => { rows.push(`<tr><td>${A(l[0])}</td><td class="n">${money(l[1])}</td></tr>`); txt.push(`- ${ar(l[0])}: ${cur(l[1])}`); });
+    if (sels.length) {
+      const groups = [];
+      q.groups.forEach(G => { const ss = G.rows.filter(r => q.sel[r.key]).map(r => q.sel[r.key]); if (ss.length) groups.push([G.g, ss]); });
+      txt.push('', tr('الإضافات:', 'Add-ons:'));
+      groups.forEach(([g, ss]) => {
+        rows.push(`<tr class="grp"><th colspan="2">${A(g)}</th></tr>`);
+        ss.forEach(s => {
+          const r = s.r;
+          const lab = r.pct ? `${A(r.n)}<br><small>${r.lbl} – ${tr('تُحتسب عند التعاقد', 'set at contracting')}</small>` : `${A(r.n)}${s.q > 1 || r.perP ? `<br><small>${AD(s.q)}${UNIT(r.unit) ? ' ' + UNIT(r.unit) : ''} × ${money(r.u)}${r.from ? tr(' (يبدأ من)', ' (from)') : ''}</small>` : r.from ? `<br><small>${tr('يبدأ من', 'from')}</small>` : ''}`;
+          rows.push(`<tr><td>${lab}</td><td class="n">${r.pct ? '—' : (r.from ? tr('من ', 'from ') : '') + money(qSub(s))}</td></tr>`);
+          txt.push(`- ${ar(r.n)}${r.pct ? `: ${ar(r.raw)}${tr(' من الأجر', ' of the fee')}` : `${s.q > 1 || r.perP ? ` – ${AD(s.q)} × ${fmt(r.u)}` : ''}: ${r.from ? tr('من ', 'from ') : ''}${cur(qSub(s))}`}`);
+        });
+      });
+      rows.push(`<tr><td><b>${tr('إجمالي الإضافات', 'Add-ons total')}</b></td><td class="n">${from ? tr('من ', 'from ') : ''}${money(add)}</td></tr>`);
+    }
+    const total = base + add;
+    rows.push(`<tr class="tot"><td>${tr('الإجمالي التقديري', 'Estimated total')}${from ? tr(' (يبدأ من)', ' (from)') : ''}${q.n ? perHead(total, q.n) : ''}</td><td class="n">${money(total)}</td></tr>`);
+    const depName = { akhenaten: 'قاعة أخناتون', isis: 'قاعة إيزيس', lotus: 'قاعة اللوتس', mawadda: 'قاعة المودة والرحمة', marasem: 'قاعة المراسم', lulu: 'قاعة اللؤلؤة', roof: 'الروف توب' }[q.hall];
+    const dep = depName && (['wedding', 'engagement'].includes(q.ev) || q.hall === 'mawadda') && K.deposit.find(r => r[0] === depName);
+    const notes = [];
+    if (dep) notes.push(tr(`مقدم الحجز ${money(dep[1])}، والتأمين ${money(dep[2])} (التأمين غير مُدرج في الإجمالي).`, `Booking deposit ${money(dep[1])}; insurance ${money(dep[2])} (insurance not included in the total).`));
+    if (from) notes.push(tr('بعض البنود المختارة لها سعر يبدأ من حد أدنى، وحُسبت في الإجمالي بأقل سعر منشور.', 'Some selected items have a starting price; the total uses the lowest published price.'));
+    if (sels.some(s => s.r.pct)) notes.push(tr('رسوم الفنانين من الخارج نسبة من الأجر، وتُحتسب عند التعاقد.', 'Outside artist fees are a share of the fee and are set at contracting.'));
+    if (q.ev === 'photo') notes.push(tr('رسوم الفوتو سيشن بحد أقصى ٦ أفراد.', 'The photo-session fee covers up to 6 people.'));
+    if (q.pk.note) notes.push(q.pk.note);
+    const dayT = q.day ? (q.day === 'we' ? tr('نهاية الأسبوع / عطلة', 'weekend / holiday') : tr('منتصف الأسبوع', 'weekday')) : '';
+    const sum = `${EVNAME[q.ev]}${q.ev !== 'photo' ? ` · ${hallName} · ${AD(q.n)}${tr(' فرد', ' guests')}` : ''}${dayT ? ' · ' + dayT : ''}`;
+    const msg = [tr('دار المراسم لضباط الشرطة – طلب عرض سعر', 'Dar El-Marasem – quote request'), '', tr('المناسبة: ', 'Occasion: ') + EVNAME[q.ev], ...(q.ev !== 'photo' ? [tr('القاعة: ', 'Hall: ') + hallName, tr('العدد: ', 'Guests: ') + AD(q.n) + tr(' فرد', '')] : []), ...(dayT ? [tr('اليوم: ', 'Day: ') + dayT] : []), '', tr('الباكدج:', 'Package:'), ...txt, '', `${tr('الإجمالي التقديري: ', 'Estimated total: ')}${from ? tr('يبدأ من ', 'from ') : ''}${cur(total)}`, '', tr('أرجو التواصل لتأكيد التوافر والسعر النهائي.', 'Please contact me to confirm availability and the final price.'), tr('(تم الإعداد عبر مساعد دار المراسم الذكي)', '(via the Dar El-Marasem AI assistant)')].join('\n');
+    bot(`<p class="dmb-h">${tr('عرض السعر المبدئي', 'Your preliminary quote')}</p><p>${sum}</p><table class="dmb-t">${rows.join('')}</table>${notes.map(x => `<p class="dmb-note">${x}</p>`).join('')}${qMissing(q)}<p class="dmb-note">${tr('<b>هذا عرض سعر تقديري</b> وفق الأسعار المنشورة بالمنيو، لحين التواصل مع فريق الحفلات لتأكيد التوافر والأسعار النهائية وتفاصيل التعاقد.', '<b>This is an estimated quote</b> based on the published menu prices, pending contact with our events team to confirm availability, final prices and contract details.')}</p>${src(QDOC(q))}`,
+      [waAct(msg, tr('إرسال عرض السعر لفريق الحفلات عبر واتساب', 'Send this quote to our team on WhatsApp')), { t: tr('تجهيز طلب الحجز', 'Booking request'), cls: 'pri', fn: () => { S.event = q.ev; S.hall = q.hall; S.count = q.n; startBook(); } }]);
+    S.event = q.ev; if (q.hall) S.hall = q.hall; if (q.n) S.count = q.n; if (q.day) S.day = q.day;
+    const keep = { ev: q.ev, hall: q.hall, n: q.n, day: q.day, pk: q.pk, exN: q.exN, sel: q.sel, groups: q.groups };
+    chips([
+      { t: tr('مراجعة الإضافات وتعديلها', 'Review & edit add-ons'), fn: () => { Q = Object.assign({}, keep, { gi: 0 }); qNext(); } },
+      { t: tr('تغيير الباكدج', 'Change the package'), fn: () => { Q = Object.assign({}, keep, { pk: null, gi: 0 }); qNext(); } },
+      { t: tr('عرض سعر جديد', 'New quote'), fn: () => startQuote() },
+      ...MAIN().slice(1, 3)
+    ]);
+    Q = null;
+  }
+
+  /* ---------------- real photos + unanswered-question log ---------------- */
+  const PHOTOS = { akhenaten: BASE + 'img/akhenaten.jpg', isis: BASE + 'img/isis.jpg', lotus: BASE + 'img/lotus.jpg', venue: BASE + '../hero.jpg' };
+  const phName = k => k === 'venue' ? tr('دار المراسم لضباط الشرطة', 'Dar El-Marasem') : HALLNAME[k];
+  function phHTML(keys, cap) {
+    keys = keys.filter(k => PHOTOS[k]);
+    if (!keys.length) return '';
+    return `<div class="dmb-ph n${Math.min(keys.length, 3)}">${keys.map(k => `<figure><img src="${PHOTOS[k]}" alt="${esc(phName(k))}" loading="lazy" decoding="async">${cap ? `<figcaption>${esc(phName(k))}</figcaption>` : ''}</figure>`).join('')}</div>`;
+  }
+  { const st = document.createElement('style'); st.textContent = `
+.dmb-ph{display:grid;gap:6px;margin:2px 0 10px}
+.dmb-ph.n2{grid-template-columns:1fr 1fr}.dmb-ph.n3{grid-template-columns:1fr 1fr 1fr}
+.dmb-ph figure{margin:0;position:relative;border-radius:12px;overflow:hidden;background:#0B1424;box-shadow:0 0 0 1px rgba(200,164,100,.45)}
+.dmb-ph img{display:block;width:100%;height:190px;object-fit:cover;cursor:zoom-in}
+.dmb-ph.n2 img{height:130px}.dmb-ph.n3 img{height:110px}
+.dmb-ph figcaption{position:absolute;inset:auto 0 0 0;padding:14px 8px 5px;background:linear-gradient(transparent,rgba(5,9,18,.85));color:#F1D9A0;font:700 12px/1.3 var(--sans);text-align:center}
+.dmb-sg .dmb-ph{margin:6px 0 8px}
+.dmb-lb{position:absolute;inset:0;z-index:20;background:rgba(5,9,18,.95);display:flex;align-items:center;justify-content:center;padding:14px;cursor:zoom-out}
+.dmb-lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:10px;box-shadow:0 0 0 1px rgba(200,164,100,.5)}
+.dmb-lb b{position:absolute;top:10px;inset-inline-end:14px;color:#F1D9A0;font:700 26px/1 var(--sans)}
+`; document.head.appendChild(st); }
+  log.addEventListener('click', e => {
+    const im = e.target.closest('.dmb-ph img'); if (!im) return;
+    const lb = document.createElement('div'); lb.className = 'dmb-lb'; lb.innerHTML = `<img src="${im.src}" alt="${esc(im.alt)}"><b aria-hidden="true">✕</b>`;
+    lb.addEventListener('click', () => lb.remove()); panel.appendChild(lb);
+  });
+  function photosAns(hid) {
+    const hk = ['akhenaten', 'isis', 'lotus'];
+    if (hk.includes(hid)) {
+      S.hall = hid;
+      bot(`<p class="dmb-h">${tr('صور', 'Photos –')} ${HALLNAME[hid]}</p>${phHTML([hid])}${phHTML(['venue'], true)}<p>${tr('اضغطوا على الصورة لتكبيرها. ونسعد باستقبالكم لمعاينة القاعة على الطبيعة يومياً من ١٠ صباحاً حتى ١٠ مساءً.', 'Tap a photo to enlarge it. We would be delighted to welcome you for a viewing, daily from 10 am to 10 pm.')}</p>`,
+        [{ t: tr('حجز موعد معاينة', 'Book a viewing'), cls: 'pri', fn: () => startVisit() }, { t: tr('الديكورات والكوشات', 'Décor & kosha options'), go: 'decor-' + hid }]);
+      chips([...hk.filter(h => h !== hid).map(h => ({ t: tr('صور ', 'Photos: ') + HALLNAME[h], fn: () => photosAns(h) })), { t: tr('مميزات القاعات', 'Hall features'), fn: hallsFeatures }]);
+      return;
+    }
+    const other = hid && !hk.includes(hid) ? `<p class="dmb-note">${tr(`يسعدنا استقبالكم لمعاينة ${HALLNAME[hid]} على الطبيعة.`, `We would be happy to show you ${HALLNAME[hid]} in person.`)}</p>` : '';
+    bot(`<p class="dmb-h">${tr('صور القاعات والدار', 'Halls & venue photos')}</p>${phHTML(hk, true)}${phHTML(['venue'], true)}${other}<p>${tr('اضغطوا على أي صورة لتكبيرها.', 'Tap any photo to enlarge it.')}</p>`, [{ t: tr('حجز موعد معاينة', 'Book a viewing'), cls: 'pri', fn: () => startVisit() }]);
+    chips([...hk.map(h => ({ t: tr('صور ', 'Photos: ') + HALLNAME[h], fn: () => photosAns(h) })), { t: tr('مميزات القاعات', 'Hall features'), fn: hallsFeatures }]);
+  }
+
+  // unanswered questions → Google Sheet (paste the Apps Script web-app URL below to enable)
+  const LOG_URL = '';
+  let LASTRAW = '';
+  function logQ(kind, q) {
+    if (!LOG_URL || !q) return;
+    try {
+      const body = JSON.stringify({ kind, q: String(q).slice(0, 400), lang: LANG, hall: S.hall || '', event: S.event || '', count: S.count || '', page: location.href.split('#')[0] });
+      if (navigator.sendBeacon) navigator.sendBeacon(LOG_URL, new Blob([body], { type: 'text/plain' }));
+      else fetch(LOG_URL, { method: 'POST', mode: 'no-cors', body });
+    } catch (e) { }
+  }
+
+  /* ---------------- English layer ---------------- */
+  const EN_ADDRESS = 'Hadiqat Al-Zuhriya St., opposite Cairo Tower, Zamalek – Cairo';
+  const EN_DESC = {
+    akhenaten: ['The largest of our halls, known for its royal grandeur. The couple is crowned in a ceremony inspired by the coronation of King Akhenaten.', 'An exceptional hall designed for a refined experience, with magnificent royal décor that turns your wedding day into a fairy tale.', 'a kosha (bridal stage) from the hall\'s collection, with an option to upgrade to the Special selection'],
+    isis: ['One of the venue\'s signature halls, blending Pharaonic heritage with a contemporary style. The bride is crowned in a ceremony inspired by Queen Isis.', 'An exceptional hall designed for a refined experience, with magnificent royal décor that turns your wedding day into a fairy tale.', 'a kosha (bridal stage) from the hall\'s collection'],
+    lotus: ['Our most intimate hall, where the couple appears like two blossoms in a garden in full bloom, just like the lotus flower.', 'The perfect setting for life\'s most beautiful moments, combining classic elegance with modern lighting and varied décor.', 'a kosha (bridal stage) from the hall\'s collection']
+  };
+  const SUG_EN = { 'الأكثر طلباً من عملائنا': 'Most requested by our clients', 'لدخلة لا تُنسى': 'For an unforgettable entrance', 'لتوثيق كل لحظة': 'To capture every moment', 'للمسة ديكور فاخرة': 'For a luxurious décor touch', 'لراحة العروسين': "For the couple's comfort", 'لضيافة أرقى': 'For finer hospitality', 'لمراسم عقد القران': 'For the marriage-contract ceremony', 'لتوثيق اللحظة': 'To capture the moment', 'لاستقبال مبهج': 'For a joyful welcome', 'للعروس': 'For the bride', 'للضيافة': 'Hospitality', 'لأجواء احتفالية': 'For a festive atmosphere', 'للتورتة': 'For the cake', 'للتوثيق': 'Photography', 'لتجهيز احترافي': 'For a professional setup', 'للمسة أنيقة': 'For an elegant touch', 'لجلسة متكاملة': 'For a complete session' };
+  const WH = ['lotus', 'isis', 'akhenaten'];
+  const enHas = (t, ...ws) => ws.some(w => new RegExp('(^| )' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '( |$)').test(t));
+  const enRx = (t, re) => re.test(t);
+  const pv = (H, m) => H.pk.type === 'wk' ? m.wd : m.price;
+
+  // ---- entities ----
+  function enMenuQ(t) {
+    let m;
+    if ((m = t.match(/coffee ?break ?(\d)?/))) return { k: 'cb', n: +(m[1] || 0) };
+    if ((m = t.match(/special set ?menu ?(\d)?/))) return { k: 'ssm', n: +(m[1] || 0) };
+    if (/high ?tea/.test(t)) return { k: 'ht', n: 0 };
+    if ((m = t.match(/(?:open )?buffet ?(?:no\.? ?|number |#)?(\d)?/)) && /buffet/.test(t)) return { k: 'ob', n: +(m[1] || 0) };
+    if ((m = t.match(/set ?menu ?(?:no\.? ?|number |#)?(\d)?/))) return { k: 'sm', n: +(m[1] || 0) };
+    if ((m = t.match(/(?:menu|package) (?:no\.? ?|number |#)?(\d)/))) return { k: 'sm', n: +m[1], loose: true };
+    return null;
+  }
+  function enHalls(t) {
+    const out = [];
+    if (/akh?e?n[ao]t[eo]n|akhnaton|akhenaten/.test(t)) out.push('akhenaten');
+    if (/\bisis\b|\bizis\b/.test(t)) out.push('isis');
+    if (/\blotus\b/.test(t)) out.push('lotus');
+    if (/mawadd?a|wal ?rahma|\brahma\b/.test(t)) out.push('mawadda');
+    if (/roof ?top|\broof\b/.test(t)) out.push('roof');
+    if (/glass|open ?air|\btent\b/.test(t)) out.push('glass');
+    if (/pearl|lulu/.test(t)) out.push('lulu');
+    if (/marasem hall|al ?marasem hall/.test(t) && !/dar el/.test(t)) out.push('marasem');
+    return out;
+  }
+  function enEvent(t) {
+    if (/katb|kateb|kitab|marriage contract|contract ceremony|signing|nikah|\bmaazoun|\bmazoun/.test(t)) return 'katb';
+    if (/birthday|b-?day/.test(t)) return 'birthday';
+    if (/aqi?q[aei]+h?|aqeeqah/.test(t)) return 'aqiqa';
+    if (/conference|meeting|corporate|seminar|workshop|business event|special event|graduation|gathering|reception party/.test(t)) return 'special';
+    if (/photo ?session|photo ?shoot|photoshoot/.test(t)) return 'photo';
+    if (/engagement|engaged/.test(t)) return 'engagement';
+    if (/wedding|marriage party|\bwed\b|bride|groom/.test(t)) return 'wedding';
+    return null;
+  }
+  function enCount(t, loose) {
+    let m = t.match(/(\d{2,4}) ?(?:guests?|people|persons?|pax|ppl|attendees|invitees|ppl|individuals|person)\b/);
+    if (m) return +m[1];
+    if (/egp|pounds?|\ble\b|budget|\d ?k\b|thousand|\d{5,}|\d{1,3},\d{3}/.test(t)) return null;
+    if (loose && (m = t.match(/(?:^| )(\d{2,4})(?: |$)/)) && +m[1] >= 10 && +m[1] <= 2000 && !/20[2-3]\d/.test(m[1])) return +m[1];
+    if ((m = t.match(/(?:for|about|around|approx\w*|expecting|expect) (\d{2,4})(?: |$)/))) return +m[1];
+    return null;
+  }
+  function enDay(t) {
+    if (/weekend|thursday|friday|saturday|\bthu\b|\bfri\b|\bsat\b|holiday|feast/.test(t)) return 'we';
+    if (/weekday|midweek|mid-week|sunday|monday|tuesday|wednesday|\bsun\b|\bmon\b|\btue\b|\bwed\b(?! ding)/.test(t)) return 'wd';
+    return null;
+  }
+  const ENMON = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+  function enDate(t) {
+    let m = t.match(/(\d{4})-(\d{1,2})-(\d{1,2})/); if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+    const mi = ENMON.findIndex(x => t.includes(x) || t.includes(' ' + x.slice(0, 3) + ' '));
+    if (mi < 0) return null;
+    m = t.match(new RegExp('(\\d{1,2})(?:st|nd|rd|th)? (?:of )?' + ENMON[mi].slice(0, 3))) || t.match(new RegExp(ENMON[mi].slice(0, 3) + '\\w* (\\d{1,2})(?:st|nd|rd|th)?\\b'));
+    if (!m) return null;
+    const now = new Date(); let y = now.getFullYear(); const d = new Date(y, mi, +m[1]); if (d < now) d.setFullYear(y + 1); return d;
+  }
+  function enBudget(t) {
+    let m = t.match(/(\d{2,4}) ?(?:k\b|thousand)/); if (m) return +m[1] * 1000;
+    m = t.match(/(\d{1,3}),(\d{3})/); if (m && /budget|afford|max|spend|egp|pounds|around|about/.test(t)) return +(m[1] + m[2]);
+    m = t.match(/(?:budget|afford|spend|maximum|max)[^\d]{0,20}(\d{5,7})/); if (m) return +m[1];
+    return null;
+  }
+  function enEnt(t) {
+    const date = enDate(t);
+    let day = enDay(t); if (!day && date) { const w = date.getDay(); day = (w >= 4 && w <= 6) ? 'we' : 'wd'; }
+    return { halls: enHalls(t), ev: enEvent(t), count: enCount(t, t.trim().split(' ').length <= 3), date, day, menuQ: enMenuQ(t), budget: enBudget(t) };
+  }
+
+  // ---- router ----
+  function enCore(raw) {
+    const t = ' ' + String(raw).toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9%+&\-. ]+/g, ' ').replace(/\s+/g, ' ').trim() + ' ';
+    LASTRAW = raw;
+    const e = enEnt(t);
+    if (FLOW && FLOW.step) { if (FLOW.step(raw, t, e)) return; }
+    const { halls, ev, count, date, day, menuQ, budget } = e;
+    if (halls.length && halls[0] !== S.hall && !menuQ) S.menu = null;
+    if (halls.length) S.hall = halls[0];
+    if (ev) { if (ev !== S.event && !halls.length && !(ev === 'katb' && ['lotus', 'mawadda'].includes(S.hall))) S.hall = halls[0] || null; S.event = ev; }
+    if (count) S.count = count;
+    if (date) S.date = date;
+    if (day) S.day = day;
+    if (menuQ) S.menu = menuQ;
+    const nw = t.trim().split(' ').length, short = nw <= 4;
+    const H = rx => rx.test(t);
+
+    if (short && H(/\b(thanks?|thank you|thx|appreciated?|great thanks)\b/)) { bot('<p>You are most welcome. It is always our pleasure to serve you.</p>'); chips(MAIN()); return; }
+    if (short && H(/\b(hi|hello|hey|good (morning|evening|afternoon)|salam|greetings)\b/) && !halls.length && !ev) { bot('<p>Welcome to Dar El-Marasem. How may I help you today?</p><p>Ask me about halls, prices, menus, any service or add-on, or let me recommend the right hall and prepare a detailed quote.</p>'); chips(MAIN()); return; }
+    if (H(/\b(view|viewing|tour|visit|come (and|to) see|see the (hall|venue) in person|site visit|walk ?through)\b/) && !H(/photo|picture/)) return startVisit();
+    if (H(/\b(book|reserve|reservation)\b/) && !H(/how (to|do|can)|process|steps|terms|policy|deposit|cancel/)) return startBook();
+    if (H(/\b(quote|quotation|full cost|total cost|full price|with (the )?add-?ons|itemi[sz]ed|detailed (price|cost|estimate))\b/)) { const pre = {}; const evq = ev || S.event; if (evq) pre.ev = evq; const hq = halls[0] || S.hall; if (hq) { if (!pre.ev && K.halls[hq]) pre.ev = 'wedding'; pre.hall = hq; } if (S.count) pre.n = S.count; if (S.day) pre.day = S.day; return startQuote(pre); }
+    if (H(/discount|cheaper price|negotiat|special price|best price|lower (the )?price|reduce (the )?price|any deal|\boffers?\b|promo/)) return enDiscount();
+    if (H(/too expensive|expensive|too much|over (my|our) budget|pricey|cant afford|cannot afford|overpriced/)) return enObjPrice();
+    if (H(/think about it|get back to you|not sure yet|need (some )?time|consult|discuss (it )?with|later\b/) && !halls.length) return enObjThink();
+    if (H(/cheaper (place|venue)|another venue|other venues?|found (a )?cheaper|competitor|elsewhere/)) return enObjCompetitor();
+    if (H(/parking|\bpark\b|garage|valet|\bcars?\b/) && !H(/fire ?show/)) return enParking();
+    if (H(/\b(photos?|pictures?|pics|images?|gallery)\b|look like|see (the )?hall/) && !H(/photograph(er|y)|session|shoot|album|clip|booth|projected/)) return photosAns(halls[0] || (K.halls[S.hall] ? S.hall : null));
+    if (H(/(describe|tell me about|features of|overview of) (the |your )?halls|hall features|which halls|what halls/)) return enHallsFeatures();
+    if (H(/why (should (i|we) )?(choose|book|pick)|what makes (you|dar)|about (the )?(venue|you|dar)\b|venue features|facilities|amenities|why dar/)) return enWhy();
+    if (H(/\b(where|address|location|map|directions|phone|contact|whatsapp|call you|number)\b/) && !count) return enContact();
+    // policies
+    if (H(/how (to|do i|do we|can i|can we) book|booking (process|steps)|steps to book/)) return enPolicy('howbook');
+    if (H(/\b(available|availability|free on|is .* free|vacant)\b/)) return enPolicy('avail');
+    if (H(/\b(deposit|down ?payment|advance payment|to confirm (the )?booking)\b/) && !H(/insurance|security|refundable deposit/)) return enPolicy('deposit');
+    if (H(/insurance|security deposit|refundable/)) return enPolicy('insurance');
+    if (H(/cancel|refund/)) return enPolicy('cancel');
+    if (H(/postpone|reschedul|change (the )?date|move (the )?date/)) return enPolicy('postpone');
+    if (H(/\b(visa|credit card|card|cash|instapay|payment methods?|pay by|pay with|ways to pay)\b/)) return enPolicy('methods');
+    if (H(/installment|payment (plan|schedule|terms)|when (do|should) (i|we) pay|pay the (rest|remaining|balance)|payments?\b/)) return enPolicy('payment');
+    if (H(/how long|duration|how many hours|extra hour|overtime|what time does it (end|finish)|hours\b/) && !H(/viewing|visit|open/)) return enPolicy('duration');
+    if (H(/outside (food|catering|cake|dessert)|bring (our|my) own (food|cake)|own (food|cake)|external (food|catering)|(cake|food|drinks|catering|desserts?|sweets) from outside/)) return enPolicy('food');
+    if (H(/outside (photographer|vendor|dj|singer|band|artist|planner|make-?up|hair)|our own (photographer|dj|band|singer|planner)|bring (a|our|my) (photographer|dj|band|singer|planner|makeup)/)) return enPolicy('vendors');
+    if (H(/alcohol|fireworks? allowed|smok|shisha|weapons?/)) return enPolicy('banned');
+    if (H(/\b(kids|children|child)\b/)) return enPolicy('kids');
+    // sales
+    if (H(/suggest|recommendation for add|ideas|make it special|special touch|upgrade|wow|stand out|what else|add-?ons? (do you )?(recommend|suggest)/) && !H(/hall for|which hall/)) return enSuggest(halls.find(h => K.halls[h]) || defScope());
+    const smW = /set ?menu/.test(t), obW = /buffet/.test(t);
+    if (smW && obW && !/(menu|buffet) ?\d/.test(t)) return enMenuTypes();
+    if (/high ?tea/.test(t) && smW && H(/differ|compare|vs|versus|or /)) { S.hall = 'lotus'; const n = (t.match(/set ?menu ?(\d)/) || [])[1]; return enCmp('lotus', K.halls.lotus.menus.find(m => m.id === 'ht'), K.halls.lotus.menus.find(m => m.id === 'sm' + (n || 1))); }
+    if (menuQ && (menuQ.k === 'sm' || menuQ.k === 'ob') && !menuQ.n && H(/what|include|consist|explain|mean|contain|whats/)) { if (halls.length) S.hall = halls[0]; return enMenuTypes(menuQ.k); }
+    if (menuQ && menuQ.n) { const m2 = t.match(/(\d)\D{1,25}?(\d)(?: |$)/); if (m2 && +m2[1] !== +m2[2] && +m2[1] <= 5 && +m2[2] <= 5 && H(/differ|compare|vs|versus|or |and |more than|extra/)) return enCmpMenus(menuQ.k, Math.min(+m2[1], +m2[2]), Math.max(+m2[1], +m2[2])); }
+    if (H(/(best|recommend|which|right|suitable|good) (menu|package)|which (menu|package)|menu (do you )?recommend/)) return enBestMenu(halls.find(h => K.halls[h]) || (K.halls[S.hall] ? S.hall : null));
+    if (H(/differ|compare|vs\.?|versus|better/) && !menuQ && halls.length < 2 && enDiff(t)) return;
+    const hk = halls.filter(h => K.halls[h]);
+    if (halls.includes('mawadda') && halls.includes('lotus')) { S.event = 'katb'; return enKatb(null); }
+    if (hk.length >= 2) return enCompare(hk[0], hk[1]);
+    if (budget && budget >= 10000) return enBudgetAns(budget);
+    const grp = enGroupRe(t);
+    if (grp && !enItemMatches(t).length) return enAddons(halls.find(h => K.halls[h]) || ctxScope() || defScope() || 'akhenaten', grp);
+    if (H(/add-?ons|extras|additional services|services (do you|you) (have|offer)|all services/)) return enAddons(halls.find(h => K.halls[h]) || ctxScope() || defScope() || 'akhenaten');
+    if (H(/capacity|how many (guests|people)|fit|accommodate|hold up to|max(imum)? (guests|number)/)) return halls[0] ? enCapacity(halls[0]) : enCapacity(null);
+    if (ev === 'photo') return enPhoto();
+    if (ev && (short || !enItemMatches(t).length)) { if (ev === 'katb') return enKatb(['lotus', 'mawadda'].includes(S.hall) ? S.hall : null); if (ev === 'birthday') return enBirthday(); if (ev === 'special') return enSpecial(); if (ev === 'photo') return enPhoto(); if (ev === 'aqiqa') return enAqiqa(); }
+    const items = enItemMatches(t);
+    if (items.length && !menuQ) return enItems(items, t);
+    if (menuQ && menuQ.n) return enMenu(halls.find(h => K.halls[h]) || (K.halls[S.hall] ? S.hall : null), menuQ);
+    if (menuQ && menuQ.k === 'ht') return enMenu('lotus', menuQ);
+    if (menuQ && (menuQ.k === 'cb' || menuQ.k === 'ssm')) return enSpecial(menuQ);
+    // event specific
+    const evx = ev || S.event;
+    if (evx === 'katb' && (ev || short || H(/price|cost|how much/))) return enKatb(['lotus', 'mawadda'].includes(S.hall) ? S.hall : null);
+    if (evx === 'birthday' && (ev || short || H(/price|cost|how much/))) return enBirthday();
+    if (evx === 'special' && (ev || short || H(/price|cost|how much/))) return enSpecial();
+    if (evx === 'photo') return enPhoto();
+    if (evx === 'aqiqa') return enAqiqa();
+    if (H(/capacity|how many (guests|people)|fit|accommodate|hold up to|max(imum)? (guests|number)/)) return halls[0] ? enCapacity(halls[0]) : enCapacity(null);
+    if (halls.length && ['mawadda'].includes(halls[0])) return enKatb('mawadda');
+    if (halls.length && ['roof', 'glass'].includes(halls[0])) return enBirthday();
+    if (halls.length && ['lulu', 'marasem'].includes(halls[0])) return enSpecial();
+    if (count && K.halls[S.hall]) return enEstimate(S.hall);
+    if (count) return enRecommend();
+    if (H(/recommend|suggest a hall|which hall|best hall|suitable hall/)) return S.count ? enRecommend() : enAskCount(enRecommend);
+    if (hk.length) return enHall(hk[0]);
+    if (H(/menu|food|dishes|meals?|buffet|catering/)) return enMenuTypes();
+    if (H(/price|prices|cost|how much|rates?|packages?|fees/)) return K.halls[S.hall] ? enHall(S.hall) : enOverview();
+    if (ev) return enEventIntro(ev);
+    enFallback(raw);
+  }
+  const defScope = () => { const sc = ctxScope(); if (sc) return sc; if (S.event === 'katb') return 'mawadda'; if (['wedding', 'engagement'].includes(S.event) && !S.count) return 'akhenaten'; if (['birthday', 'special', 'photo', 'aqiqa'].includes(S.event)) return S.event; if (S.count) return WH.find(h => S.count <= K.halls[h].max) || 'akhenaten'; return null; };
+
+  // ---- shared bits ----
+  const enMain = () => [
+    { t: 'Detailed quote for your event', fn: () => startQuote() }, { t: 'Suggestions for your event', fn: () => enSuggest(defScope()) }, { t: 'Venue & hall features', fn: enWhy },
+    { t: 'Hall prices', fn: enOverview }, { t: 'Recommend a hall', fn: () => S.count ? enRecommend() : enAskCount(enRecommend) }, { t: 'Menus', fn: () => enMenuTypes() },
+    { t: 'Booking & payment policy', fn: () => enPolicy('howbook') }, { t: 'Book a viewing', fn: () => startVisit() }, { t: 'Location & contact', fn: enContact }
+  ];
+  function enAskCount(then) {
+    bot('<p>How many guests are you expecting? Please type the number (e.g. 250).</p>');
+    FLOW = { wantCount: true, step: (raw, t, e) => { const n = e.count || enCount(t, true); if (!n) { FLOW = null; return false; } FLOW = null; S.count = n; if (e.halls.length) S.hall = e.halls[0]; if (e.day) S.day = e.day; (then || (() => K.halls[S.hall] ? enEstimate(S.hall) : enRecommend()))(); return true; } };
+    chips([100, 150, 200, 250, 300, 400].map(n => ({ t: n + ' guests', fn: () => { FLOW = null; S.count = n; (then || (() => K.halls[S.hall] ? enEstimate(S.hall) : enRecommend()))(); } })));
+  }
+  const enInc = H => H.inc.flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1])).filter(x => !/حجز القاعة|كراسي/.test(x)).map(x => txEN(x).replace(/\s*—.*$/, ''));
+  const enBasis = H => H.pk.type === 'wk' ? `${H.pk.wd.n} guests (Sun – Wed) / ${H.pk.we.n} guests (Thu – Sat)` : `${H.pk.n} guests (+${money(H.pk.fee)} on weekends & public holidays)`;
+
+  function enWelcome() {
+    bot(`<p class="dmb-h">Welcome to Dar El-Marasem</p>${phHTML(['venue'])}<p>I am the <b>Dar El-Marasem AI assistant</b>, here around the clock to help you plan your event from the first question to the final quote:</p><ul><li>Recommending the right hall and package for your guest count and budget</li><li>Prices and contents of every menu, and comparisons between halls and packages</li><li>A <b>detailed, itemized quote</b> and suggestions to complete your event</li><li>Booking and payment terms, and booking a viewing</li></ul><p>Let us begin: <b>what is the happy occasion?</b></p>`);
+    chips([...['wedding', 'engagement', 'katb', 'birthday', 'special'].map(e => ({ t: EVNAME[e], fn: () => { S.event = e; if (e === 'katb') return S.count ? enKatb(null) : enAskCount(() => enKatb(null)); if (e === 'birthday') return enBirthday(); if (e === 'special') return enSpecial(); S.count ? enRecommend() : enAskCount(enRecommend); } })), { t: 'Detailed quote', fn: () => startQuote() }, { t: 'Hall prices', fn: enOverview }, { t: 'Book a viewing', fn: () => startVisit() }]);
+  }
+  function enFallback(raw) {
+    logQ('unanswered', raw);
+    bot('<p>Thank you for your question.</p><p>To make sure you receive accurate, up-to-date information, our events team will be delighted to answer this directly. You can reach them on WhatsApp or by phone, or book a visit to see the halls (daily, 10 am – 10 pm).</p>', [waAct('Dar El-Marasem – inquiry' + (raw ? ':\n' + raw : '')), { t: 'Contact us', fn: enContact }]);
+    chips(MAIN());
+  }
+  function enContact() {
+    bot(`<p class="dmb-h">Location & contact</p><p><b>Address:</b> ${EN_ADDRESS}</p><p><b>Phone:</b> ${PHONES.join(' – ')}<br><b>WhatsApp:</b> ${PHONES[0]}</p><p><b>Hall viewings:</b> daily, 10 am – 10 pm.</p><p class="dmb-note">An indoor garage with valet service is available for your guests.</p>`, [{ t: 'Open in Google Maps', href: MAP }, waAct('Dar El-Marasem – I would like to inquire about an event'), { t: 'Call us', href: 'tel:' + PHONES[0] }]);
+    chips([{ t: 'Book a viewing', fn: () => startVisit() }, { t: 'Venue features', fn: enWhy }]);
+  }
+  function enOverview() {
+    const Hs = K.halls;
+    const row = (name, cap, from, note) => `<tr><td><b>${name}</b><br><small>${cap}</small></td><td class="n">${from}</td><td><small>${note}</small></td></tr>`;
+    bot(`<p class="dmb-h">Halls at a glance</p><table class="dmb-t"><tr><th>Hall / event</th><th>From</th><th>Basis</th></tr>
+${row('Akhenaten Hall', '250 – 600 guests', money(Hs.akhenaten.menus[0].wd), 'Weekday wedding package, 250 guests')}
+${row('Isis Hall', '150 – 300 guests', money(Hs.isis.menus[0].price), 'Wedding package, 150 guests')}
+${row('Lotus Hall', '100 – 200 guests', money(Hs.lotus.menus[0].price), 'Wedding package (high tea), 100 guests')}
+${row('Al-Mawadda wal-Rahma Hall', '100 – 150 guests', money(K.katb.mawadda.price), 'Marriage-contract package, 100 guests')}
+${row('Birthdays', 'Lotus – Roof Top – Glass Hall', money(5000), 'Roof Top (20 – 40 guests)')}
+${row('Special events', 'Conferences – meetings – coffee breaks', money(5000), "Al-Lulu'a Hall; menu priced per person")}
+${row('Photo session', 'Up to 6 people', money(5000), 'Session fee')}</table><p class="dmb-note">Prices follow the venue's current menus and vary with guest count, menu and day.</p>`);
+    chips([...WH.slice().reverse().map(h => ({ t: HALLNAME[h] + ' prices', fn: () => enHall(h) })), { t: 'Marriage contract', fn: () => enKatb(null) }, { t: 'Recommend a hall', fn: () => S.count ? enRecommend() : enAskCount(enRecommend) }]);
+  }
+  function enPriceTable(H) {
+    if (H.pk.type === 'wk') return `<table class="dmb-t"><tr><th>Menu</th><th>Weekday<br><small>${H.pk.wd.n} guests</small></th><th>Weekend<br><small>${H.pk.we.n} guests</small></th></tr>${H.menus.map(m => `<tr><td>${A(m.name)}</td><td class="n">${money(m.wd)}</td><td class="n">${money(m.we)}</td></tr>`).join('')}</table>`;
+    return `<table class="dmb-t"><tr><th>Menu</th><th>Package<br><small>${H.pk.n} guests</small></th><th>Extra meal</th></tr>${H.menus.map(m => `<tr><td>${A(m.name)}</td><td class="n">${money(m.price)}</td><td class="n">${m.tiers ? money(m.tiers[2]) + ' – ' + money(m.tiers[0]) : money(m.extra)}</td></tr>`).join('')}</table>`;
+  }
+  function enHall(hid) {
+    S.hall = hid; const Hh = K.halls[hid], d = EN_DESC[hid];
+    const dep = K.deposit.find(r => r[0] === Hh.name);
+    const exh = K.addons.find(a => a.s === hid && norm(a.n).trim() === 'ساعه اضافيه');
+    bot(`<p class="dmb-h">${HALLNAME[hid]}</p>${phHTML([hid])}<p>${d[0]} ${d[1]}</p><table class="dmb-t"><tr><td>Capacity</td><td class="n">${Hh.min} – ${Hh.max} guests</td></tr><tr><td>Package based on</td><td>${enBasis(Hh)}</td></tr>${exh ? `<tr><td>Extra hour</td><td class="n">${ar(exh.p)}</td></tr>` : ''}${dep ? `<tr><td>Booking deposit / insurance</td><td class="n">${money(dep[1])}<br><small>insurance ${money(dep[2])}</small></td></tr>` : ''}</table>${enPriceTable(Hh)}${Hh.menus[0].tiers ? '<p class="dmb-note">Extra meals are tiered: the first 50, then 51 – 100, then beyond 100 get progressively cheaper.</p>' : ''}<div class="dmb-sg"><b>Every package includes</b>Besides the meals: ${enInc(Hh).map(A).join(', ')}. The kosha: ${d[2]}.</div>${ctaLine(hid)}${src(hid, '1 – 3')}`, [{ t: 'Book a viewing', cls: 'pri', fn: () => startVisit() }, { t: 'Décor & kosha options', go: Hh.decor }]);
+    chips([{ t: 'Calculate for my guest count', fn: () => S.count ? enEstimate(hid) : enAskCount(() => enEstimate(hid)) }, { t: 'Which menu suits me?', fn: () => enBestMenu(hid) }, { t: 'Suggestions for your event', fn: () => enSuggest(hid) }, { t: 'Compare with another hall', fn: () => enCompare(hid, hid === 'isis' ? 'akhenaten' : 'isis') }, { t: 'Detailed quote', fn: () => startQuote(quotePre(hid)) }]);
+  }
+  function enCapacity(hid) {
+    if (hid && K.halls[hid]) { const Hh = K.halls[hid]; const n = S.count; bot(`<p><b>${HALLNAME[hid]}</b> hosts ${Hh.min} – ${Hh.max} guests${n ? (n <= Hh.max ? `, so <b>${n} guests fit comfortably</b>` : `; ${n} guests exceed its capacity`) : ''}. The package is based on ${enBasis(Hh)}.</p>`); chips([{ t: 'Recommend a hall', fn: () => S.count ? enRecommend() : enAskCount(enRecommend) }, { t: HALLNAME[hid] + ' prices', fn: () => enHall(hid) }]); return; }
+    bot(`<p class="dmb-h">Hall capacities</p><table class="dmb-t"><tr><td>Akhenaten Hall (largest)</td><td class="n">250 – 600</td></tr><tr><td>Isis Hall</td><td class="n">150 – 300</td></tr><tr><td>Lotus Hall</td><td class="n">100 – 200</td></tr><tr><td>Al-Mawadda wal-Rahma Hall (marriage contract)</td><td class="n">100 – 150</td></tr><tr><td>Glass Hall (Open Air) – birthdays</td><td class="n">30 – 60</td></tr><tr><td>Roof Top – birthdays</td><td class="n">20 – 40</td></tr></table>`);
+    chips([{ t: 'Recommend a hall', fn: () => S.count ? enRecommend() : enAskCount(enRecommend) }]);
+  }
+  function enRecommend() {
+    const n = S.count, ev = S.event || 'wedding';
+    if (!n) return enAskCount(enRecommend);
+    if (ev === 'katb') return enKatb(null);
+    if (ev === 'birthday') return enBirthday();
+    if (ev === 'special') return enSpecial();
+    if (ev === 'aqiqa') return enAqiqa();
+    let fits = WH.filter(h => n >= K.halls[h].min && n <= K.halls[h].max);
+    if (!fits.length && n < 100) fits = ['lotus'];
+    if (!fits.length) { bot(`<p>Thank you for your interest. ${n} guests exceeds our largest hall (Akhenaten, up to 600 guests); our events team will gladly study your request.</p>`, [waAct(`Dar El-Marasem – event for ${n} guests`)]); chips(MAIN()); return; }
+    const rows = fits.map(h => { const Hh = K.halls[h]; const r = d => { const v = Hh.menus.map(m => estTotal(Hh, m, n, d)); return [Math.min(...v), Math.max(...v)]; }; const a = r('wd'), b = r('we'); return `<tr><td><b>${HALLNAME[h]}</b><br><small>${Hh.min} – ${Hh.max} guests</small></td><td class="n"><small>Weekday</small><br>${money(a[0])} – ${money(a[1])}<br><small>Weekend</small><br>${money(b[0])} – ${money(b[1])}</td></tr>`; }).join('');
+    bot(`<p>Suitable halls for <b>${n} guests</b>:</p><table class="dmb-t"><tr><th>Hall</th><th>Estimated cost</th></tr>${rows}</table><p class="dmb-note">Totals include the package and extra meals for ${n} guests, from the lowest to the highest menu.${n < 100 ? ' The Lotus Hall package covers a minimum of 100 guests.' : ''}</p>${recPick(fits, n)}`);
+    chips(fits.map(h => ({ t: 'Details: ' + HALLNAME[h], fn: () => { S.hall = h; S.menu = null; enEstimate(h); } })));
+  }
+  function enEstimate(hid) {
+    const Hh = K.halls[hid], n = S.count; S.hall = hid;
+    if (!n) return enAskCount(() => enEstimate(hid));
+    if (n > Hh.max) { bot(`<p>${n} guests exceeds the capacity of ${HALLNAME[hid]} (up to ${Hh.max}).</p>`); return enRecommend(); }
+    let day = S.day;
+    if (Hh.pk.type === 'wk' && !day) { bot(`<p>At ${HALLNAME[hid]} the price depends on the day. Which day are you planning?</p>`); FLOW = { step: (raw, t, e) => { if (!e.day) { FLOW = null; return false; } FLOW = null; S.day = e.day; enEstimate(hid); return true; } }; chips([{ t: 'Weekday (Sun – Wed)', fn: () => { S.day = 'wd'; enEstimate(hid); } }, { t: 'Weekend (Thu – Sat)', fn: () => { S.day = 'we'; enEstimate(hid); } }]); return; }
+    const baseN = Hh.pk.type === 'wk' ? Hh.pk[day].n : Hh.pk.n;
+    const mq = S.menu && hallMenu(hid, S.menu);
+    const menus = mq ? [mq] : Hh.menus;
+    const rows = menus.map(m => { const tot = estTotal(Hh, m, n, day || 'wd'); return `<tr><td>${A(m.name)}</td><td class="n">${money(tot)}<br><small>≈ ${money(Math.round(tot / Math.max(n, baseN) / 5) * 5)} per guest</small></td></tr>`; }).join('');
+    const dTxt = Hh.pk.type === 'wk' ? (day === 'we' ? 'weekend' : 'weekday') : (day === 'we' ? 'weekend / holiday' : day === 'wd' ? 'weekday' : '');
+    const notes = [];
+    if (n < baseN) notes.push(`The package covers a guaranteed minimum of ${baseN} guests.`);
+    if (Hh.pk.type !== 'wk' && !day) notes.push(`For Thursday, Friday, Saturday, feasts and public holidays add ${money(Hh.pk.fee)}.`);
+    notes.push('Estimates exclude the insurance and any add-ons; final prices are confirmed by our events team at contracting.');
+    bot(`<p class="dmb-h">Estimated cost – ${HALLNAME[hid]}</p><p>${n} guests${dTxt ? ' – ' + dTxt : ''}${S.date ? ' (' + dateTxt(S.date) + ')' : ''}</p><table class="dmb-t"><tr><th>Menu</th><th>Estimated total</th></tr>${rows}</table>${notes.map(x => `<p class="dmb-note">${x}</p>`).join('')}${mq ? upTier(hid, mq, n, day) : ''}${ctaLine(hid)}${src(hid)}`, [{ t: 'Detailed quote with add-ons', cls: 'pri', fn: () => startQuote({ ev: ['wedding', 'engagement'].includes(S.event) ? S.event : 'wedding', hall: hid, n, day }) }, { t: 'Booking request', fn: () => startBook() }]);
+    chips([{ t: 'Suggestions for your event', fn: () => enSuggest(hid) }, ...Hh.menus.slice(0, 3).map(m => ({ t: 'Contents: ' + txEN(m.name), fn: () => enMenu(hid, { k: m.id.replace(/\d+$/, ''), n: +m.id.replace(/^\D+/, '') || 0 }) })), { t: 'Change guest count', fn: () => enAskCount(() => enEstimate(hid)) }, ...(Hh.pk.type === 'wk' || day ? [{ t: day === 'we' ? 'Calculate for a weekday' : 'Calculate for a weekend', fn: () => { S.day = day === 'we' ? 'wd' : 'we'; S.date = null; enEstimate(hid); } }] : [])]);
+  }
+  function enMenu(hid, mq) {
+    if (!hid) { if (mq.k === 'ht') hid = 'lotus'; else { bot('<p>Which hall would you like to see this menu for?</p>'); chips(WH.slice().reverse().map(h => ({ t: HALLNAME[h], fn: () => { S.hall = h; enMenu(h, mq); } }))); return; } }
+    const Hh = K.halls[hid]; const m = hallMenu(hid, mq);
+    if (!m) { bot(`<p>${HALLNAME[hid]} offers: ${Hh.menus.map(x => A(x.name)).join(', ')}.</p>`); chips(Hh.menus.map(x => ({ t: txEN(x.name), fn: () => enMenu(hid, { k: x.id.replace(/\d+$/, ''), n: +x.id.replace(/^\D+/, '') || 0 }) }))); return; }
+    S.hall = hid; S.menu = mq;
+    const price = Hh.pk.type === 'wk' ? `<tr><td>Weekday (${Hh.pk.wd.n} guests)</td><td class="n">${money(m.wd)}</td></tr><tr><td>Weekend (${Hh.pk.we.n} guests)</td><td class="n">${money(m.we)}</td></tr>` : `<tr><td>Package (${Hh.pk.n} guests)</td><td class="n">${money(m.price)}</td></tr><tr><td>Weekends, feasts & public holidays</td><td class="n">+ ${money(Hh.pk.fee)}</td></tr>`;
+    const extra = m.tiers ? `<tr><th colspan="2">Extra meal price</th></tr><tr><td>First 50 meals</td><td class="n">${money(m.tiers[0])}</td></tr><tr><td>Meals 51 – 100</td><td class="n">${money(m.tiers[1])}</td></tr><tr><td>Beyond 100 meals</td><td class="n">${money(m.tiers[2])}</td></tr>` : `<tr><td>Extra meal (per guest)</td><td class="n">${money(m.extra)}</td></tr>`;
+    bot(`<p class="dmb-h">${A(m.name)} – ${HALLNAME[hid]}</p>${contentHTML(m.c)}<table class="dmb-t">${price}${extra}</table>${upTier(hid, m, S.count, S.day)}${src(hid, m.pg)}`, [{ t: 'View the printed menu', go: Hh.menu }]);
+    chips([{ t: 'Calculate for my guest count', fn: () => S.count ? enEstimate(hid) : enAskCount(() => enEstimate(hid)) }, ...Hh.menus.filter(x => x.id !== m.id).slice(0, 3).map(x => ({ t: txEN(x.name), fn: () => enMenu(hid, { k: x.id.replace(/\d+$/, ''), n: +x.id.replace(/^\D+/, '') || 0 }) })), { t: 'Detailed quote', fn: () => startQuote(quotePre(hid)) }]);
+  }
+  function enMenuTypes(focus) {
+    const hid = K.halls[S.hall] && S.hall !== 'lotus' ? S.hall : 'isis', Hh = K.halls[hid];
+    const sm = Hh.menus.filter(m => m.id.startsWith('sm')), ob = Hh.menus.filter(m => m.id.startsWith('ob'));
+    const smRows = sm.map(m => `<tr><td><b>${A(m.name)}</b><br><small>${secItems(m, /الرئيسي/).map(A).join(', ')}</small></td><td class="n">${money(pv(Hh, m))}</td></tr>`).join('');
+    const obRows = ob.map(m => `<tr><td><b>${A(m.name)}</b><br><small>${itemCount(m)} items, including ${secItems(m, /الساخن/).length} hot dishes and a carving station</small></td><td class="n">${money(pv(Hh, m))}</td></tr>`).join('');
+    bot(`<p class="dmb-h">${focus === 'sm' ? 'The set menu' : focus === 'ob' ? 'The open buffet' : 'Set menu & open buffet'}</p>${focus !== 'ob' ? '<div class="dmb-sg"><b>Set menu</b>A complete, defined meal served to each guest at the table: salads, appetizers, main course, dessert and drinks. It offers organized, elegant service, and grows from (1) to (5) with more appetizers and main-course items.</div>' : ''}${focus !== 'sm' ? '<div class="dmb-sg"><b>Open buffet</b>A wider spread guests choose from freely: salads, oriental appetizers, cold starters, breads, a hot buffet, a carving station, desserts and drinks. Ideal if you prefer variety and an open, festive atmosphere.</div>' : ''}${focus !== 'ob' ? `<p><b>Main course in each set menu</b> – ${HALLNAME[hid]}:</p><table class="dmb-t">${smRows}</table>` : ''}${focus !== 'sm' && ob.length ? `<p><b>Open buffet</b> – ${HALLNAME[hid]}:</p><table class="dmb-t">${obRows}</table>` : ''}<p class="dmb-note">Items are the same at Akhenaten and Isis (with slight differences in open buffets 2 and 3). Lotus Hall offers high tea and set menus (1 – 3), without open buffet.${Hh.pk.type === 'wk' ? ' Prices shown are weekday packages.' : ''}</p>${src(hid)}`);
+    chips([{ t: 'Which menu suits me?', fn: () => enBestMenu(hid) }, { t: 'Set Menu (1) contents', fn: () => enMenu(hid, { k: 'sm', n: 1 }) }, ...(ob.length ? [{ t: 'Open Buffet (3) contents', fn: () => enMenu(hid, { k: 'ob', n: 3 }) }] : []), { t: 'Detailed quote', fn: () => startQuote(quotePre(hid)) }]);
+  }
+  function enBestMenu(hid) {
+    if (!hid) { bot('<p>I would be glad to help you choose. Which hall?</p>'); chips(WH.slice().reverse().map(h => ({ t: HALLNAME[h], fn: () => { S.hall = h; enBestMenu(h); } }))); return; }
+    S.hall = hid; const Hh = K.halls[hid];
+    const sm = Hh.menus.filter(m => m.id.startsWith('sm')), ob = Hh.menus.filter(m => m.id.startsWith('ob'));
+    const rich = sm.slice().sort((a, b) => secItems(b, /الرئيسي/).length - secItems(a, /الرئيسي/).length || pv(Hh, a) - pv(Hh, b))[0];
+    const top = Hh.menus.slice().sort((a, b) => itemCount(b) - itemCount(a) || pv(Hh, b) - pv(Hh, a))[0];
+    const L = [`<li><b>Best for your budget:</b> ${A(Hh.menus[0].name)} at ${money(pv(Hh, Hh.menus[0]))}, complete and economical.</li>`];
+    if (rich && rich !== Hh.menus[0]) L.push(`<li><b>For a richer main course:</b> ${A(rich.name)} – ${secItems(rich, /الرئيسي/).map(A).join(', ')}.</li>`);
+    L.push(ob.length ? `<li><b>For variety and an open atmosphere:</b> the open buffet; ${A(top.name)} has the widest spread (${itemCount(top)} items).</li>` : `<li><b>For a light, elegant reception:</b> ${A((Hh.menus.find(m => m.id === 'ht') || Hh.menus[0]).name)}.</li>`);
+    bot(`<p class="dmb-h">Which menu suits you at ${HALLNAME[hid]}?</p><p>All our menus are complete; the choice depends on your priority:</p><ul>${L.join('')}</ul><table class="dmb-t"><tr><th>Menu</th><th>Package${Hh.pk.type === 'wk' ? ' (weekday)' : ''}</th></tr>${Hh.menus.map(m => `<tr><td><b>${A(m.name)}</b><br><small>${itemCount(m)} items</small></td><td class="n">${money(pv(Hh, m))}</td></tr>`).join('')}</table><div class="dmb-cta">Tell me your guest count and I will calculate the full cost of any menu with the add-ons you choose.</div>${src(hid)}`, [{ t: 'Detailed quote', cls: 'pri', fn: () => startQuote(quotePre(hid)) }]);
+    chips([{ t: 'Set menu vs open buffet', fn: () => enMenuTypes() }, ...(sm.length >= 2 ? [{ t: `Compare set menu 1 and ${sm.length}`, fn: () => enCmpMenus('sm', 1, sm.length) }] : [])]);
+  }
+  function enCmp(hid, m1, m2) {
+    const Hh = K.halls[hid];
+    const heads = [...new Set([...m1.c, ...m2.c].map(x => x.h).filter(Boolean))];
+    const L = (m, h) => { const x = m.c.find(y => y.h === h); if (!x) return '—'; const i = x.o.filter(o => o[0] === 'i'); return (i.length ? i : x.o).map(o => A(o[1])).join(', '); };
+    const items = m => m.c.flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1]));
+    const have = new Set(items(m1).map(norm)), add = items(m2).filter(x => !have.has(norm(x)));
+    const gap = pv(Hh, m2) - pv(Hh, m1);
+    bot(`<p class="dmb-h">${A(m1.name)} vs ${A(m2.name)} – ${HALLNAME[hid]}</p><table class="dmb-t"><tr><th></th><th>${A(m1.name)}</th><th>${A(m2.name)}</th></tr><tr><td>Package</td><td class="n">${money(pv(Hh, m1))}</td><td class="n">${money(pv(Hh, m2))}</td></tr>${heads.map(h => `<tr><td><b>${A(h)}</b></td><td><small>${L(m1, h)}</small></td><td><small>${L(m2, h)}</small></td></tr>`).join('')}</table>${add.length ? `<p><b>${A(m2.name)}</b> adds: ${add.slice(0, 10).map(A).join(', ')}${gap > 0 ? `, for ${money(gap)} more on the package${Hh.pk.type === 'wk' ? ' (weekday)' : ''}` : ''}.</p>` : ''}${src(hid, m1.pg + ' & ' + m2.pg)}`);
+    chips([{ t: 'Calculate for my guest count', fn: () => S.count ? enEstimate(hid) : enAskCount(() => enEstimate(hid)) }, { t: 'Detailed quote', fn: () => startQuote(quotePre(hid)) }]);
+  }
+  function enCmpMenus(k, a, b) {
+    if (k === 'cb' || k === 'ssm') { const m1 = K.special.menus.find(m => m.id === k + a), m2 = K.special.menus.find(m => m.id === k + b); if (m1 && m2) return enSpecial({ k, n: b }); }
+    const hid = K.halls[S.hall] ? S.hall : 'isis';
+    const m1 = hallMenu(hid, { k, n: a }), m2 = hallMenu(hid, { k, n: b });
+    if (!m1 || !m2) return enMenu(hid, { k, n: a });
+    enCmp(hid, m1, m2);
+  }
+  function enCompare(a, b) {
+    const H1 = K.halls[a], H2 = K.halls[b];
+    const row = (l, f) => `<tr><td><b>${l}</b></td><td>${f(H1, a)}</td><td>${f(H2, b)}</td></tr>`;
+    const dep = Hh => { const r = K.deposit.find(x => x[0] === Hh.name); return r ? `${money(r[1])}<br><small>insurance ${money(r[2])}</small>` : '—'; };
+    const exh = id => { const x = K.addons.find(z => z.s === id && norm(z.n).trim() === 'ساعه اضافيه'); return x ? ar(x.p) : '—'; };
+    bot(`<p class="dmb-h">${HALLNAME[a]} vs ${HALLNAME[b]}</p>${phHTML([a, b], true)}<table class="dmb-t"><tr><th></th><th>${HALLNAME[a]}</th><th>${HALLNAME[b]}</th></tr>${row('Capacity', Hh => `${Hh.min} – ${Hh.max}`)}${row('Package basis', Hh => Hh.pk.type === 'wk' ? `${Hh.pk.wd.n} / ${Hh.pk.we.n} guests` : `${Hh.pk.n} guests`)}${row('From', Hh => `<b>${money(pv(Hh, Hh.menus[0]))}</b>`)}${row('Weekend', Hh => Hh.pk.type === 'wk' ? `Separate package (${Hh.pk.we.n} guests)` : `+ ${money(Hh.pk.fee)}`)}${row('Menus', Hh => Hh.menus.length + ' options' + (Hh.menus.some(m => m.id.startsWith('ob')) ? ' (incl. open buffet)' : ''))}${row('Extra hour', (Hh, id) => exh(id))}${row('Deposit', Hh => dep(Hh))}</table>${hallAdvice(a, b)}${src(a, '1 – 3')}`, [{ t: 'Book a viewing of both halls', cls: 'pri', fn: () => startVisit() }]);
+    chips([{ t: HALLNAME[a] + ' details', fn: () => enHall(a) }, { t: HALLNAME[b] + ' details', fn: () => enHall(b) }, { t: 'Calculate for my guest count', fn: () => enAskCount(() => enCompare(a, b)) }, { t: 'Detailed quote', fn: () => startQuote({ ev: 'wedding', n: S.count || null }) }]);
+  }
+  function enKatb(which) {
+    S.event = 'katb'; const m = K.katb.mawadda, l = K.katb.lotus, n = S.count;
+    const est = k => n ? k.price + Math.max(n - k.n, 0) * k.extra : null;
+    bot(`<p class="dmb-h">Marriage contract (Katb El-Ketab)</p><table class="dmb-t"><tr><th></th><th>Al-Mawadda wal-Rahma</th><th>Lotus Hall</th></tr><tr><td><b>Package</b></td><td class="n">${money(m.price)}<br><small>${m.n} guests</small></td><td class="n">${money(l.price)}<br><small>${l.n} guests</small></td></tr><tr><td><b>Extra guest</b></td><td class="n">${money(m.extra)}</td><td class="n">${money(l.extra)}</td></tr>${n ? `<tr class="tot"><td>For ${n} guests</td><td class="n">${n <= m.max ? money(est(m)) : '—'}</td><td class="n">${n <= 200 ? money(est(l)) : '—'}</td></tr>` : ''}<tr><td><b>Capacity</b></td><td>${m.min} – ${m.max}</td><td>up to 200</td></tr><tr><td><b>Duration</b></td><td>1.5 hours</td><td>1.5 hours</td></tr><tr><td><b>Time slots</b></td><td><small>${m.slots.map(x => A(x)).join('<br>')}</small></td><td><small>${l.slots.map(x => A(x)).join('<br>')}</small></td></tr></table><div class="dmb-sec"><b>Lotus package includes</b>${contentHTML(l.c.slice(0, 1))}</div><div class="dmb-sec"><b>Al-Mawadda wal-Rahma package includes</b>${contentHTML(m.c)}</div><p class="dmb-note">Our advice: <b>Al-Mawadda wal-Rahma</b> is the most economical choice up to ${m.max} guests; <b>Lotus</b> suits a fuller package or more guests.</p>${src('mawadda', 3)}`, [{ t: 'Detailed quote', cls: 'pri', fn: () => startQuote({ ev: 'katb', n: n || null }) }]);
+    chips([{ t: 'Suggestions for the ceremony', fn: () => enSuggest('mawadda') }, { t: 'Marriage-contract add-ons', fn: () => enAddons(which === 'lotus' ? 'lotusk' : 'mawadda') }, { t: 'Calculate for my guest count', fn: () => enAskCount(() => enKatb(which)) }, { t: 'Book a viewing', fn: () => startVisit() }]);
+  }
+  function enBirthday() {
+    S.event = 'birthday'; const n = S.count;
+    const ok = n ? K.birthday.filter(b => n <= (b.id === 'lotus' ? 200 : b.max)) : null;
+    bot(`<p class="dmb-h">Birthday packages</p><p>Every package includes the hall, tables + chairs and a SPEAKERS sound system.</p><table class="dmb-t">${K.birthday.map(b => `<tr><td><b>${A(b.name)}</b><br><small>${A(b.cap)}</small></td><td class="n">${money(b.price)}</td></tr>`).join('')}</table>${ok ? `<p class="dmb-note">For ${n} guests: ${ok.map(b => A(b.name)).join(', ') || 'please contact our events team'}.</p>` : ''}<p>Food, cakes and balloon décor can be added from the birthday menu.</p>${src('birthday', 2)}`, [{ t: 'Detailed quote', cls: 'pri', fn: () => startQuote({ ev: 'birthday', n: n || null }) }]);
+    chips([{ t: 'Birthday suggestions', fn: () => enSuggest('birthday') }, { t: 'Décor & balloons', fn: () => enAddons('birthday', /البالونات/) }, { t: 'Cakes', fn: () => enAddons('birthday', /التورت/) }, { t: 'Sandwiches & snacks', fn: () => enAddons('birthday', /السندوتشات|سناكس|المخبوزات/) }]);
+  }
+  function enSpecial(mq) {
+    S.event = 'special'; const sp = K.special, n = S.count;
+    if (mq && mq.n) { const m = sp.menus.find(x => x.id === mq.k + mq.n); if (m) { bot(`<p class="dmb-h">${A(m.name)}</p>${contentHTML(m.c)}<table class="dmb-t"><tr><td>Price per person</td><td class="n">${money(m.pp)}</td></tr>${n ? `<tr class="tot"><td>For ${n} guests</td><td class="n">${money(m.pp * n)}</td></tr>` : ''}</table><p class="dmb-note">In addition to the hall booking fee.</p>${src('special', m.pg)}`); chips([{ t: 'Special events halls & menus', fn: () => enSpecial() }, { t: 'Detailed quote', fn: () => startQuote({ ev: 'special', n: n || null }) }]); return; } }
+    const CAP = { lotus: 200, isis: 300, akhenaten: 600 };
+    let lead = '';
+    if (n) { const opts = sp.halls.map(h => n <= h.n ? { h, x: 0, c: h.price } : (CAP[h.id] && n <= CAP[h.id] ? { h, x: n - h.n, c: h.price + (n - h.n) * 50 } : null)).filter(Boolean).sort((a, b) => a.c - b.c); lead = opts.length ? `<p>For <b>${n} guests</b>, suitable halls by booking cost:</p><table class="dmb-t">${opts.slice(0, 4).map(o => `<tr><td>${A(o.h.name)}${o.x ? `<br><small>${money(o.h.price)} + ${o.x} extra table & chair × ${money(50)}</small>` : ''}</td><td class="n">${money(o.c)}</td></tr>`).join('')}</table>` : ''; }
+    bot(`<p class="dmb-h">Special events & conferences</p>${lead}<div class="dmb-sec"><b>Hall booking (tables & chairs included)</b></div><table class="dmb-t">${sp.halls.map(h => `<tr><td>${A(h.name)}<br><small>package for ${h.n} guests</small></td><td class="n">${money(h.price)}</td></tr>`).join('')}</table><div class="dmb-sec"><b>Menus (per person)</b></div><table class="dmb-t">${sp.menus.map(m => `<tr><td>${A(m.name)}${m.pcs ? ` <small>(${m.pcs} pieces)</small>` : ''}</td><td class="n">${money(m.pp)}${n ? `<br><small>${money(m.pp * n)} for ${n}</small>` : ''}</td></tr>`).join('')}</table>${src('special', '2, 4 – 12')}`, [{ t: 'Detailed quote', cls: 'pri', fn: () => startQuote({ ev: 'special', n: n || null }) }]);
+    chips([{ t: 'Coffee Break (1) contents', fn: () => enSpecial({ k: 'cb', n: 1 }) }, { t: 'Special Set Menu (1) contents', fn: () => enSpecial({ k: 'ssm', n: 1 }) }, { t: 'Sound, screens & photography', fn: () => enAddons('special') }, { t: 'Calculate for my guest count', fn: () => enAskCount(() => enSpecial()) }]);
+  }
+  function enPhoto() {
+    S.event = 'photo'; const L = K.addons.filter(a => a.s === 'photo');
+    bot(`<p class="dmb-h">Photo session</p><p>The photo-session fee is <b>${ar(L[0].p)}</b> (up to 6 people). Optional extras:</p><table class="dmb-t">${L.slice(1).map(a => `<tr><td>${A(a.n)}</td><td class="n">${ar(a.p)}</td></tr>`).join('')}</table>${src('photo', 2)}`, [waAct('Dar El-Marasem – I would like to book a photo session', 'Book a photo session on WhatsApp')]);
+    chips(MAIN().slice(0, 4));
+  }
+  function enAqiqa() {
+    S.event = 'aqiqa';
+    bot(`<p class="dmb-h">Aqiqa – Lotus Hall</p>${K.aqiqa.map(a => `<div class="dmb-sec"><b>${A(a.name)} – ${a.n} guests – ${money(a.price)}</b><ul>${a.i.map(x => `<li>${A(x)}</li>`).join('')}</ul><small>Extra guest (meal + chair + table): ${money(a.extra)}</small></div>`).join('')}${src('lotus', 13)}`, [{ t: 'Detailed quote', cls: 'pri', fn: () => startQuote({ ev: 'aqiqa', n: S.count || null }) }]);
+    chips(MAIN().slice(0, 4));
+  }
+  function enEventIntro(ev) {
+    if (ev === 'katb') return enKatb(null); if (ev === 'birthday') return enBirthday(); if (ev === 'special') return enSpecial(); if (ev === 'photo') return enPhoto(); if (ev === 'aqiqa') return enAqiqa();
+    bot(`<p class="dmb-h">${EVNAME[ev]}s at Dar El-Marasem</p>${phHTML(WH, true)}<table class="dmb-t">${WH.map(h => { const Hh = K.halls[h]; return `<tr><td><b>${HALLNAME[h]}</b><br><small>${Hh.min} – ${Hh.max} guests</small></td><td class="n">from ${money(pv(Hh, Hh.menus[0]))}</td></tr>`; }).join('')}</table><p>How many guests are you expecting? I will recommend the right hall and calculate the full cost.</p>`);
+    enAskCount(enRecommend);
+  }
+  function enBudgetAns(budget) {
+    const n = S.count;
+    if (!n) { bot(`<p>Budget: ${money(budget)}. How many guests are you expecting?</p>`); FLOW = { wantCount: true, step: (raw, t, e) => { const c = e.count || enCount(t, true); if (!c) { FLOW = null; return false; } FLOW = null; S.count = c; enBudgetAns(budget); return true; } }; chips([]); return; }
+    const best = {};
+    WH.forEach(h => { const Hh = K.halls[h]; if (n > Hh.max) return; ['wd', 'we'].forEach(d => Hh.menus.forEach(m => { const v = estTotal(Hh, m, n, d); if (v <= budget && (!best[h + d] || v > best[h + d].v)) best[h + d] = { h, d, m, v }; })); });
+    const L = Object.values(best).sort((a, b) => b.v - a.v);
+    if (!L.length) { const c = WH.filter(h => n <= K.halls[h].max).map(h => ({ h, v: Math.min(...K.halls[h].menus.map(m => estTotal(K.halls[h], m, n, 'wd'))) })).sort((a, b) => a.v - b.v)[0]; bot(`<p>No wedding package for ${n} guests fits within ${money(budget)}.${c ? ` The lowest estimate for this guest count is ${money(c.v)} at ${HALLNAME[c.h]} on a weekday.` : ''}</p>`); chips([{ t: 'Change guest count', fn: () => enAskCount(() => enBudgetAns(budget)) }]); return; }
+    bot(`<p>Within a budget of <b>${money(budget)}</b> for <b>${n} guests</b>, the best option in each hall:</p><table class="dmb-t">${L.map(o => `<tr><td><b>${HALLNAME[o.h]}</b> – ${A(o.m.name)}<br><small>${o.d === 'we' ? 'weekend' : 'weekday'}</small></td><td class="n">${money(o.v)}</td></tr>`).join('')}</table><p class="dmb-note">Estimates include the package and extra meals, excluding insurance and add-ons.</p>`);
+    chips([...new Set(L.map(o => o.h))].map(h => ({ t: 'Details: ' + HALLNAME[h], fn: () => { S.hall = h; S.menu = null; enEstimate(h); } })));
+  }
+
+  // ---- add-ons ----
+  const EN_GROUPS = [[/dessert|sweets|cake|gateau|cheesecake|om ali/, /حلويات|التورت|حلو/], [/drinks?|beverages?|juice|soft drinks|coffee|tea\b/, /المشروبات|البوفيه \(/], [/photograph|video|album|filming|camera|promo/, /التصوير/], [/screens?|led|hologram/, /الشاشات/], [/shows?|effects|fire ?show|firework|laser|fog|bubbles|pyro/, /العروض|المؤثرات/], [/zaffa|procession|tanoura|mizmar/, /الزفة/], [/suites?|rooms?\b|day use/, /السويت/], [/decor|decoration|kosha|balloons?|photo booth|welcome board/, /الديكور|البالونات/], [/extra food|platters?|mirror|starters|table service|lamb|turkey/, /السرفيس|السفنديش|المرايات|فواتح/], [/sandwich|snacks?|bakery|canap/, /السندوتشات|سناكس|المخبوزات|الضيافة/], [/entry fee|outside vendor|fees/, /رسوم/], [/sound|mic|mixer|podium|setup|chairs/, /التجهيزات|الصوت/]];
+  function enGroupRe(t) { if (!/(what|which|list|all|any|available|options|types|have|offer|add|prices?|extras?)/.test(t)) return null; for (const [q, re] of EN_GROUPS) if (q.test(t)) return re; return null; }
+  function enAddons(sc, re) {
+    const L = K.addons.filter(a => a.s === sc && (!re || re.test(a.g)));
+    if (!L.length) return enSuggest(sc);
+    const sg = sugSet(sc), groups = [];
+    L.forEach(a => { let g = groups.find(x => x.g === a.g); if (!g) groups.push(g = { g: a.g, L: [] }); g.L.push(a); });
+    bot(`<p class="dmb-h">${re ? groups.map(g => A(g.g)).join(' · ') : 'All add-ons'} – ${K.scopes[sc]}</p>${groups.map((g, i) => `<details class="dmb-law"${i === 0 || re ? ' open' : ''}><summary>${A(g.g)} (${g.L.length})</summary><table class="dmb-t">${g.L.map(a => `<tr><td>${A(a.n)}${isTop(a) ? topTag() : sg.has(a.s + '|' + a.n) ? '<em class="dmb-tag">Suggested</em>' : ''}</td><td class="n">${ar(a.p)}</td></tr>`).join('')}</table></details>`).join('')}<div class="dmb-cta">You can add any of these to a <b>detailed quote</b> in a few taps.</div>${src(K.docOf[sc] || sc, L[0].pg)}`, [{ t: 'Detailed quote', cls: 'pri', fn: () => startQuote(quotePre(sc)) }]);
+    chips([{ t: 'Suggestions for your event', fn: () => enSuggest(sc) }, ...['akhenaten', 'isis', 'lotus', 'mawadda', 'birthday', 'special'].filter(x => x !== sc).slice(0, 3).map(x => ({ t: 'Add-ons: ' + K.scopes[x], fn: () => enAddons(x, re) }))]);
+  }
+  const ENSTOP = new Set('what is the a an of for in on at to and or how much does do you have price prices cost costs your with about can i we me please tell is are there any much many it this that get give show which from per by be wedding weddings marriage contract birthday party conference event events hall halls guests guest people persons akhenaten isis lotus mawadda roof glass package packages menu menus capacity book booking want like would need our my add include includes included'.split(' '));
+  function enItemMatches(t) {
+    const toks = t.trim().split(' ').filter(w => w.length >= 3 && !ENSTOP.has(w));
+    if (!toks.length) return [];
+    const sc = ctxScope() || 'akhenaten';
+    const pool = K.addons.filter(a => a.s === sc).concat(K.addons.filter(a => a.s !== sc));
+    const scored = [];
+    const seen = new Set();
+    pool.forEach(a => { const nm = ' ' + txEN(a.n).toLowerCase().replace(/[^a-z0-9 ]+/g, ' ') + ' '; const hit = toks.filter(w => nm.includes(' ' + w) || (w.length > 4 && nm.includes(w.slice(0, -1)))).length; if (hit && hit / toks.length >= 0.5) { const key = txEN(a.n); if (!seen.has(key)) { seen.add(key); scored.push({ a, s: hit / toks.length + hit * 0.01 }); } } });
+    const top = scored.sort((x, y) => y.s - x.s);
+    return top.filter(x => x.s >= (top[0] ? top[0].s - 0.01 : 1)).slice(0, 6).map(x => x.a);
+  }
+  function enItems(items, t) {
+    const rows = items.map(a => { const all = K.addons.filter(x => x.n === a.n); const sameP = all.every(x => x.p === all[0].p); return `<tr><td><b>${A(a.n)}</b><br><small>${sameP ? all.map(x => K.scopes[x.s]).join(', ') : all.map(x => `${K.scopes[x.s]}: ${ar(x.p)}`).join(' · ')}</small></td><td class="n">${sameP ? ar(a.p) : ''}</td></tr>`; }).join('');
+    bot(`<p>Yes, available as an add-on:</p><table class="dmb-t">${rows}</table>${src(K.docOf[items[0].s] || items[0].s, items[0].pg)}`, [{ t: 'Add it to a detailed quote', cls: 'pri', fn: () => startQuote(quotePre(items[0].s)) }]);
+    chips([{ t: 'Suggestions for your event', fn: () => enSuggest(items[0].s) }, { t: 'All add-ons', fn: () => enAddons(items[0].s) }]);
+  }
+  function enDiff(t) {
+    const body = t.replace(/what(s| is)? the|difference|between|compare|differ|better|which is|is it/g, ' ').replace(/\s+/g, ' ').trim();
+    const parts = body.split(/ (?:and|or|vs\.?|versus) /).map(x => x.trim()).filter(Boolean);
+    if (parts.length !== 2) return false;
+    let w1 = parts[0].split(' ').filter(w => !ENSTOP.has(w)), w2 = parts[1].split(' ').filter(w => !ENSTOP.has(w));
+    if (w2.length === 1 && /^\d+$/.test(w2[0]) && w1.some(w => /^\d+$/.test(w))) w2 = w1.map(w => /^\d+$/.test(w) ? w2[0] : w);
+    if (w1.length === 1 && /^\d+$/.test(w1[0]) && w2.some(w => /^\d+$/.test(w))) w1 = w2.map(w => /^\d+$/.test(w) ? w1[0] : w);
+    if (w2.length < w1.length) w2 = [...w1.slice(0, w1.length - w2.length), ...w2];
+    else if (w1.length < w2.length) w1 = [...w1, ...w2.slice(w1.length)];
+    const sc = ctxScope() || 'akhenaten';
+    const pool = K.addons.filter(a => a.s === sc).concat(K.addons.filter(a => a.s !== sc));
+    const pick = ws => { let best = null, bs = 0; pool.forEach(a => { const nm = ' ' + txEN(a.n).toLowerCase().replace(/[^a-z0-9 ]+/g, ' ') + ' '; const hit = ws.filter(w => nm.includes(' ' + w)).length; const s = hit / ws.length - nm.length / 10000; if (hit >= Math.min(2, ws.length) && s > bs) { bs = s; best = a; } }); return bs >= 0.6 ? best : null; };
+    const a = pick(w1), b = pick(w2);
+    if (!a || !b || a.n === b.n) return false;
+    diffShow(a, b); return true;
+  }
+  function enSuggest(sc) {
+    sc = sc || defScope();
+    if (!sc) { bot('<p>I would be glad to suggest what will complete your event. What is the occasion?</p>'); chips([['wedding', 'akhenaten'], ['katb', 'mawadda'], ['birthday', 'birthday'], ['special', 'special'], ['photo', 'photo']].map(([e, s]) => ({ t: EVNAME[e], fn: () => { S.event = e; enSuggest(s); } }))); return; }
+    const G = sugItems(sc);
+    if (!G.length) return enAddons(sc);
+    const wed = ['akhenaten', 'isis', 'lotus'].includes(sc);
+    bot(`<p class="dmb-h">Our suggestions – ${K.scopes[sc]}</p><p>Hand-picked from the venue's services to make your event stand out, with their official prices:</p>${G.map(([why, L]) => `<div class="dmb-sg"><b>${SUG_EN[why] || why}</b><ul>${L.map(a => `<li>${A(a.n)} – <span>${ar(a.p)}</span></li>`).join('')}</ul></div>`).join('')}${wed ? '<p class="dmb-note">Prices shown are for this hall; most are the same across the three wedding halls.</p>' : ''}<div class="dmb-cta">Would you like a <b>detailed quote</b> combining your package with any of these?</div>${src(K.docOf[sc] || sc)}`, [{ t: 'Detailed quote with add-ons', cls: 'pri', fn: () => startQuote(quotePre(sc)) }]);
+    chips([{ t: 'All add-ons', fn: () => enAddons(sc) }, ...(wed ? WH.filter(h => h !== sc).map(h => ({ t: 'Suggestions: ' + HALLNAME[h], fn: () => { S.hall = h; enSuggest(h); } })) : []), { t: 'Book a viewing', fn: () => startVisit() }]);
+  }
+
+  // ---- venue, objections, policies ----
+  function enParking() {
+    bot(`<p class="dmb-h">Parking</p><p>The venue has an <b>indoor garage</b> for guests' cars, with a <b>valet service</b> to receive and park your cars, so you and your guests can enjoy the occasion without worrying about parking.</p><p class="dmb-note">The venue is at ${EN_ADDRESS}; our events team will gladly coordinate your guests' arrival on the day.</p>`, [{ t: 'Location on Google Maps', href: MAP }]);
+    chips([{ t: 'Venue features', fn: enWhy }, { t: 'Hall features', fn: enHallsFeatures }, { t: 'Book a viewing', fn: () => startVisit() }]);
+  }
+  function enWhy() {
+    const inc = enInc(K.halls.akhenaten);
+    bot(`<p class="dmb-h">Why Dar El-Marasem?</p>${phHTML(['venue'])}<div class="dmb-sg"><b>A prime location</b>${EN_ADDRESS}, in the heart of Cairo.</div><div class="dmb-sg"><b>Indoor garage & valet service</b>Comfort for your guests from the moment they arrive.</div><div class="dmb-sg"><b>Complete facilities in one place</b>The venue includes a hotel, Al-Fayrouz and Rosetta restaurants, a coffee shop, a gym, and suites prepared for the couple's preparations.</div><div class="dmb-sg"><b>Halls with a unique royal character</b><ul>${WH.slice().reverse().map(h => `<li><b>${HALLNAME[h]}:</b> ${EN_DESC[h][0]}</li>`).join('')}</ul></div><div class="dmb-sg"><b>All-inclusive packages</b>At Akhenaten, for example, the package includes: ${inc.slice(0, 11).map(A).join(', ')}, besides the meals.</div><div class="dmb-sg"><b>A venue for every occasion</b>Weddings and engagements, marriage contracts at Al-Mawadda wal-Rahma Hall, birthdays on the Roof Top and in the Glass Hall, conferences and special events, and photo sessions.</div><div class="dmb-sg"><b>Clear, published prices</b>Every price is published in our menus, and you can get a detailed quote right here before you visit.</div><div class="dmb-cta">We would be honored to welcome you for a viewing, daily from 10 am to 10 pm.</div>`, [{ t: 'Book a viewing', cls: 'pri', fn: () => startVisit() }]);
+    chips([{ t: 'Hall features', fn: enHallsFeatures }, { t: 'Detailed quote', fn: () => startQuote() }, { t: 'Recommend a hall', fn: () => S.count ? enRecommend() : enAskCount(enRecommend) }, { t: 'Parking', fn: enParking }]);
+  }
+  function enHallsFeatures() {
+    const card = h => { const Hh = K.halls[h]; return `<div class="dmb-sg"><b>${HALLNAME[h]} · ${Hh.min} – ${Hh.max} guests</b>${phHTML([h])}${EN_DESC[h][0]} ${EN_DESC[h][1]}<ul><li>Kosha: ${EN_DESC[h][2]}</li><li>${Hh.menus.length} ${Hh.menus.some(m => m.id.startsWith('ob')) ? 'options across set menus and open buffets' : 'menu options'}</li><li>Package includes: ${enInc(Hh).slice(0, 9).map(A).join(', ')}</li></ul></div>`; };
+    bot(`<p class="dmb-h">The halls of Dar El-Marasem</p><p>Each hall has its own royal Pharaonic character:</p>${WH.slice().reverse().map(card).join('')}<div class="dmb-sg"><b>Al-Mawadda wal-Rahma Hall · ${K.katb.mawadda.min} – ${K.katb.mawadda.max} guests</b>Dedicated to marriage-contract ceremonies, with packages from ${money(K.katb.mawadda.price)}.</div><div class="dmb-sg"><b>For smaller occasions</b>The Roof Top and the Glass Hall (Open Air) for birthdays, and Al-Lulu'a and Al-Marasem halls for conferences and special events.</div><p class="dmb-note">Indoor garage with valet service.</p>`, [{ t: 'Book a viewing', cls: 'pri', fn: () => startVisit() }]);
+    chips([{ t: 'Akhenaten vs Isis', fn: () => enCompare('akhenaten', 'isis') }, { t: 'Recommend a hall', fn: () => S.count ? enRecommend() : enAskCount(enRecommend) }, { t: 'Venue features', fn: enWhy }]);
+  }
+  function enDiscount() {
+    const n = S.count, L = [];
+    const best = (h, d) => Math.min(...K.halls[h].menus.map(m => estTotal(K.halls[h], m, n, d)));
+    if (n) { const fit = WH.filter(h => n <= K.halls[h].max); if (fit.length) { const v = fit.map(h => [h, best(h, 'wd')]).sort((a, b) => a[1] - b[1]); L.push(`For ${n} guests, the lowest available cost is <b>${money(v[0][1])}</b> at ${HALLNAME[v[0][0]]} on a weekday.`); if (S.day === 'we') { const h = K.halls[S.hall] ? S.hall : v[0][0]; const g = best(h, 'we') - best(h, 'wd'); if (g > 0) L.push(`Moving your event from the weekend to a weekday saves you <b>${money(g)}</b>.`); } } }
+    else { L.push(`Weekday events (Sunday – Wednesday) avoid the weekend fee; at Akhenaten the weekday package starts at ${money(K.halls.akhenaten.menus[0].wd)} versus ${money(K.halls.akhenaten.menus[0].we)} on weekends.`); L.push(`Choosing the hall that matches your guest count matters: Lotus Hall packages start at ${money(K.halls.lotus.menus[0].price)}.`); }
+    L.push('The first menu in every hall is complete, and you can start with it and add only what matters to you.');
+    bot(`<p>We truly appreciate your interest${LEAD.name ? ', ' + esc(LEAD.name.split(' ')[0]) : ''}, and we would be glad to help you reach the best possible cost.</p><p>Our prices are published and the same for all our clients, out of fairness and transparency, so we do not offer discounts. Together, however, we can lower the cost through the right choices:</p><ul>${L.map(x => `<li>${x}</li>`).join('')}</ul><p>Tell me the budget that suits you and I will recommend the best option within it.</p>`);
+    chips([{ t: 'Recommend within my budget', fn: () => { bot('<p>Please type your approximate budget and guest count (e.g. budget 200k for 200 guests).</p>'); chips([]); } }, { t: 'Detailed quote', fn: () => startQuote() }]);
+  }
+  function enObjPrice() {
+    bot(`<p>We completely understand your concern for the budget; our job is to reach the best value with you:</p><ul><li>Wedding packages start from ${money(K.halls.lotus.menus[0].price)} at Lotus Hall for ${K.halls.lotus.pk.n} guests.</li><li>Weekday events (Sunday – Wednesday) avoid the weekend fee, and Akhenaten has a separate, lower weekday package.</li><li>Choosing the hall that matches your guest count avoids paying for a larger minimum than you need.</li></ul><p class="dmb-note">Our packages already include services often charged separately elsewhere: DJ, video filming, screens, lighting, the kosha and the bride's suite.</p><p>Share your budget and guest count, and I will recommend the best option within it.</p>`);
+    chips([{ t: 'Recommend within my budget', fn: () => { bot('<p>Please type your approximate budget and guest count (e.g. budget 200k for 200 guests).</p>'); chips([]); } }, { t: 'Detailed quote', fn: () => startQuote() }]);
+  }
+  function enObjThink() {
+    bot(`<p>Of course, take your time; it is an occasion that deserves it.</p><p>To make it easier:</p><ul><li>You are welcome to <b>visit and view the halls</b> daily from 10 am to 10 pm.</li><li>We can <b>send a summary of your request</b> to our events team on WhatsApp so they can follow up with you.</li></ul><p class="dmb-note">Please note that dates are secured on a first-come basis once the booking deposit is paid and the contract is signed, so if you have a preferred date, we recommend not waiting too long.</p>`, [waAct('Dar El-Marasem – I would like to follow up about an event', 'Send my request to the team'), { t: 'Book a viewing', cls: 'pri', fn: () => startVisit() }]);
+    chips([{ t: 'Detailed quote', fn: () => startQuote() }, { t: 'Why Dar El-Marasem?', fn: enWhy }]);
+  }
+  function enObjCompetitor() {
+    bot(`<p>We respect your wish to compare, and we want your decision to be made with confidence. What sets Dar El-Marasem apart:</p><ul><li><b>All-inclusive packages:</b> the hall, meals, DJ, video filming, screens, lighting, the kosha and the bride's suite, so compare the total, not the hall price alone.</li><li><b>Clear, published prices</b> with no surprises, and an instant itemized quote right here.</li><li><b>A prime location</b> in Zamalek, an indoor garage with valet, and halls with a unique royal character.</li></ul><p>We invite you to visit and see the halls for yourself; we are confident you will feel the difference.</p>`, [{ t: 'Book a viewing', cls: 'pri', fn: () => startVisit() }]);
+    chips([{ t: 'Detailed quote', fn: () => startQuote() }, { t: 'Why Dar El-Marasem?', fn: enWhy }]);
+  }
+  function enPolicy(id) {
+    const depRows = K.deposit.map(r => `<tr><td>${A(r[0])}</td><td class="n">${money(r[1])}</td><td class="n">${money(r[2])}</td></tr>`).join('');
+    const T = {
+      howbook: '<p class="dmb-h">How to book</p><ol><li>Choose the hall and menu (I can help and calculate the cost).</li><li>Contact our events team to confirm the date is available, or book a viewing (daily, 10 am – 10 pm).</li><li>The booking is secured by paying the <b>booking deposit</b> in full and signing the <b>booking form</b> (name, national ID and contact details).</li><li>Within one month of contracting: choose the package and pay at least 50% of its value.</li><li>The balance, with add-ons and insurance: no later than one month before the event.</li></ol>',
+      avail: '<p>Our events team will gladly <b>confirm the availability of your date</b> right away. Dates are allocated on a first-come basis once the booking is completed (deposit paid and form signed); no date is held before that.</p>',
+      deposit: `<p>A booking is <b>only confirmed once the booking deposit is paid in full and the booking form is signed</b>; no date is held before that.</p><table class="dmb-t"><tr><th>Hall</th><th>Booking deposit</th><th>Insurance</th></tr>${depRows}</table><p class="dmb-note">The booking deposit is non-refundable, except if the hall is rebooked on the same date by another client. The insurance is paid with the final installment (or at contracting if the event is less than a month away).</p>`,
+      insurance: `<p>An <b>insurance amount is paid for each hall</b> (and for suites and rooms) to cover the hall and the venue's property, with the final installment. It is <b>refunded by bank cheque within 45 days</b> of the event after inspection, minus any damages or dues.</p><table class="dmb-t"><tr><th>Hall</th><th>Booking deposit</th><th>Insurance</th></tr>${depRows}</table>`,
+      payment: '<p class="dmb-h">Payment schedule</p><ol><li><b>Booking deposit:</b> paid in full at contracting.</li><li><b>Within one month of contracting:</b> choose the package and services and pay at least 50% of the package value.</li><li><b>Balance:</b> the full event value including add-ons and insurance, no later than one month before the event.</li></ol><p class="dmb-note">If the contract is signed less than a month before the event, the full value and insurance are paid at once.</p>',
+      methods: '<p>Payment is accepted in <b>cash</b>, by <b>payment cards (Visa)</b>, or via <b>InstaPay</b> to the venue\'s official account. Only an official receipt issued by the venue is valid proof of payment.</p>',
+      cancel: '<p>We fully understand that circumstances can change. Our terms provide that:</p><ul><li>Cancellation requests are submitted <b>in writing</b> on the official form.</li><li>The <b>booking deposit is non-refundable</b>, except if the hall is rebooked on the same date by another client.</li><li>Any amount paid above the deposit is refunded <b>by bank cheque</b> in the payer\'s name; no cash refunds.</li></ul>',
+      postpone: '<p>We are happy to help you rearrange your date, as follows:</p><ul><li>Postponement is allowed <b>once only</b>, by written request at least <b>30 days</b> before the original date, subject to availability and management approval, and <b>within 3 months</b> of the original date.</li><li><b>Fees:</b> EGP 5,000 if the new date is in the same month, EGP 10,000 if in another month, plus any price differences.</li><li>Requests made less than 30 days before the event are treated as cancellations.</li></ul>',
+      duration: `<p>Events last <b>4 hours</b> in all halls, except <b>marriage contracts at Lotus and Al-Mawadda wal-Rahma: one and a half hours</b>. Extensions require prior management approval and are charged by the full hour.</p><table class="dmb-t">${[['akhenaten', 'Akhenaten Hall'], ['isis', 'Isis Hall'], ['lotus', 'Lotus Hall (weddings)'], ['lotusk', 'Marriage contract at Lotus']].map(([s, nm]) => { const a = K.addons.find(x => x.s === s && norm(x.n).trim() === 'ساعه اضافيه'); return a ? `<tr><td>Extra hour – ${nm}</td><td class="n">${ar(a.p)}</td></tr>` : ''; }).join('')}</table>`,
+      food: '<p>For the safety of our guests and the quality of hospitality, <b>food and drinks from outside the venue are not permitted</b>. We offer a wide selection of cakes, desserts and bakery items from the venue\'s kitchens. (The birthday menu lists an outside-cake entry fee; please confirm it with our events team.)</p>',
+      vendors: `<p><b>Yes, outside vendors are allowed</b> against the fees listed in the menus, with prior written notice to the venue:</p><table class="dmb-t">${K.addons.filter(a => a.s === (ctxScope() && K.halls[ctxScope()] ? ctxScope() : 'akhenaten') && /^رسوم/.test(a.n)).map(a => `<tr><td>${A(a.n)}</td><td class="n">${ar(a.p)}</td></tr>`).join('')}</table>`,
+      banned: '<p>For our guests\' safety, the venue does not permit <b>weapons, fireworks, flammable materials or alcoholic drinks</b>, or outside food and drinks. Laser and smoke effects require prior approval and supervision. Smoking is allowed only in designated areas.</p><p class="dmb-note">Professional fire shows and fireworks are available as official add-ons.</p>',
+      kids: '<p>Children are most welcome; their care and safety throughout their stay remain with their families and companions.</p>'
+    };
+    bot(T[id] + src('rules'), id === 'howbook' ? [{ t: 'Booking request', cls: 'pri', fn: () => startBook() }, { t: 'Book a viewing', fn: () => startVisit() }] : id === 'avail' ? [waAct('Dar El-Marasem – I would like to check date availability' + (S.date ? ' on ' + dateTxt(S.date) : '') + (S.hall ? ' at ' + HALLNAME[S.hall] : ''), 'Ask about the date on WhatsApp')] : [{ t: 'Full terms & conditions', go: 'rules' }]);
+    const rel = [['deposit', 'Booking deposit'], ['payment', 'Payment schedule'], ['methods', 'Payment methods'], ['insurance', 'Insurance'], ['cancel', 'Cancellation & refunds'], ['postpone', 'Postponement'], ['duration', 'Event duration']].filter(x => x[0] !== id).slice(0, 5);
+    chips(rel.map(([k, l]) => ({ t: l, fn: () => enPolicy(k) })));
+  }
+
   /* ---------------- booking & visit flows → WhatsApp ---------------- */
-  function dateInput(cb, label) {
-    const d = bot(`<p>${label}</p><div class="dmb-form"><input type="date" aria-label="${label}"><p class="dmb-hint">اضغطوا على الخانة لاختيار التاريخ من التقويم، ثم «تأكيد التاريخ».</p><button type="button" class="dmb-btn pri" disabled>تأكيد التاريخ</button></div>`);
+  function dateInput(cb, label, rg) {
+    const d = bot(`<p>${label}</p><div class="dmb-form"><input type="date" aria-label="${label.replace(/<[^>]+>/g, '')}"><p class="dmb-hint">${tr('اضغطوا على الخانة لاختيار التاريخ من التقويم، ثم «تأكيد التاريخ».', 'Tap the field to pick a date from the calendar, then “Confirm date”.')}</p><button type="button" class="dmb-btn pri" disabled>${tr('تأكيد التاريخ', 'Confirm date')}</button></div>`);
     d.classList.add('dmb-wide');
     const inp = d.querySelector('input'), b = d.querySelector('button');
-    const t = new Date(); inp.min = ymd(t);
+    const t = new Date(); inp.min = ymd(rg && rg.min ? rg.min : t); if (rg && rg.max) inp.max = ymd(rg.max);
     inp.addEventListener('click', () => { try { inp.showPicker(); } catch (e) { } });
-    inp.addEventListener('change', () => { b.disabled = !inp.value; if (inp.value) { const [y, m, dd] = inp.value.split('-').map(Number); b.textContent = 'تأكيد: ' + dateTxt(new Date(y, m - 1, dd)); } });
+    inp.addEventListener('change', () => { b.disabled = !inp.value; if (inp.value) { const [y, m, dd] = inp.value.split('-').map(Number); b.textContent = tr('تأكيد: ', 'Confirm: ') + dateTxt(new Date(y, m - 1, dd)); } });
     setTimeout(() => d.scrollIntoView({ block: 'end', behavior: 'smooth' }), 50);
     b.addEventListener('click', () => { if (!inp.value) { inp.focus(); return; } const [y, m, dd] = inp.value.split('-').map(Number); const dt = new Date(y, m - 1, dd); addUser(dateTxt(dt)); b.disabled = true; inp.disabled = true; chips([]); think(() => cb(dt)); });
     return d;
   }
   function startBook() {
-    const B = { event: S.event, hall: S.hall, count: S.count, date: S.date, name: '', menu: null };
+    const B = { event: S.event, hall: S.hall, count: S.count, date: S.date, name: LEAD.name || '', menu: null };
     if (S.menu && K.halls[S.hall]) { const m = hallMenu(S.hall, S.menu); if (m) B.menu = m.name; }
     const next = () => {
       if (!B.event) {
-        bot('<p class="dmb-h">طلب حجز</p><p>يُرجى اختيار نوع المناسبة:</p>');
+        bot(tr('<p class="dmb-h">طلب حجز</p><p>يُرجى اختيار نوع المناسبة:</p>', '<p class="dmb-h">Booking request</p><p>Please choose the occasion:</p>'));
         FLOW = { step: (raw, t, e) => { if (e.ev) { B.event = e.ev; FLOW = null; next(); return true; } FLOW = null; return false; } };
         chips(['wedding', 'engagement', 'katb', 'birthday', 'aqiqa', 'special', 'photo'].map(ev => ({ t: EVNAME[ev], fn: () => { B.event = ev; next(); } })));
         return;
       }
       if (!B.count && B.event !== 'photo') {
-        bot('ما العدد المتوقع للمدعوين؟');
-        FLOW = { wantCount: true, step: (raw, t, e) => { const n = e.count || findCount(t, true); if (!n) { bot('يُرجى كتابة العدد بالأرقام (مثال: ٢٠٠).'); return true; } B.count = n; FLOW = null; next(); return true; } };
-        chips([{ t: 'لم أحدد بعد', fn: () => { B.count = -1; next(); } }]);
+        bot(tr('ما العدد المتوقع للمدعوين؟', 'How many guests are you expecting?'));
+        FLOW = { wantCount: true, step: (raw, t, e) => { const n = e.count || (EN() ? enCount(t, true) : findCount(t, true)); if (!n) { bot(tr('يُرجى كتابة العدد بالأرقام (مثال: ٢٠٠).', 'Please type the number of guests (e.g. 200).')); return true; } B.count = n; FLOW = null; next(); return true; } };
+        chips([{ t: tr('لم أحدد بعد', 'Not decided yet'), fn: () => { B.count = -1; next(); } }]);
         return;
       }
       if (!B.hall) {
         const opts = hallOptions(B.event, B.count);
-        bot('القاعة المفضلة:');
+        bot(tr('القاعة المفضلة:', 'Preferred hall:'));
         FLOW = { step: (raw, t, e) => { if (e.halls.length) { B.hall = e.halls[0]; FLOW = null; next(); return true; } FLOW = null; return false; } };
-        chips([...opts.map(h => ({ t: HALLNAME[h], fn: () => { B.hall = h; next(); } })), { t: 'لم أحدد بعد', fn: () => { B.hall = '-'; next(); } }]);
+        chips([...opts.map(h => ({ t: HALLNAME[h], fn: () => { B.hall = h; next(); } })), { t: tr('لم أحدد بعد', 'Not decided yet'), fn: () => { B.hall = '-'; next(); } }]);
         return;
       }
       if (!B.date) {
-        dateInput(dt => { B.date = dt; next(); }, 'التاريخ المطلوب:');
-        chips([{ t: 'لم أحدد بعد', fn: () => { B.date = '-'; next(); } }]);
+        dateInput(dt => { B.date = dt; next(); }, tr('التاريخ المطلوب:', 'Requested date:'));
+        chips([{ t: tr('لم أحدد بعد', 'Not decided yet'), fn: () => { B.date = '-'; next(); } }]);
         return;
       }
       if (!B.name) {
-        bot('الاسم الكريم:');
+        bot(tr('الاسم الكريم:', 'Your name:'));
         FLOW = { step: raw => { if (/[?؟]/.test(raw) || raw.trim().split(/\s+/).length > 5) { FLOW = null; return false; } B.name = raw.trim().slice(0, 60); FLOW = null; next(); return true; } };
         input.focus();
         return;
       }
       FLOW = null;
-      const L = ['دار المراسم لضباط الشرطة – طلب حجز / استفسار', '', 'الاسم: ' + B.name, 'المناسبة: ' + EVNAME[B.event], 'القاعة: ' + (B.hall && B.hall !== '-' ? HALLNAME[B.hall] : 'لم أحدد بعد')];
-      if (B.menu) L.push('المنيو: ' + B.menu);
-      if (B.date && B.date !== '-') L.push('التاريخ المطلوب: ' + dateTxt(B.date));
-      if (B.count > 0) L.push('العدد المتوقع: ' + AD(B.count) + ' فرد');
-      L.push('', '(تم التجهيز عبر مساعد دار المراسم الذكي)');
+      const L = [tr('دار المراسم لضباط الشرطة – طلب حجز / استفسار', 'Dar El-Marasem – booking request / inquiry'), '', tr('الاسم: ', 'Name: ') + B.name, tr('المناسبة: ', 'Occasion: ') + EVNAME[B.event], tr('القاعة: ', 'Hall: ') + (B.hall && B.hall !== '-' ? HALLNAME[B.hall] : tr('لم أحدد بعد', 'not decided yet'))];
+      if (B.menu) L.push(tr('المنيو: ', 'Menu: ') + ar(B.menu));
+      if (B.date && B.date !== '-') L.push(tr('التاريخ المطلوب: ', 'Requested date: ') + dateTxt(B.date));
+      if (B.count > 0) L.push(tr('العدد المتوقع: ', 'Expected guests: ') + AD(B.count) + tr(' فرد', ''));
+      L.push('', tr('(تم التجهيز عبر مساعد دار المراسم الذكي)', '(via the Dar El-Marasem AI assistant)'));
       const msg = L.join('\n');
-      bot(`<p class="dmb-h">ملخص طلبك</p><p style="white-space:pre-line">${esc(L.slice(2, -2).join('\n'))}</p><p>بالضغط على الزر يُرسل الطلب لفريق الحفلات عبر واتساب، وسيتم التواصل معكم لتأكيد التوافر والتفاصيل.</p><p class="dmb-note">الحجز لا يُثبَّت إلا بسداد مقدم الحجز وتوقيع استمارة التعاقد.</p>`, [waAct(msg, 'إرسال الطلب عبر واتساب')]);
+      bot(`<p class="dmb-h">${tr('ملخص طلبك', 'Your request')}</p><p style="white-space:pre-line">${esc(L.slice(2, -2).join('\n'))}</p>${tr('<p>بالضغط على الزر يُرسل الطلب لفريق الحفلات عبر واتساب، وسيتم التواصل معكم لتأكيد التوافر والتفاصيل.</p><p class="dmb-note">الحجز لا يُثبَّت إلا بسداد مقدم الحجز وتوقيع استمارة التعاقد.</p>', '<p>Tap the button to send your request to our events team on WhatsApp; they will contact you to confirm availability and details.</p><p class="dmb-note">A booking is only secured once the deposit is paid and the booking form is signed.</p>')}`, [waAct(msg, tr('إرسال الطلب عبر واتساب', 'Send the request on WhatsApp'))]);
       chips(MAIN());
     };
     next();
@@ -1339,29 +2934,31 @@ ${row('مقدم الحجز', h => dep(h))}
     const f = all.filter(h => n >= K.halls[h].min && n <= K.halls[h].max);
     return f.length ? f : all;
   }
-  const HRS = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21].map(h => { const h12 = h > 12 ? h - 12 : h, p = h < 12 ? 'صباحاً' : (h < 17 ? 'ظهراً' : 'مساءً'); return `الساعة ${AD(h12)} ${h === 12 ? 'ظهراً' : p}`; });
+  const HRS_AR = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21].map(h => { const h12 = h > 12 ? h - 12 : h, p = h < 12 ? 'صباحاً' : (h < 17 ? 'ظهراً' : 'مساءً'); return `الساعة ${String(h12).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d])} ${h === 12 ? 'ظهراً' : p}`; });
+  const HRS_EN = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21].map(h => `${h > 12 ? h - 12 : h} ${h < 12 ? 'am' : 'pm'}`);
   function startVisit() {
-    const V = { name: '', date: S.date || null, time: '', hall: S.hall || null };
+    const V = { name: LEAD.name || '', date: null, time: '', hall: K.halls[S.hall] || S.hall === 'mawadda' ? S.hall : null };
     const next = () => {
-      if (!V.date) { dateInput(dt => { V.date = dt; next(); }, 'المعاينة يومياً من ١٠ صباحاً حتى ١٠ مساءً. اختاروا اليوم:'); return; }
+      if (!V.date) { dateInput(dt => { V.date = dt; next(); }, tr('المعاينة يومياً من ١٠ صباحاً حتى ١٠ مساءً. اختاروا اليوم:', 'Viewings are daily from 10 am to 10 pm. Choose the day:')); return; }
       if (!V.time) {
-        bot('الساعة المناسبة:');
-        chips(HRS.map(h => ({ t: h.replace('الساعة ', ''), fn: () => { V.time = h; next(); } })));
+        bot(tr('الساعة المناسبة:', 'Preferred time:'));
+        chips((EN() ? HRS_EN : HRS_AR).map(h => ({ t: h.replace('الساعة ', ''), fn: () => { V.time = h; next(); } })));
         return;
       }
       if (!V.hall) {
-        bot('القاعة المطلوب معاينتها:');
-        chips([{ t: 'كل القاعات', fn: () => { V.hall = 'all'; next(); } }, ...['akhenaten', 'isis', 'lotus', 'mawadda', 'roof', 'glass', 'lulu', 'marasem'].map(h => ({ t: HALLNAME[h], fn: () => { V.hall = h; next(); } }))]);
+        bot(tr('القاعة المطلوب معاينتها:', 'Which hall would you like to see?'));
+        chips([{ t: tr('كل القاعات', 'All halls'), fn: () => { V.hall = 'all'; next(); } }, ...['akhenaten', 'isis', 'lotus', 'mawadda', 'roof', 'glass', 'lulu', 'marasem'].map(h => ({ t: HALLNAME[h], fn: () => { V.hall = h; next(); } }))]);
         return;
       }
       if (!V.name) {
-        bot('الاسم الكريم:');
+        bot(tr('الاسم الكريم:', 'Your name:'));
         FLOW = { step: raw => { if (/[?؟]/.test(raw) || raw.trim().split(/\s+/).length > 5) { FLOW = null; return false; } V.name = raw.trim().slice(0, 60); FLOW = null; next(); return true; } };
         input.focus();
         return;
       }
-      const msg = ['دار المراسم لضباط الشرطة – طلب موعد معاينة', '', 'الاسم: ' + V.name, 'اليوم: ' + dateTxt(V.date), 'الموعد: ' + V.time, 'القاعة: ' + (V.hall === 'all' ? 'كل القاعات' : HALLNAME[V.hall] || 'كل القاعات'), '', '(تم التجهيز عبر مساعد دار المراسم الذكي)'].join('\n');
-      bot(`<p class="dmb-h">موعد المعاينة</p><p>${esc(V.name)} – ${dateTxt(V.date)} – ${V.time} – ${V.hall === 'all' ? 'كل القاعات' : HALLNAME[V.hall]}</p><p>بالضغط على الزر يُرسل الموعد لفريق الحفلات عبر واتساب لتأكيده.</p><p><b>العنوان:</b> ${ADDRESS}</p>`, [waAct(msg, 'تأكيد الموعد عبر واتساب'), { t: 'الموقع على الخريطة', href: MAP }]);
+      const allH = tr('كل القاعات', 'All halls');
+      const msg = [tr('دار المراسم لضباط الشرطة – طلب موعد معاينة', 'Dar El-Marasem – viewing appointment request'), '', tr('الاسم: ', 'Name: ') + V.name, tr('اليوم: ', 'Day: ') + dateTxt(V.date), tr('الموعد: ', 'Time: ') + V.time, tr('القاعة: ', 'Hall: ') + (V.hall === 'all' ? allH : HALLNAME[V.hall] || allH), '', tr('(تم التجهيز عبر مساعد دار المراسم الذكي)', '(via the Dar El-Marasem AI assistant)')].join('\n');
+      bot(`<p class="dmb-h">${tr('موعد المعاينة', 'Viewing appointment')}</p><p>${esc(V.name)} – ${dateTxt(V.date)} – ${V.time} – ${V.hall === 'all' ? allH : HALLNAME[V.hall]}</p><p>${tr('بالضغط على الزر يُرسل الموعد لفريق الحفلات عبر واتساب لتأكيده.', 'Tap the button to send the appointment to our events team on WhatsApp for confirmation.')}</p><p><b>${tr('العنوان:', 'Address:')}</b> ${tr(ADDRESS, EN_ADDRESS)}</p>`, [waAct(msg, tr('تأكيد الموعد عبر واتساب', 'Confirm on WhatsApp')), { t: tr('الموقع على الخريطة', 'Location on the map'), href: MAP }]);
       chips(MAIN());
     };
     next();
