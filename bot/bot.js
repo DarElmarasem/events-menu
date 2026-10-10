@@ -386,7 +386,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   }
   function think(fn) {
     const t = document.createElement('div'); t.className = 'dmb-typing'; t.innerHTML = '<i></i><i></i><i></i>'; log.appendChild(t); scroll();
-    setTimeout(() => { t.remove(); try { fn(); } catch (e) { console.error(e); EN() ? enFallback(LASTRAW) : fallback(); } }, window.DMB_FAST ? 120 : 650 + Math.random() * 450);
+    setTimeout(() => { t.remove(); try { fn(); } catch (e) { console.error(e); EN() ? enFallback(LASTRAW) : fallback(); } }, window.DMB_FAST ? 120 : 380 + Math.random() * 320);
   }
   function goTo(hash) {
     try { history.pushState(null, '', '#' + hash); } catch (e) { location.hash = hash; }
@@ -580,7 +580,10 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
       { t: 'عرض سعر تفصيلي لحفلتك', fn: () => startQuote() }, { t: 'أسعار القاعات', q: 'أسعار القاعات' }, { t: 'حجز موعد معاينة', fn: () => startVisit() }
     ]);
   }
+  let MISS = 0, MISSAT = -1;
   function fallback(t) {
+    MISS = MISSAT === TURNS - 1 ? MISS + 1 : 1; MISSAT = TURNS;
+    if (MISS >= 2 && !EN()) { logQ('unanswered', t || LASTRAW); MISS = 0; return humanAns('معلش يا ' + (hon() || 'فندم') + '، النقطة دي فريق الحفلات هيفيدك فيها أحسن مني، فخليني أوصّلك بيهم'); }
     if (t && smartFallback(t)) return;
     logQ(t ? 'unanswered' : 'error', t || LASTRAW);
     bot(`<p>شكراً لسؤال حضرتك.</p><p>وعشان تاخد معلومة دقيقة ومحدّثة، الأفضل فريق الحفلات يرد عليك في النقطة دي بنفسه. تقدر تكلمهم على واتساب أو التليفون، أو تحجز ميعاد تزور فيه الدار وتعاين القاعات (يومياً من ١٠ الصبح لـ ١٠ بالليل).</p>`,
@@ -695,7 +698,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   }
   function brainRoute(t, o) {
     const { W } = o;
-    if (W('فريق الحفلات', 'فريق الحفلات مين', 'قسم الحفلات', 'رئيس قسم الحفلات', 'عايز اكلم حد', 'اكلم مين', 'الموظفين', 'موظفين الحفلات', 'مين هيكلمني', 'مين بيرد', 'مين موجود', 'مين متواجد', 'الفتره الصباحيه', 'الفتره المسائيه', 'الشيفت', 'ساره سيد', 'سيد ابراهيم', 'نرفانا', 'سمر اسماعيل', 'اسلام مختار', 'هدي محمد', 'دينا هشام')) { teamAns(); return true; }
+    if (W('فريق الحفلات', 'فريق الحفلات مين', 'قسم الحفلات', 'رئيس قسم الحفلات', 'اكلم مين', 'الموظفين', 'موظفين الحفلات', 'مين هيكلمني', 'مين بيرد', 'مين موجود', 'مين متواجد', 'الفتره الصباحيه', 'الفتره المسائيه', 'الشيفت', 'ساره سيد', 'سيد ابراهيم', 'نرفانا', 'سمر اسماعيل', 'اسلام مختار', 'هدي محمد', 'دينا هشام')) { teamAns(); return true; }
     if (W('احلي', 'احسن', 'افضل', 'انسب', 'تنصحني بانهي', 'ترشحلي') && W('منيو', 'المنيو', 'منيوهات') && !/ (?:قاعه|قاعات) /.test(t)) { bestMenuAns(); return true; }
     if (W('مكان للعربيات', 'مكان للعربيه', 'مكان للعربية', 'مكان نركن', 'مكان اركن', 'نركن فين', 'اركن فين', 'ركنه', 'الركنه', 'ركن', 'عربيتي', 'عربياتنا', 'العربيات')) { parkingAns(); return true; }
     if (W('فندق', 'الفندق', 'اوتيل', 'الاوتيل', 'مبيت', 'نبات', 'ابات', 'مطعم', 'مطاعم', 'المطعم', 'الفيروز', 'روزيتا', 'جيم', 'الجيم', 'كافيه', 'كوفي شوب', 'مرافق', 'خدمات الدار')) { amenitiesAns(); return true; }
@@ -872,6 +875,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   }
   function brain2Route(t, o) {
     const { W, halls, count } = o;
+    if (!EN() && W('اكلم موظف', 'عايز موظف', 'عاوز موظف', 'محتاج موظف', 'كلمني موظف', 'حد يكلمني', 'حد يتصل بيا', 'حد يرد عليا', 'عايز اكلم حد', 'عاوز اكلم حد', 'اكلم حد', 'خدمه العملاء', 'بني ادم', 'انسان حقيقي', 'مش عاوز بوت', 'مش عايز بوت', 'كلموني', 'اتصلوا بيا', 'عايز اتكلم مع حد', 'عاوز اتكلم مع حد', 'موظف الحجز', 'موظف حجز', 'المسؤول')) { humanAns(); return true; }
     if (!EN()) {
       if (W('اغير العدد', 'تغيير العدد', 'اعدل العدد', 'تعديل العدد', 'نغير العدد', 'نعدل العدد', 'العدد يتغير', 'ازود العدد', 'اقلل العدد', 'نزود العدد', 'نقلل العدد')) { countAns(null, t); return true; }
       if (W('التعاقد', 'العقد', 'اتعاقد', 'نتعاقد', 'التعاقد بيتم') && W('ازاي', 'ايه', 'خطوات', 'بيتم', 'اجراءات', 'نظام') && !W('الغاء', 'الغي', 'تعديل', 'مقدم', 'عربون')) { howBook(); return true; }
@@ -956,13 +960,30 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
     if (!inner && correction(raw)) return;
     respondCore(raw, inner);
     if (!inner) try { afterSell(n0); } catch (e) { }
-    if (!inner) resumeIntake();
+    if (!inner) { TURNS++; resumeIntake(); }
   }
   // collect the client's details gradually: after each answer, one intake question (until he finishes, skips, or ignores it twice)
-  let KEEPCH = null;
+  let KEEPCH = null, CLOSING = false, OFFERED = 0, TURNS = 0;
+  // the very last stage: only after the client knows everything (quote done / says thanks / wants to confirm),
+  // and only if he agrees — collect what the events team needs, then send it
+  function readyToClose() { return !EN() && !LEAD.done && !CLOSING && !Q && (S.count || LEAD.lastQ) && (K.halls[S.hall] || LEAD.lastQ || ['katb', 'birthday', 'special', 'aqiqa'].includes(S.event)); }
+  function offerClose(lead) {
+    OFFERED = TURNS || 1;
+    bot(`${lead || ''}<p>ولو حضرتك خلاص <b>استقريت على اختيارك</b>، أقدر أجهّز طلبك وأبعته لفريق الحفلات عشان يأكدوا لك <b>توافر التاريخ</b> ويكمّلوا معاك الحجز. تحب؟</p>`);
+    chips([{ t: 'أيوه، جهّز طلبي', fn: () => startClosing() }, { t: 'لسه عندي أسئلة', fn: () => { bot('<p>تحت أمرك، اسأل في أي حاجة وأنا معاك.</p>'); chips(MAIN()); } }, { t: 'حجز موعد معاينة', fn: () => startVisit() }]);
+  }
+  function startClosing() {
+    CLOSING = true; LEAD.skipped = false; LEAD.ign = 0;
+    syncLead();
+    if (S.menu && K.halls[S.hall] && LEAD.pkg == null) { const m = hallMenu(S.hall, S.menu); if (m) LEAD.pkg = m.id; }
+    if (LEAD.lastQ && LEAD.pkg == null) LEAD.pkg = '';
+    saveLead();
+    bot(`<p>تمام${hon() ? ' يا ' + hon() : ''} 🌷 كام سؤال سريع بس عشان طلبك يوصل لفريق الحفلات كامل:</p>`);
+    leadNext();
+  }
   function resumeIntake() {
     setTimeout(() => {
-      if (FLOW || Q || LSTEP || EN() || !LEAD.greeted || LEAD.done || LEAD.skipped || (LEAD.ign || 0) >= 2) return;
+      if (!CLOSING || FLOW || Q || LSTEP || EN() || !LEAD.greeted || LEAD.done || LEAD.skipped || (LEAD.ign || 0) >= 2) return;
       KEEPCH = (ACT || []).slice(0, 2); syncLead(); leadNext(); KEEPCH = null;
     }, window.DMB_FAST ? 300 : 900);
   }
@@ -1009,7 +1030,8 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
     if (brain2Route(t, { W, halls, count, day, prevHall })) return;
     if (brainRoute(t, { W })) return;
 
-    if (short && W('شكرا', 'متشكر', 'تسلم', 'ميرسي', 'thank', 'thanks', 'جزاك', 'الف شكر')) { bot('<p>العفو يا فندم، ده واجبنا. ولو في أي استفسار تاني أنا موجود.</p>'); chips(MAIN()); return; }
+    if (short && W('شكرا', 'متشكر', 'تسلم', 'ميرسي', 'thank', 'thanks', 'جزاك', 'الف شكر')) { if (readyToClose()) return offerClose('<p>العفو يا فندم، ده واجبنا 🌷</p>'); bot('<p>العفو يا فندم، ده واجبنا. ولو في أي استفسار تاني أنا موجود.</p>'); chips(MAIN()); return; }
+    if (short && readyToClose() && W('تمام كده', 'كده تمام', 'خلاص كده', 'اتفقنا', 'عاجبني', 'عجبني', 'هو ده', 'ده المطلوب', 'موافق', 'تمام اوي', 'حلو اوي', 'ماشي كده')) return offerClose('<p>يا سلام 🌷 اختيار موفّق.</p>');
     if (short && !menuQ && W('اهلا', 'السلام', 'سلام عليكم', 'هاي', 'hi', 'hello', 'صباح', 'مساء', 'الو', 'ازيك', 'ازيكم') && !halls.length && !ev && !hasItemWord(t)) { bot('<p>' + (greetReply(t) ? greetReply(t) + ' ' : '') + 'أهلاً وسهلاً بحضرتك في دار المراسم لضباط الشرطة، أقدر أساعدك إزاي؟</p><p>تقدر تسألني عن أسعار القاعات والمنيوهات وأي خدمة أو إضافة، أو تقولّي عدد المعازيم وأنا أرشّح لك القاعة المناسبة وأحسب لك التكلفة.</p>'); chips(MAIN()); return; }
 
     // viewing & booking
@@ -1038,7 +1060,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
     if (tp && !(wantBook && tp === 'deposit' && !W('مقدم', 'عربون'))) return topic(tp);
     if ((date || W('يوم', 'تاريخ', 'ميعاد')) && W('متاح', 'فاضي', 'فاضيه', 'محجوز', 'محجوزه', 'available', 'متاحه', 'ينفع')) return topic('avail');
     if (W('المواعيد المتاحه', 'في ميعاد فاضي', 'ايام فاضيه')) return topic('avail');
-    if (wantBook) return startBook();
+    if (wantBook) return consultFirst() || startBook();
 
     if (W('العنوان', 'عنوان', 'مكانكم', 'لوكيشن', 'location', 'address', 'خريطه', 'اوصل', 'اوصلكم', 'انتو فين', 'انتم فين', 'الدار فين', 'مكان الدار') || (W('فين') && short && !findMenu(t) && !hasItemWord(t) && !has(t, [' منيو', ' المنيو', ' سعر', ' اسعار', ' كوش', ' الكوش', ' ديكور', ' الديكور', ' صور', ' الصور']) && !halls.length)) return contact(true);
     if (W('رقم التليفون', 'رقم تليفون', 'رقم الموبايل', 'رقمكم', 'ارقامكم', 'الارقام', 'ارقام', 'رقم للتواصل', 'رقم الواتس', 'تليفون', 'تلفون', 'موبايل', 'اتصل', 'نتواصل', 'تواصل', 'واتس', 'whatsapp', 'هاتف', 'phone', 'فيسبوك', 'انستجرام', 'انستا', 'صفحتكم', 'اتكلم مع', 'اكلم حد', 'اكلمكم', 'حد يكلمني', 'موظف', 'خدمه العملاء', 'customer service')) return contact();
@@ -1515,6 +1537,26 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
 
   const TEAM_AM = ['أ. سيد إبراهيم', 'أ. نرفانا عماد'], TEAM_PM = ['أ. سمر إسماعيل', 'أ. إسلام مختار', 'أ. هدى محمد', 'أ. دينا هشام'];
   const teamHTML = () => `<div class="dmb-sec"><b>فريق الحفلات في خدمتك</b><ul><li><b>أ. سارة سيد</b> – رئيس قسم الحفلات (الفترة المسائية)</li><li><b>الفترة الصباحية:</b> ${TEAM_AM.join('، ')}</li><li><b>الفترة المسائية:</b> ${TEAM_PM.join('، ')}</li></ul></div>`;
+  // the client asked for a person (or the bot could not help twice): hand over to the events team with everything already known
+  function convoSummary() {
+    const L = [];
+    if (LEAD.name) L.push('الاسم: ' + LEAD.name);
+    if (S.event && EVNAME[S.event]) L.push('المناسبة: ' + EVNAME[S.event]);
+    if (S.count) L.push('العدد: ' + S.count + ' فرد');
+    if (HALLNAME[S.hall]) L.push('القاعة: ' + HALLNAME[S.hall]);
+    if (S.menu && K.halls[S.hall]) { const m = hallMenu(S.hall, S.menu); if (m) L.push('المنيو: ' + m.name); }
+    if (S.date) L.push('التاريخ: ' + dateTxt(S.date)); else if (S.day) L.push('اليوم: ' + (S.day === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'));
+    if (LEAD.lastQ) L.push('آخر عرض سعر: ' + LEAD.lastQ.sum + ' – ' + LEAD.lastQ.total + ' ج');
+    return L;
+  }
+  function humanAns(why) {
+    const h = new Date().getHours(), am = h >= 9 && h < 16;
+    const L = convoSummary();
+    if (LEAD.name) logLead('طلب التواصل مع موظف', { details: L.join('\n') });
+    bot(`<p>${why || 'أكيد يا ' + (hon() || 'فندم') + '، هحوّلك لفريق الحفلات حالاً'} 🌷</p><p>${am ? `في الفترة الصباحية معاك <b>${TEAM_AM.join(' و')}</b>` : `في الفترة المسائية معاك <b>أ. سارة سيد</b> رئيس قسم الحفلات، و<b>${TEAM_PM.join(' و')}</b>`}.</p>${L.length ? `<p>جهّزت لهم ملخص كلامنا عشان محدش يسألك تاني:</p><p class="dmb-note" style="white-space:pre-line">${esc(L.join('\n'))}</p>` : ''}<p>اضغط واتساب والرسالة هتوصلهم جاهزة، أو كلّمهم على طول.</p>`,
+      [waAct(['دار المراسم لضباط الشرطة – أرغب في التواصل مع فريق الحفلات', ...(L.length ? ['', ...L] : []), '', '(عبر مساعد دار المراسم الذكي)'].join('\n'), 'كلّم فريق الحفلات على واتساب'), { t: 'اتصال: ' + PHONES[0], href: 'tel:' + PHONES[0] }, { t: 'اتصال: ' + PHONES[1], href: 'tel:' + PHONES[1] }]);
+    chips([{ t: 'حجز موعد معاينة', fn: () => startVisit() }, ...(readyToClose() ? [{ t: 'جهّز طلبي لفريق الحفلات', fn: () => startClosing() }] : []), { t: 'أكمّل مع المساعد', fn: () => { bot('<p>تحت أمرك، اسأل في أي حاجة.</p>'); chips(MAIN()); } }]);
+  }
   function teamAns() {
     bot(`<p class="dmb-h">فريق الحفلات</p><p>فريق الحفلات بالدار يسعده يتابع مع حضرتك كل تفاصيل مناسبتك:</p>${teamHTML()}<p class="dmb-note">للتواصل: <a href="tel:01111117958" dir="ltr">01111117958</a> (واتساب) – <a href="tel:01010107958" dir="ltr">01010107958</a> – <a href="tel:01222227958" dir="ltr">01222227958</a></p>`, [waAct('دار المراسم لضباط الشرطة – أرغب في التواصل مع فريق الحفلات')]);
     chips([{ t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'تجهيز طلب الحجز', fn: () => startBook() }, ...MAIN().slice(0, 3)]);
@@ -2034,16 +2076,32 @@ ${row('مقدم الحجز', h => dep(h))}
     return null;
   }
   const skipChip = () => ({ t: tr('تخطّي وادخل على أسئلتي', 'Skip to my questions'), fn: () => { LEAD.skipped = true; LSTEP = null; FLOW = null; saveLead(); leadDone(true); } });
+  // after the client picks a hall or a package, explain and calculate first, then continue with the next question
+  let CONSULTED = false;
+  function consultAfter(st) {
+    if (CLOSING || EN() || !LEAD.count || !K.halls[LEAD.hall] || !['hall', 'pkg'].includes(st) || ['katb', 'birthday', 'special', 'aqiqa'].includes(LEAD.event)) return false;
+    if (st === 'pkg' && !pkgName()) return false;
+    leadToState(); LSTEP = null; FLOW = null;
+    if (st === 'pkg') { const mm = LEAD.pkg.match(/^([a-z]+)(\d*)$/); S.menu = mm ? { k: mm[1], n: +mm[2] || 0 } : null; } else S.menu = null;
+    const n0 = log.children.length;
+    if (st === 'pkg') bot(`<p>اختيار جميل 👌 خليني أحسب لحضرتك ${pkgName()} في ${HALLNAME[LEAD.hall]} لعدد ${AD(LEAD.count)} فرد:</p>`);
+    else bot(`<p>تمام، خليني أشرح لحضرتك ${HALLNAME[LEAD.hall]} وأحسب لك التكلفة لعدد ${AD(LEAD.count)} فرد بكل منيو:</p>`);
+    estimate(); CONSULTED = st;
+    try { afterSell(n0); } catch (e) { }
+    resumeIntake();
+    return true;
+  }
   function leadAsk(html, opts, step) {
+    const stepNow = LSTEP;
     bot(html);
     FLOW = { wantCount: LSTEP === 'count', step: (raw, t, e) => {
       const r = step(raw.trim(), t, e);
-      if (r === true) { FLOW = null; saveLead(); leadNext(); return true; }
+      if (r === true) { FLOW = null; saveLead(); if (!consultAfter(stepNow)) leadNext(); return true; }
       if (r === 'retry') return true;
       LEAD.ign = (LEAD.ign || 0) + 1; saveLead();
       LSTEP = null; FLOW = null; return false; // a real question: pause the intake and answer it
     } };
-    chips([...opts.map(o => ({ t: o.t, fn: () => { o.fn(); saveLead(); leadNext(); } })), ...(KEEPCH || []), skipChip()]);
+    chips([...opts.map(o => ({ t: o.t, fn: () => { o.fn(); saveLead(); if (!consultAfter(stepNow)) leadNext(); } })), ...(KEEPCH || []), skipChip()]);
   }
   const isQuestion = raw => /[?؟]/.test(raw) || /^(ايه|إيه|كام|بكام|هل|ممكن|فين|امتى|إمتى|ازاي|إزاي|عاوز|عايز|سعر|اسعار|أسعار|what|how|where|when|which|is|are|do|does|can|could|price|prices|cost)\b/i.test(raw.trim());
   const notYet = t => /لسه|لم احدد|مش عارف|مش محدد|معرفش|not sure|not yet|dont know|undecided|no idea|tbd/.test(t);
@@ -2065,6 +2123,7 @@ ${row('مقدم الحجز', h => dep(h))}
   const EVCHEER_EN = { wedding: 'Congratulations in advance!', engagement: 'Congratulations!', katb: 'Congratulations!', birthday: 'Happy birthday in advance!', aqiqa: 'Congratulations!', special: 'Wonderful, we would be delighted to host you.' };
   let CHEER = '';
   function startLead() {
+    CLOSING = false; OFFERED = 0; TURNS = 0;
     if (LEAD.done) return welcomeBack();
     if (EN()) {
       bot(`<p class="dmb-h">Welcome to Dar El-Marasem</p>${phHTML(['venue'])}<p>It is my pleasure to assist you. I am the <b>Dar El-Marasem AI assistant</b>, here around the clock to help you plan your event step by step: the right hall and package, and a detailed quote.</p><p>To advise you properly, may I ask <b>a few quick questions</b>?</p>`);
@@ -2104,8 +2163,7 @@ ${row('مقدم الحجز', h => dep(h))}
     bot(LEAD.name ? `<p>تشرفنا يا ${hon()}، نوّرت.</p>` : '<p>ولا يهمك يا فندم.</p>');
     if (f) {
       f();
-      setTimeout(() => { if (!FLOW && !Q && !LSTEP && !LEAD.done && !LEAD.skipped) { syncLead(); leadNext(); } }, 700);
-    } else leadNext();
+    } else { bot('<p>أقدر أساعد حضرتك إزاي؟</p>'); chips(MAIN()); }
   }
   function askName() {
     LSTEP = 'name';
@@ -2243,7 +2301,7 @@ ${row('مقدم الحجز', h => dep(h))}
       if (!H || ['katb', 'birthday', 'special', 'aqiqa'].includes(LEAD.event)) { LEAD.pkg = ''; saveLead(); return leadNext(); }
       LSTEP = 'pkg';
       const ms = okMenus(H);
-      return leadAsk(tr(`<p>اختيار موفّق، ${H.name}.</p><p><b>في باكدج معيّن في بال حضرتك؟</b></p>`, `<p>Great choice, ${HALLNAME[LEAD.hall]}.</p><p><b>Do you have a package in mind?</b></p>`), [...ms.map(m => ({ t: A(m.name), fn: () => { LEAD.pkg = m.id; } })), { t: tr('لسه مش محدد', 'Not decided yet'), fn: () => { LEAD.pkg = '-'; } }], (raw, t) => {
+      return leadAsk(tr(CONSULTED === 'hall' ? `<p><b>في منيو معيّن عجبك؟</b> اختاره وأنا أحسب لك الإجمالي بيه بالتفصيل.</p>` : `<p>اختيار موفّق، ${H.name}.</p><p><b>في باكدج معيّن في بال حضرتك؟</b></p>`, `<p>Great choice, ${HALLNAME[LEAD.hall]}.</p><p><b>Do you have a package in mind?</b></p>`), [...ms.map(m => ({ t: A(m.name), fn: () => { LEAD.pkg = m.id; } })), { t: tr('لسه مش محدد', 'Not decided yet'), fn: () => { LEAD.pkg = '-'; } }], (raw, t) => {
         const mq = EN() ? null : findMenu(t), m = mq && hallMenu(LEAD.hall, mq);
         if (m) { LEAD.pkg = m.id; return true; }
         if (notYet(t)) { LEAD.pkg = '-'; return true; }
@@ -2306,12 +2364,24 @@ ${row('مقدم الحجز', h => dep(h))}
     const SENT = skipped ? null : logLead('بيانات العميل');
     leadToState();
     if (skipped) { bot(tr(`<p>ولا يهمك${hon() ? ' يا ' + hon() : ''}، اتفضل اسأل في أي حاجة وأنا تحت أمرك.</p>`, `<p>With pleasure${hon() ? ', ' + hon() : ''}. Please ask me anything; we are happy to help.</p>`)); chips(MAIN()); return; }
-    const L = leadBlock();
-    const phone = LEAD.phone && LEAD.phone !== '-' ? LEAD.phone : '';
-    const EL = bot(tr(`<p class="dmb-h">متشكر جداً يا ${hon()}</p><p>خليني أراجع مع حضرتك اللي فهمته:</p><p style="white-space:pre-line">${esc(L.join('\n'))}</p><p>لو تحب، اضغط على الزرار وبياناتك هتوصل لفريق الحفلات على واتساب${phone ? ' وهيكلموك على رقمك' : ''}.</p>`, `<p class="dmb-h">Thank you, ${hon()}</p><p style="white-space:pre-line">${esc(L.join('\n'))}</p><p>Tap the button to send your details to our events team on WhatsApp${phone ? ' so they can reach you on your number' : ''}.</p>`),
-      [waAct([tr('دار المراسم لضباط الشرطة – عميل جديد', 'Dar El-Marasem – new client'), '', ...L, '', tr('(تم التسجيل عبر مساعد دار المراسم الذكي)', '(via the Dar El-Marasem AI assistant)')].join('\n'), tr('إرسال بياناتي لفريق الحفلات', 'Send my details to the team')), { t: tr('تعديل بياناتي', 'Edit my details'), fn: () => { LEAD = {}; saveLead(); leadNext(); } }]);
-    markSent(SENT, EL, 'بياناتك');
-    setTimeout(() => {
+    // no «sent» here: the data is saved quietly and the conversation continues with explaining and calculating
+    if (EN()) bot(`<p>Thank you, ${hon()}. I have everything I need.</p>`);
+    if (!EN() && CLOSING) {
+      CLOSING = false;
+      const L = leadBlock(), phone = LEAD.phone && LEAD.phone !== '-' ? LEAD.phone : '';
+      const q = LEAD.lastQ;
+      const EL = bot(`<p class="dmb-h">متشكر جداً يا ${hon() || 'فندم'}</p><p>ده ملخص طلبك:</p><p style="white-space:pre-line">${esc(L.join('\n'))}</p>${q ? `<p>عرض السعر: <b>${esc(q.sum)}</b> – الإجمالي التقديري <b>${money(q.total)}</b></p>` : ''}<p>فريق الحفلات هيراجع طلبك${phone ? ' ويتواصل مع حضرتك على رقمك' : ''} عشان يأكد التاريخ ويكمّل معاك الحجز. ولو حابب تبعته بنفسك على واتساب، اضغط الزرار.</p><p class="dmb-note">الحجز بيتثبّت بسداد مقدم الحجز وتوقيع استمارة التعاقد.</p>`,
+        [waAct(['دار المراسم لضباط الشرطة – طلب عميل', '', ...L, ...(q ? ['', q.msg] : []), '', '(عبر مساعد دار المراسم الذكي)'].join('\n'), 'إرسال طلبي لفريق الحفلات على واتساب'), { t: 'حجز موعد معاينة', cls: 'pri', fn: () => startVisit() }]);
+      markSent(SENT, EL, 'طلبك');
+      chips([{ t: 'صور القاعات', q: 'صور القاعات' }, { t: 'تعديل بياناتي', fn: () => { const n = LEAD.name; LEAD = { name: n, greeted: true, logged0: true, id: LEAD.id }; saveLead(); startClosing(); } }, ...MAIN().slice(0, 2)]);
+      return;
+    }
+    if (!EN() && CONSULTED === 'pkg' && K.halls[LEAD.hall] && LEAD.count) {
+      bot(`<p>متشكر يا ${hon() || 'فندم'} 🌷 كده عندي كل اللي محتاجه عشان أكمّل معاك.</p><p class="dmb-close">✦ ${closeLine()}</p>`);
+      chips([...(LEAD.lastQ ? [] : [{ t: 'يلا نكمّل الحساب', fn: () => startQuote(quotePre(S.hall)) }]), { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'صور القاعة', q: 'صور ' + HALLNAME[S.hall] }, { t: 'قارن بقاعة تانية', fn: () => recommend() }]);
+      return;
+    }
+    const go = () => {
       if (EN()) {
         if (LEAD.hall === 'mawadda' || LEAD.event === 'katb') return enKatb(LEAD.hall === 'lotus' ? 'lotus' : 'mawadda');
         if (K.halls[LEAD.hall] && LEAD.count) return enEstimate(LEAD.hall);
@@ -2320,7 +2390,7 @@ ${row('مقدم الحجز', h => dep(h))}
         return chips(MAIN());
       }
       const ev = LEAD.event;
-      if (LEAD.count || K.halls[LEAD.hall] || ['katb', 'birthday', 'special', 'aqiqa'].includes(ev)) bot(`<p>ودلوقتي خليني أعرض على حضرتك ${LEAD.count ? 'الأنسب لعدد ' + AD(LEAD.count) + ' فرد' : 'التفاصيل'}:</p>`);
+      if (LEAD.count || K.halls[LEAD.hall] || ['katb', 'birthday', 'special', 'aqiqa'].includes(ev)) bot(`<p>متشكر يا ${hon() || 'فندم'} 🌷 ودلوقتي خليني أشرح لحضرتك ${K.halls[LEAD.hall] && LEAD.count ? 'التكلفة بالتفصيل في ' + HALLNAME[LEAD.hall] : LEAD.count ? 'الأنسب لعدد ' + AD(LEAD.count) + ' فرد' : 'التفاصيل'}:</p>`);
       if (ev === 'katb' || LEAD.hall === 'mawadda') return katb(LEAD.hall === 'lotus' || LEAD.hall === 'mawadda' ? LEAD.hall : null);
       if (ev === 'birthday') return LEAD.count ? birthday() : chips(MAIN());
       if (ev === 'special') return special();
@@ -2330,9 +2400,10 @@ ${row('مقدم الحجز', h => dep(h))}
       if (K.halls[LEAD.hall] && LEAD.count) return estimate();
       if (K.halls[LEAD.hall]) return hallProfile(LEAD.hall);
       if (LEAD.count) return recommend();
-      bot('<p>تحب نبدأ بإيه؟ اختار من تحت أو اكتب سؤالك.</p>');
+      bot(`<p>متشكر يا ${hon() || 'فندم'} 🌷 تحب نبدأ بإيه؟ قولّي عدد المعازيم وأنا أرشّح لك القاعة وأحسب لك التكلفة.</p>`);
       chips(MAIN());
-    }, 600);
+    };
+    setTimeout(() => { const n0 = log.children.length; go(); try { afterSell(n0); } catch (e) { } }, 600);
   }
   function welcomeBack() {
     leadToState();
@@ -2538,8 +2609,10 @@ ${row('مقدم الحجز', h => dep(h))}
     }
     if (!S.event && !S.hall && !S.count) return 'لو تقولّي <b>نوع المناسبة وعدد المعازيم</b>، أرشّح لحضرتك الأنسب وأحسب لك التكلفة كاملة.';
     if (!S.count) return '<b>عدد المعازيم</b> المتوقع كام؟ وأنا أحسب لك التكلفة كاملة على طول.';
-    if (!S.date) return 'حضرتك حددت <b>ميعاد الحفلة</b>؟ أنصحك تثبّته بدري، لأن المواعيد بتتحجز بأسبقية دفع المقدم.';
-    return 'تحب أجهّز لك <b>عرض سعر تفصيلي</b> بالإضافات، ولا أحجز لك <b>ميعاد تعاين فيه القاعة</b>؟';
+    // the next step of the journey: count → hall → menu & add-ons (full total) → viewing → booking
+    if (!K.halls[S.hall] && !['katb', 'birthday', 'special', 'aqiqa', 'photo'].includes(S.event)) return '<b>الخطوة الجاية:</b> اختار القاعة اللي عجبتك، وأنا أشرح لك تفاصيلها وأحسب لك التكلفة بالمنيو.';
+    if (!LEAD.lastQ) return S.menu ? '<b>الخطوة الجاية:</b> نختار سوا <b>الإضافات</b> اللي تحبها (الكوشة، التصوير، الزفة…)، وأطلّع لك <b>الإجمالي النهائي</b> بند بند. نبدأ؟' : '<b>الخطوة الجاية:</b> نختار سوا <b>المنيو والإضافات</b> اللي تحبها، وأطلّع لك <b>الإجمالي النهائي</b> خطوة بخطوة. نبدأ؟';
+    return '<b>الخطوة الجاية:</b> تشرّفنا <b>تعاين القاعة</b> على الطبيعة، ولو استقريت أجهّز طلبك لفريق الحفلات يأكد لك التاريخ.';
   }
   function afterSell(n0) {
     if (FLOW || Q) return;
@@ -2561,13 +2634,13 @@ ${row('مقدم الحجز', h => dep(h))}
     const acts = last.querySelector('.dmb-acts');
     acts ? last.insertBefore(p, acts) : last.appendChild(p);
     const add = [];
-    if (S.count && !ACT.some(a => /عرض سعر|quote/i.test(a.t))) add.push({ t: tr('عرض سعر تفصيلي', 'Detailed quote'), fn: () => startQuote(quotePre(defaultScope() || 'akhenaten')) });
+    if (!EN() && S.count && K.halls[S.hall] && !LEAD.lastQ && !ACT.some(a => /نكمّل الحساب/.test(a.t))) add.unshift({ t: 'يلا نكمّل الحساب', fn: () => startQuote(quotePre(S.hall)) });
+    else if (S.count && !ACT.some(a => /عرض سعر|quote/i.test(a.t))) add.push({ t: tr('عرض سعر تفصيلي', 'Detailed quote'), fn: () => startQuote(quotePre(defaultScope() || 'akhenaten')) });
     if (S.count && !ACT.some(a => /معاينة|viewing/i.test(a.t))) add.push({ t: tr('حجز موعد معاينة', 'Book a viewing'), fn: () => startVisit() });
-    if (!LEAD.done && !LEAD.skipped && !LSTEP && !ACT.some(a => /بياناتي|my details/i.test(a.t))) add.unshift({ t: tr('استكمال بياناتي', 'Complete my details'), fn: () => leadNext() });
-    if (add.length) chips([...ACT, ...add].slice(0, 7));
+    if (add.length) chips((add[0] && /نكمّل الحساب/.test(add[0].t) ? [add[0], ...ACT, ...add.slice(1)] : [...ACT, ...add]).slice(0, 7));
     scroll();
   }
-  { const st = document.createElement('style'); st.textContent = '.dmb-qrb{margin-inline-start:auto}.dmb-qrh{display:inline-flex;align-items:center;gap:8px;margin:14px auto 0;padding:10px 20px;border-radius:26px;border:1px solid rgba(200,164,100,.6);background:rgba(10,17,32,.6);color:#E9D3A1;font:700 15px/1.2 Cairo,Tajawal,sans-serif;cursor:pointer}.dmb-qrh:hover{background:rgba(200,164,100,.14)}@media(max-width:700px){.dmb-qrb,.dmb-qrh{display:none!important}}.dmb-qrm{position:fixed;inset:0;z-index:140;background:rgba(5,9,18,.82);display:flex;align-items:center;justify-content:center;padding:18px}.dmb-qrm[hidden]{display:none}.dmb-qrc{position:relative;max-height:94vh;display:flex;flex-direction:column;align-items:center;gap:10px}.dmb-qrc img{max-height:78vh;width:auto;max-width:92vw;border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.6)}.dmb-qrt{margin:0;text-align:center;color:#F1DFB5;font:700 22px/1.5 Cairo,Tajawal,sans-serif}.dmb-qrt small{font-weight:500;font-size:15px;color:#CFC6B4}.dmb-qrx{position:absolute;top:-6px;left:-6px;width:42px;height:42px;border-radius:50%;border:1px solid rgba(200,164,100,.6);background:#0A1120;color:#E9D3A1;font-size:18px;cursor:pointer}.dmb-tels{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 8px;padding:7px var(--gut,14px);background:#0B1324;border-bottom:1px solid rgba(200,164,100,.18)}.dmb-tels a{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:18px;border:1px solid rgba(200,164,100,.4);color:#F1DFB5;text-decoration:none;font:700 14px/1.2 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}.dmb-tels a.twa{background:#1DA851;border-color:#1DA851;color:#fff}.dmb-tels a.twa small{font:600 11.5px/1 var(--sans);opacity:.9}@media(max-width:420px){.dmb-tels{gap:4px;flex-wrap:nowrap;padding-inline:8px}.dmb-tels a{font-size:11.5px;letter-spacing:-.2px;padding:4px 7px;gap:3px}.dmb-tels svg{width:13px;height:13px}.dmb-tels a.twa small{display:none}}.dmb-launch.inl{position:relative!important;right:auto!important;left:auto!important;bottom:auto!important;top:auto!important;margin:22px auto 4px;animation:none!important;z-index:2}.dmb-launch.inl:before,.dmb-launch.inl:after{animation-play-state:running}.dmb-mic{flex:none;width:48px;height:48px;border-radius:50%;border:1.5px solid rgba(200,164,100,.7);background:transparent;color:#E9D3A1;display:flex;align-items:center;justify-content:center;cursor:pointer}.dmb-mic:hover{background:rgba(200,164,100,.14)}.dmb-mic.rec{background:#B3261E;border-color:#B3261E;color:#fff;animation:dmbMic 1.1s infinite}@keyframes dmbMic{0%{box-shadow:0 0 0 0 rgba(179,38,30,.55)}100%{box-shadow:0 0 0 14px rgba(179,38,30,0)}}.dmb-cap{max-width:560px;margin:12px auto 0;padding:0 18px;text-align:center;color:#CFC6B4;font:500 16px/1.85 Cairo,Tajawal,sans-serif;cursor:pointer}.dmb-cap b{color:#F1DFB5;font-weight:700}.dmb-cap em{display:block;margin-top:4px;font-style:normal;font-weight:700;color:#D9B979}.dmb-cap em:before{content:"⬆ "}@media(max-width:560px){.dmb-cap{font-size:15px;padding:0 6px}}.dmb-launch.dmb-fl{animation:none!important;position:fixed!important;top:calc(12px + env(safe-area-inset-top,0px))!important;right:12px!important;bottom:auto!important;left:auto!important;margin:0!important;z-index:31;transform-origin:top right;transform:scale(.86) translateY(-14px);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}.dmb-launch.dmb-fl.on{opacity:1;transform:scale(.86);pointer-events:auto}.dmb-launch.dmb-fl.rd{top:calc(78px + env(safe-area-inset-top,0px))!important}html.dmb-open .dmb-launch.dmb-fl{display:none}@media(max-width:560px){.dmb-launch.dmb-fl{transform:scale(.78) translateY(-14px)}.dmb-launch.dmb-fl.on{transform:scale(.78)}.dmb-launch.dmb-fl.rd{top:calc(70px + env(safe-area-inset-top,0px))!important}}html.dmb-pad body{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}@media(max-width:560px){.dmb-launch.inl{margin-top:18px}}.dmb-hd .dmb-x{display:none!important}.dmb-nav{display:flex;align-items:center;gap:8px;padding:8px var(--gut,14px);background:#0B1324;border-bottom:1px solid rgba(200,164,100,.18)}.dmb-nav button,.dmb-nav a{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:20px;border:1px solid rgba(200,164,100,.45);background:transparent;color:#F1DFB5;font:600 15px/1 var(--sans);cursor:pointer;text-decoration:none;white-space:nowrap}.dmb-nav button:hover,.dmb-nav a:hover{background:rgba(200,164,100,.14)}.dmb-nav button:disabled{opacity:.35;cursor:default}.dmb-nav .dmb-tel{margin-inline-start:auto;background:linear-gradient(180deg,#E9D3A1,#C8A464);color:#1A1406;border-color:transparent;font-weight:700;font-variant-numeric:tabular-nums}.dmb-cr{padding:2px var(--gut,14px) calc(8px + env(safe-area-inset-bottom,0px));text-align:center;color:#9C8E70;font:500 12.5px/1.6 var(--sans)}.dmb-cr b{color:#E9D3A1;font-weight:800;font-size:1.3em}@media(max-width:420px){.dmb-nav{gap:6px}.dmb-nav button,.dmb-nav a{height:34px;padding:0 10px;font-size:14px}.dmb-cr{font-size:11.5px}}.dmb-ret{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:125;display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:30px;border:1px solid rgba(200,164,100,.6);background:rgba(10,17,32,.94);color:#F1DFB5;font:700 15px/1 Cairo,Tajawal,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.45);cursor:pointer;direction:rtl}.dmb-ret img{width:26px;height:26px}.dmb-log,.dmb-chips{--serif:"Cairo","Tajawal",sans-serif}.dmb-panel{font-size:18px}.dmb-b{line-height:1.8}.dmb-h{font-size:23px!important;line-height:1.45!important}.dmb-t{font-size:16px}.dmb-t th{font-size:15px}.dmb-t tr.tot td.n{font-size:17.5px}.dmb-note{font-size:15px}.dmb-btn{font-size:15.5px}.dmb-chips button{font-size:15.5px}.dmb-in input{font-size:17.5px}.dmb-in button{font-size:16.5px}.dmb-sec>b{font-size:17.5px}.dmb-sec p{font-size:15.5px}.dmb-law summary{font-size:16px}.dmb-law p{font-size:15px}.dmb-cols{font-size:15.5px}.dmb-close{font-size:16.5px}.dmb-cta{font-size:16px}.dmb-sg>b{font-size:17px}.dmb-step{font-size:13px}.dmb-tag{font-size:12.5px}.dmb-qc{font-size:16px}.dmb-qc .nm small{font-size:13.5px}.dmb-qq input{font-size:17px}.dmb-qq .ut{font-size:14px}.dmb-qs{font-size:15px}.dmb-qs b{font-size:17px}.dmb-qb .dmb-btn{font-size:16.5px}.dmb-qk .pick{font-size:16.5px}.dmb-qk .pick small{font-size:13.5px}.dmb-qk details{font-size:15px}.dmb-qk summary{font-size:14px}.dmb-form input{font-size:18px}.dmb-form .dmb-hint{font-size:14px}.dmb-u{font-size:18px}.dmb-t small{font-size:14px}@media(max-width:560px){.dmb-chips{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;justify-content:flex-start!important;padding-bottom:10px!important}.dmb-chips::-webkit-scrollbar{display:none}.dmb-chips button{flex:0 0 auto;white-space:nowrap}}.dmb-step{display:table;margin:0 0 6px;padding:1px 10px;border-radius:20px;background:linear-gradient(180deg,#F4E6C4,#E9D3A1);color:#5A4210;font:700 11.5px/1.7 var(--sans)}.dmb-close{margin-top:10px;padding-top:9px;border-top:1px dashed var(--line);color:#2A3350;font-size:13.5px}.dmb-close b{color:var(--wine)}.dmb-panel.dmb-kb .dmb-nav,.dmb-panel.dmb-kb .dmb-tels,.dmb-panel.dmb-kb .dmb-cr{display:none!important}.dmb-panel.dmb-kb .dmb-hd{padding-top:6px!important;padding-bottom:6px!important}.dmb-panel.dmb-kb .dmb-hd img{max-height:32px}.dmb-panel.dmb-kb .dmb-chips{padding-top:4px!important;padding-bottom:4px!important}.dmb-sent{margin:8px 0 2px;padding:6px 10px;border-radius:10px;background:#E8F5EC;color:#1B6B3A;font-weight:700;font-size:15px}'; document.head.appendChild(st); }
+  { const st = document.createElement('style'); st.textContent = '.dmb-qrb{margin-inline-start:auto}.dmb-qrh{display:inline-flex;align-items:center;gap:8px;margin:14px auto 0;padding:10px 20px;border-radius:26px;border:1px solid rgba(200,164,100,.6);background:rgba(10,17,32,.6);color:#E9D3A1;font:700 15px/1.2 Cairo,Tajawal,sans-serif;cursor:pointer}.dmb-qrh:hover{background:rgba(200,164,100,.14)}@media(max-width:700px){.dmb-qrb,.dmb-qrh{display:none!important}}.dmb-qrm{position:fixed;inset:0;z-index:140;background:rgba(5,9,18,.82);display:flex;align-items:center;justify-content:center;padding:18px}.dmb-qrm[hidden]{display:none}.dmb-qrc{position:relative;max-height:94vh;display:flex;flex-direction:column;align-items:center;gap:10px}.dmb-qrc img{max-height:78vh;width:auto;max-width:92vw;border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.6)}.dmb-qrt{margin:0;text-align:center;color:#F1DFB5;font:700 22px/1.5 Cairo,Tajawal,sans-serif}.dmb-qrt small{font-weight:500;font-size:15px;color:#CFC6B4}.dmb-qrx{position:absolute;top:-6px;left:-6px;width:42px;height:42px;border-radius:50%;border:1px solid rgba(200,164,100,.6);background:#0A1120;color:#E9D3A1;font-size:18px;cursor:pointer}.dmb-tels{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 8px;padding:7px var(--gut,14px);background:#0B1324;border-bottom:1px solid rgba(200,164,100,.18)}.dmb-tels a{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:18px;border:1px solid rgba(200,164,100,.4);color:#F1DFB5;text-decoration:none;font:700 14px/1.2 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}.dmb-tels a.twa{background:#1DA851;border-color:#1DA851;color:#fff}.dmb-tels a.twa small{font:600 11.5px/1 var(--sans);opacity:.9}@media(max-width:420px){.dmb-tels{gap:4px;flex-wrap:nowrap;padding-inline:8px}.dmb-tels a{font-size:11.5px;letter-spacing:-.2px;padding:4px 7px;gap:3px}.dmb-tels svg{width:13px;height:13px}.dmb-tels a.twa small{display:none}}.dmb-launch.inl{position:relative!important;right:auto!important;left:auto!important;bottom:auto!important;top:auto!important;margin:22px auto 4px;animation:none!important;z-index:2}.dmb-launch.inl:before,.dmb-launch.inl:after{animation-play-state:running}.dmb-mic{flex:none;width:48px;height:48px;border-radius:50%;border:1.5px solid rgba(200,164,100,.7);background:transparent;color:#E9D3A1;display:flex;align-items:center;justify-content:center;cursor:pointer}.dmb-mic:hover{background:rgba(200,164,100,.14)}.dmb-mic.rec{background:#B3261E;border-color:#B3261E;color:#fff;animation:dmbMic 1.1s infinite}@keyframes dmbMic{0%{box-shadow:0 0 0 0 rgba(179,38,30,.55)}100%{box-shadow:0 0 0 14px rgba(179,38,30,0)}}.dmb-cap{max-width:560px;margin:12px auto 0;padding:0 18px;text-align:center;color:#CFC6B4;font:500 16px/1.85 Cairo,Tajawal,sans-serif;cursor:pointer}.dmb-cap b{color:#F1DFB5;font-weight:700}.dmb-cap em{display:block;margin-top:4px;font-style:normal;font-weight:700;color:#D9B979}.dmb-cap em:before{content:"⬆ "}@media(max-width:560px){.dmb-cap{font-size:15px;padding:0 6px}}.dmb-launch.dmb-fl{animation:none!important;position:fixed!important;top:calc(12px + env(safe-area-inset-top,0px))!important;right:12px!important;bottom:auto!important;left:auto!important;margin:0!important;z-index:31;transform-origin:top right;transform:scale(.86) translateY(-14px);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}.dmb-launch.dmb-fl.on{opacity:1;transform:scale(.86);pointer-events:auto}.dmb-launch.dmb-fl.rd{top:calc(78px + env(safe-area-inset-top,0px))!important}html.dmb-open .dmb-launch.dmb-fl{display:none}@media(max-width:560px){.dmb-launch.dmb-fl{transform:scale(.78) translateY(-14px)}.dmb-launch.dmb-fl.on{transform:scale(.78)}.dmb-launch.dmb-fl.rd{top:calc(70px + env(safe-area-inset-top,0px))!important}}html.dmb-pad body{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}@media(max-width:560px){.dmb-launch.inl{margin-top:18px}}.dmb-hd .dmb-x{display:none!important}.dmb-nav{display:flex;align-items:center;gap:8px;padding:8px var(--gut,14px);background:#0B1324;border-bottom:1px solid rgba(200,164,100,.18)}.dmb-nav button,.dmb-nav a{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:20px;border:1px solid rgba(200,164,100,.45);background:transparent;color:#F1DFB5;font:600 15px/1 var(--sans);cursor:pointer;text-decoration:none;white-space:nowrap}.dmb-nav button:hover,.dmb-nav a:hover{background:rgba(200,164,100,.14)}.dmb-nav button:disabled{opacity:.35;cursor:default}.dmb-nav .dmb-tel{margin-inline-start:auto;background:linear-gradient(180deg,#E9D3A1,#C8A464);color:#1A1406;border-color:transparent;font-weight:700;font-variant-numeric:tabular-nums}.dmb-cr{padding:2px var(--gut,14px) calc(8px + env(safe-area-inset-bottom,0px));text-align:center;color:#9C8E70;font:500 12.5px/1.6 var(--sans)}.dmb-cr b{color:#E9D3A1;font-weight:800;font-size:1.3em}@media(max-width:420px){.dmb-nav{gap:6px}.dmb-nav button,.dmb-nav a{height:34px;padding:0 10px;font-size:14px}.dmb-cr{font-size:11.5px}}.dmb-ret{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:125;display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:30px;border:1px solid rgba(200,164,100,.6);background:rgba(10,17,32,.94);color:#F1DFB5;font:700 15px/1 Cairo,Tajawal,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.45);cursor:pointer;direction:rtl}.dmb-ret img{width:26px;height:26px}.dmb-log,.dmb-chips{--serif:"Cairo","Tajawal",sans-serif}.dmb-panel{font-size:18px}.dmb-b{line-height:1.8}.dmb-h{font-size:23px!important;line-height:1.45!important}.dmb-t{font-size:16px}.dmb-t th{font-size:15px}.dmb-t tr.tot td.n{font-size:17.5px}.dmb-note{font-size:15px}.dmb-btn{font-size:15.5px}.dmb-chips button{font-size:15.5px}.dmb-in input{font-size:17.5px}.dmb-in button{font-size:16.5px}.dmb-sec>b{font-size:17.5px}.dmb-sec p{font-size:15.5px}.dmb-law summary{font-size:16px}.dmb-law p{font-size:15px}.dmb-cols{font-size:15.5px}.dmb-close{font-size:16.5px}.dmb-cta{font-size:16px}.dmb-sg>b{font-size:17px}.dmb-step{font-size:13px}.dmb-tag{font-size:12.5px}.dmb-qc{font-size:16px}.dmb-qc .nm small{font-size:13.5px}.dmb-qq input{font-size:17px}.dmb-qq .ut{font-size:14px}.dmb-qs{font-size:15px}.dmb-qs b{font-size:17px}.dmb-qb .dmb-btn{font-size:16.5px}.dmb-qk .pick{font-size:16.5px}.dmb-qk .pick small{font-size:13.5px}.dmb-qk details{font-size:15px}.dmb-qk summary{font-size:14px}.dmb-form input{font-size:18px}.dmb-form .dmb-hint{font-size:14px}.dmb-u{font-size:18px}.dmb-t small{font-size:14px}@media(max-width:560px){.dmb-chips{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;justify-content:flex-start!important;padding-bottom:10px!important}.dmb-chips::-webkit-scrollbar{display:none}.dmb-chips button{flex:0 0 auto;white-space:nowrap}}.dmb-step{display:table;margin:0 0 6px;padding:1px 10px;border-radius:20px;background:linear-gradient(180deg,#F4E6C4,#E9D3A1);color:#5A4210;font:700 11.5px/1.7 var(--sans)}.dmb-close{margin-top:10px;padding-top:9px;border-top:1px dashed var(--line);color:#2A3350;font-size:13.5px}.dmb-close b{color:var(--wine)}.dmb-panel.dmb-kb .dmb-nav,.dmb-panel.dmb-kb .dmb-tels,.dmb-panel.dmb-kb .dmb-cr{display:none!important}.dmb-panel.dmb-kb .dmb-hd{padding-top:6px!important;padding-bottom:6px!important}.dmb-panel.dmb-kb .dmb-hd img{max-height:32px}.dmb-panel.dmb-kb .dmb-chips{padding-top:4px!important;padding-bottom:4px!important}.dmb-launch{background:linear-gradient(180deg,#F6E3B4 0%,#D9B66F 55%,#B8904A 100%)!important;box-shadow:0 0 0 2px #FFF3D6,0 0 0 7px rgba(200,164,100,.35),0 18px 44px rgba(0,0,0,.55),0 0 80px rgba(233,211,161,.6)!important}.dmb-launch .dmb-lt .en{background:none!important;-webkit-text-fill-color:#0A1120!important;color:#0A1120!important}.dmb-launch .dmb-lt .ar{color:#0A1120!important}.dmb-launch .dmb-lt .tg{color:#2A1C05!important;opacity:1!important}.dmb-launch.inl{transform:scale(1.15);transform-origin:center}.dmb-launch.dmb-fl{transform:scale(1) translateY(-14px)}.dmb-launch.dmb-fl.on{transform:scale(1)}@media(max-width:560px){.dmb-launch.dmb-fl{transform:scale(.9) translateY(-14px)}.dmb-launch.dmb-fl.on{transform:scale(.9)}.dmb-launch.inl{margin-top:26px}}.dmb-sent{margin:8px 0 2px;padding:6px 10px;border-radius:10px;background:#E8F5EC;color:#1B6B3A;font-weight:700;font-size:15px}'; document.head.appendChild(st); }
 
   /* ---------------- sales consultant layer ---------------- */
   const SCSS = `
@@ -2691,7 +2764,7 @@ ${showSm ? `<div class="dmb-sg"><b>الست منيو (Set Menu)</b>وجبة مت
 ${showOb ? `<div class="dmb-sg"><b>الأوبن بوفيه (Open Buffet)</b>بوفيه مفتوح بتشكيلة أوسع يختار منها الضيوف بحرية: سلطات ومقبلات شرقية وفواتح شهية باردة ومخبوزات وبوفيه ساخن وركن كارفن وحلويات ومشروبات. مثالي لمن يفضّل التنوع والأجواء الاحتفالية المفتوحة.</div>` : ''}
 ${showSm ? `<p><b>الطبق الرئيسي في كل ست منيو</b> – ${H.name}:</p><table class="dmb-t">${smRows}</table>` : ''}
 ${showOb && ob.length ? `<p><b>الأوبن بوفيه</b> – ${H.name}:</p><table class="dmb-t">${obRows}</table>` : ''}
-${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانتقال من ست منيو (١) لأوبن بوفيه (١) فرقه ${money(diff)} على الباكدج في ${H.name}.</p>` : ''}
+${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانتقال من ست منيو (١) لأوبن بوفيه (١) فرقه ${money(diff)} على الباكدج في ${H.name}.</p>` : ''}${S.count && S.count >= H.min && S.count <= H.max && ob.length ? (() => { const d = S.day || 'wd', a = Math.min(...sm.map(m => estTotal(H, m, S.count, d))), b = Math.min(...ob.map(m => estTotal(H, m, S.count, d))); return `<div class="dmb-cta">✦ <b>لعدد ${AD(S.count)} فرد في ${H.name}</b>: أقل ست منيو ${money(a)}، وأقل أوبن بوفيه ${money(b)}، يعني الفرق حوالي <b>${money(Math.round((b - a) / 500) * 500)}</b>. ${b - a > 0 ? 'لو الأولوية للخدمة المنظمة على الترابيزة والتوفير، الست منيو أنسب؛ ولو عايز تنوع أكبر وأجواء مفتوحة، الأوبن بوفيه يستاهل الفرق.' : ''}</div>`; })() : ''}
 <p class="dmb-note">الأصناف واحدة في قاعتي أخناتون وإيزيس (عدا اختلافات طفيفة في أوبن بوفيه ٢ و٣)، وقاعة اللوتس تقدّم هاي تي وست منيو (١ – ٣) دون أوبن بوفيه.</p>${src(hid)}`,
       [{ t: 'عرض المنيو كاملاً', go: H.menu }]);
     chips([{ t: 'أي منيو يناسبني؟', fn: () => bestMenuAns(hid) }, ...H.menus.slice(0, 2).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.slice(0, 2), n: +m.id.slice(2) || 0 }) })), ...(ob.length ? [{ t: 'محتوى أوبن بوفيه (٣)', fn: () => menuDetail({ k: 'ob', n: 3 }) }] : []), { t: 'عرض سعر تفصيلي', fn: () => startQuote(quotePre(hid)) }]);
@@ -3226,6 +3299,7 @@ ${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانت
     logLead('عرض سعر', { total, details: msg });
     S.event = q.ev; if (q.hall) S.hall = q.hall; if (q.n) S.count = q.n; if (q.day) S.day = q.day;
     const keep = { ev: q.ev, hall: q.hall, n: q.n, day: q.day, pk: q.pk, exN: q.exN, sel: q.sel, groups: q.groups };
+    if (!EN() && !LEAD.done) setTimeout(() => offerClose('<p>كده حضرتك عارف التكلفة بالكامل بند بند 👌</p>'), window.DMB_FAST ? 200 : 1200);
     chips([
       { t: tr('احجز ميعاد معاينة', 'Book a viewing'), fn: () => startVisit() },
       { t: tr('مراجعة الإضافات وتعديلها', 'Review & edit add-ons'), fn: () => { Q = Object.assign({}, keep, { gi: 0 }); qNext(); } },
@@ -3794,6 +3868,15 @@ ${row('Photo session', 'Up to 6 people', money(5000), 'Session fee')}</table><p 
     setTimeout(() => d.scrollIntoView({ block: 'end', behavior: 'smooth' }), 50);
     b.addEventListener('click', () => { if (!inp.value) { inp.focus(); return; } const [y, m, dd] = inp.value.split('-').map(Number); const dt = new Date(y, m - 1, dd); addUser(dateTxt(dt)); b.disabled = true; inp.disabled = true; chips([]); think(() => cb(dt)); });
     return d;
+  }
+  // «عاوز أحجز» before anything was explained: consult first (hall → cost → menu), the booking request comes after
+  function consultFirst() {
+    if (EN() || LEAD.lastQ || (K.halls[S.hall] && S.count && LASTA && LASTA.k === 'est')) return false;
+    if (['photo'].includes(S.event)) return false;
+    const go = () => (K.halls[S.hall] || ['katb', 'birthday', 'special', 'aqiqa'].includes(S.event) ? estimate() : recommend());
+    bot(`<p>يسعدنا جداً إن حضرتك تختار دار المراسم 🌷</p><p>قبل ما نجهّز طلب الحجز، خليني أساعدك نختار سوا <b>القاعة والمنيو</b> وأحسب لك <b>التكلفة</b>، عشان طلبك يوصل لفريق الحفلات كامل وواضح.</p>`);
+    if (S.count || ['special', 'aqiqa'].includes(S.event)) go(); else askCount(go);
+    return true;
   }
   function startBook() {
     const B = { event: S.event, hall: S.hall, count: S.count, date: S.date, name: LEAD.name || '', menu: null };
