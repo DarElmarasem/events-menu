@@ -59,6 +59,9 @@
   };
   const HALLNAME_AR = { akhenaten: 'قاعة أخناتون', isis: 'قاعة إيزيس', lotus: 'قاعة اللوتس', mawadda: 'قاعة المودة والرحمة', roof: 'الروف توب', glass: 'قاعة أوبن إير', lulu: 'قاعة اللؤلؤة', marasem: 'قاعة المراسم' };
   const HALLNAME_EN = { akhenaten: 'Akhenaten Hall', isis: 'Isis Hall', lotus: 'Lotus Hall', mawadda: 'Al-Mawadda wal-Rahma Hall', roof: 'Roof Top', glass: 'Open Air Hall', lulu: "Al-Lulu'a (Pearl) Hall", marasem: 'Al-Marasem Hall' };
+  // only the halls that suit the client's guest count (both, when two suit it)
+  const fitN = (h, n) => !K || !K.halls[h] || !n || (n >= K.halls[h].min && n <= K.halls[h].max) || (h === 'lotus' && n < 100);
+  const byCount = (arr, n) => { n = n === undefined ? (typeof S !== 'undefined' && S.count) : n; if (!n) return arr; const f = arr.filter(h => fitN(h, n)); return f.length ? f : arr; };
   const HALLNAME = new Proxy(HALLNAME_AR, { get: (o, k) => (EN() && HALLNAME_EN[k]) || o[k] });
   const HALLRE = Object.fromEntries(Object.entries(HALLS).map(([k, ws]) => [k, wordRe(ws)]));
   function findHalls(t) {
@@ -459,7 +462,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   let idleT = 0, warnT = 0, warnI = 0, warnEl = null;
   function idleClear() { clearTimeout(idleT); clearTimeout(warnT); clearInterval(warnI); if (warnEl) { warnEl.remove(); warnEl = null; } }
   function idleArm() {
-    idleClear();
+    idleClear(); try { nudgeArm(); } catch (e) { }
     if (!started) return;
     if (!panel.hidden) warnT = setTimeout(idleWarn, WARN_MS);
     idleT = setTimeout(idleReset, IDLE_MS);
@@ -605,11 +608,16 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   sendBtn.addEventListener('click', e => { if (e.pointerType === 'mouse' || e.detail === 0 || !('PointerEvent' in window)) send(); });
 
   /* ---------------- conversation ---------------- */
+  // ordered the way a client thinks: which hall suits me → how much → what we eat → my full cost → see it → why here → extras → terms → contact
   const MAIN = () => EN() ? enMain() : [
-    { t: 'عرض سعر تفصيلي لحفلتك', fn: () => startQuote() }, { t: 'مقترحات لحفلتك', fn: () => suggestAns() }, { t: 'مميزات الدار والقاعات', fn: whyUs },
-    { t: 'أسعار القاعات', q: 'أسعار القاعات' }, { t: 'ترشيح قاعة مناسبة', fn: () => startRec() },
-    { t: 'المنيوهات', q: 'المنيوهات' }, { t: 'سياسة الحجز والسداد', q: 'ازاي احجز' },
-    { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'العنوان والتواصل', q: 'العنوان والتليفون' }
+    { t: 'رشّح لي القاعة المناسبة', fn: () => startRec() }, { t: 'أسعار القاعات', q: 'أسعار القاعات' }, { t: 'المنيوهات', q: 'المنيوهات' }, { t: 'كلّم فريق الحفلات', fn: () => humanAns() },
+    { t: 'المزيد…', fn: () => { bot('<p>اختار اللي تحبه:</p>'); chips(MAINFULL().slice(3)); } }
+  ];
+  const MAINFULL = () => EN() ? enMain() : [
+    { t: 'رشّح لي القاعة المناسبة', fn: () => startRec() }, { t: 'أسعار القاعات', q: 'أسعار القاعات' }, { t: 'المنيوهات', q: 'المنيوهات' },
+    { t: 'عرض سعر تفصيلي لحفلتك', fn: () => startQuote() }, { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'صور القاعات', q: 'صور القاعات' },
+    { t: 'مميزات الدار والقاعات', fn: whyUs }, { t: 'مقترحات لحفلتك', fn: () => suggestAns() }, { t: 'سياسة الحجز والسداد', q: 'ازاي احجز' },
+    { t: 'العنوان والتواصل', q: 'العنوان والتليفون' }, { t: 'كلّم فريق الحفلات', fn: () => humanAns() }
   ];
   function welcome() { if (LEAD.done) return welcomeBack(); if (LEAD.skipped) return EN() ? enWelcome() : welcomeMain(); startLead(); }
   function welcomeMain() {
@@ -857,7 +865,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   { const _b = budgetAns; budgetAns = function (budget) {
     const n = S.count;
     if (!n || EN()) return _b.apply(this, arguments);
-    const fits = ['lotus', 'isis', 'akhenaten'].filter(h => n <= K.halls[h].max);
+    const fits = ['lotus', 'isis', 'akhenaten'].filter(h => fitN(h, n));
     const { best, saver } = planBudget(budget, n, K.halls[S.hall] ? [S.hall] : fits, S.day ? [S.day] : ['wd', 'we']);
     if (!best) return _b.apply(this, arguments);
     bot(`<p class="dmb-h">اقتراحي في حدود ميزانية ${money(budget)}</p><p>لعدد <b>${AD(n)} فرد</b>، ده أحسن اختيار يستغل ميزانيتك صح${best.adds.length ? '، ومعاه من الإضافات الأكثر طلباً' : ''}:</p>${planHTML(best, n, budget)}${saver && saver.v < best.v - 15000 ? `<p class="dmb-note">ولو حابب توفّر أكتر: ${A(saver.m.name)} في ${HALLNAME[saver.hid]} (${saver.d === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}) بـ ${money(saver.v)}.</p>` : ''}`);
@@ -871,7 +879,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
     const n = S.count; if (!n) { bot('<p>عشان أحسب لك سعر الفرد صح، عدد المعازيم المتوقع كام؟</p>'); FLOW = { wantCount: true, step: (raw, t, e) => { const c = e.count || findCount(t, true); if (!c) { FLOW = null; return false; } FLOW = null; S.count = c; perHeadAns(); return true; } }; return; }
     const day = S.day || 'wd';
     const L = [];
-    ['lotus', 'isis', 'akhenaten'].filter(h => n <= K.halls[h].max).forEach(h => okMenus(K.halls[h]).forEach(m => L.push({ h, m, v: estTotal(K.halls[h], m, n, day) })));
+    ['lotus', 'isis', 'akhenaten'].filter(h => fitN(h, n)).forEach(h => okMenus(K.halls[h]).forEach(m => L.push({ h, m, v: estTotal(K.halls[h], m, n, day) })));
     if (!L.length) return recommend();
     L.sort((a, b) => a.v - b.v);
     const per = v => money(Math.round(v / n / 5) * 5);
@@ -914,6 +922,10 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   }
   function brain2Route(t, o) {
     const { W, halls, count } = o;
+    if (!EN() && W('خطه الدفع', 'خطه السداد', 'هدفع امتي', 'هدفع ازاي', 'الدفع ازاي', 'السداد ازاي', 'ادفع علي دفعات', 'علي دفعات', 'اقساط', 'تقسيط', 'بالتقسيط', 'مواعيد الدفع', 'مواعيد السداد', 'جدول السداد', 'هدفع كام دلوقتي', 'المطلوب دلوقتي', 'ادفع كام الاول') && (K.halls[S.hall] && S.count)) { payPlanAns(); return true; }
+    if (!EN() && W('جدول التحضيرات', 'تحضيرات الفرح', 'فاضل كام يوم', 'العد التنازلي', 'خطوات التحضير', 'امتي اعمل ايه', 'الجدول الزمني', 'المواعيد المهمه')) { timelineAns(); return true; }
+    if (!EN() && W('قارن الباكدجات', 'مقارنه الباكدجات', 'قارنلي الباكدجات', 'قارن المنيوهات', 'مقارنه المنيوهات', 'الفرق بين المنيوهات', 'انهي منيو احسن') && K.halls[S.hall] && S.count) { threePkgAns(); return true; }
+    if (!EN() && W('احفظ عرض السعر', 'صوره لعرض السعر', 'عرض السعر صوره', 'ابعتلي عرض السعر')) { saveQuoteImg(); return true; }
     if (!EN() && W('اكلم موظف', 'عايز موظف', 'عاوز موظف', 'محتاج موظف', 'كلمني موظف', 'حد يكلمني', 'حد يتصل بيا', 'حد يرد عليا', 'عايز اكلم حد', 'عاوز اكلم حد', 'اكلم حد', 'خدمه العملاء', 'بني ادم', 'انسان حقيقي', 'مش عاوز بوت', 'مش عايز بوت', 'كلموني', 'اتصلوا بيا', 'عايز اتكلم مع حد', 'عاوز اتكلم مع حد', 'موظف الحجز', 'موظف حجز', 'المسؤول')) { humanAns(); return true; }
     if (!EN()) {
       if (W('اغير العدد', 'تغيير العدد', 'اعدل العدد', 'تعديل العدد', 'نغير العدد', 'نعدل العدد', 'العدد يتغير', 'ازود العدد', 'اقلل العدد', 'نزود العدد', 'نقلل العدد')) { countAns(null, t); return true; }
@@ -1172,6 +1184,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
     if (['roof', 'glass', 'lulu', 'marasem'].includes(S.hall) && halls.length) return capW && !priceW ? capacity(S.hall) : hallBrief(S.hall);
 
     if (capW && halls.length) return capacity(halls[0]);
+    if (recW && !EN() && (!S.count || !S.event) && !halls.length) return startConsult();
     if (recW || (capW && !halls.length)) return recommend();
     if (count && !K.halls[S.hall] && !halls.length) return S.event ? recommend() : askEvent();
     if (halls.length && count) return estimate();
@@ -1194,6 +1207,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
 
   /* ---------------- answers ---------------- */
   function overview() {
+    if (S.count && !EN() && !['katb', 'birthday', 'special', 'aqiqa', 'photo'].includes(S.event)) return recommend();
     const H = K.halls;
     const row = (name, cap, from, note, go) => `<tr><td><b>${name}</b><br><small>${cap}</small></td><td class="n">${from}</td><td><small>${note}</small></td></tr>`;
     bot(`<p class="dmb-h">مقارنة سريعة بين القاعات</p>
@@ -1239,7 +1253,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     if (S.event === 'birthday' || hid === 'roof' || hid === 'glass') return birthday();
     if (S.event === 'special') return special();
     if (S.event === 'aqiqa') return aqiqa();
-    if (!K.halls[hid]) { bot('يُرجى تحديد القاعة:'); chips(['akhenaten', 'isis', 'lotus'].map(h => ({ t: HALLNAME[h], fn: () => { S.hall = h; included(); } }))); return; }
+    if (!K.halls[hid]) { bot('يُرجى تحديد القاعة:'); chips(byCount(['akhenaten', 'isis', 'lotus']).map(h => ({ t: HALLNAME[h], fn: () => { S.hall = h; included(); } }))); return; }
     const h = K.halls[hid];
     let extra = '';
     if (hid === 'akhenaten') extra = `<p class="dmb-note">في باكدج نهاية الأسبوع (الخميس – السبت) نفس الخدمات لعدد ٣٠٠ فرد و٣٠٠ وجبة.</p>`;
@@ -1265,7 +1279,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     let hid = S.hall;
     if (!K.halls[hid]) {
       bot('تحب تشوف أنهي قاعة؟ كل قاعة ليها منيوهاتها وأسعارها:');
-      chips(['akhenaten', 'isis', 'lotus'].map(h => ({ t: HALLNAME[h], fn: () => { S.hall = h; menuDetail(mq, count); } })));
+      chips(byCount(['akhenaten', 'isis', 'lotus']).map(h => ({ t: HALLNAME[h], fn: () => { S.hall = h; menuDetail(mq, count); } })));
       return;
     }
     const h = K.halls[hid], m = hallMenu(hid, mq);
@@ -1343,7 +1357,8 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
       menus.forEach(m => { const r = one(m); rows.push(`<tr><td>${A(m.name)}${r.ex ? `<br><small>الباكدج ${money(r.base)} + ${AD(r.ex)} وجبة إضافية شاملة التجهيزات</small>` : ''}</td><td class="n">${money(r.total)}</td></tr>`); });
       bot(`<p class="dmb-h">تكلفة تقديرية – ${h.name}</p><p>${AD(n)} فرد${dayTxt ? ' – ' + dayTxt : ''}${dateNote}</p><table class="dmb-t"><tr><th>المنيو</th><th>الإجمالي التقديري</th></tr>${rows.join('')}</table>${notesFor(h, n, baseN, day)}${ctaLine(hid)}${src(hid)}`, [{ t: 'عرض سعر تفصيلي بالإضافات', fn: () => startQuote({ ev: ['wedding', 'engagement'].includes(S.event) ? S.event : 'wedding', hall: hid, n, day }), cls: 'pri' }, { t: 'تجهيز طلب الحجز', fn: () => startBook() }]);
     }
-    chips([{ t: 'مقترحات لحفلتك', fn: () => suggestAns(hid) }, ...h.menus.slice(0, 3).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.slice(0, 2), n: +m.id.slice(2) || 0 }) })), { t: 'تغيير العدد', fn: () => askCount() }, ...(h.pk.type === 'wk' || day ? [{ t: day === 'we' ? 'احسب لمنتصف الأسبوع' : 'احسب لنهاية الأسبوع', fn: () => { S.day = day === 'we' ? 'wd' : 'we'; S.date = null; estimate(); } }] : [])]);
+    // ordered by what clients need next: the menus → set menu or buffet → the other day → viewing → add-ons → change the count
+    chips([...h.menus.filter(menuOK).slice(0, 2).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.replace(/\d+$/, ''), n: +(m.id.match(/\d+$/) || [0])[0] }) })), { t: 'قارن ٣ باكدجات', fn: threePkgAns }, ...(h.menus.some(m => /^ob/.test(m.id)) ? [{ t: 'ست منيو ولا أوبن بوفيه؟', q: 'الفرق بين الست منيو والاوبن بوفيه' }] : []), ...(h.pk.type === 'wk' || h.pk.fee ? [{ t: day === 'we' ? 'احسب لمنتصف الأسبوع' : 'احسب لنهاية الأسبوع', fn: () => { S.day = day === 'we' ? 'wd' : 'we'; S.date = null; estimate(); } }] : []), { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'مقترحات لحفلتك', fn: () => suggestAns(hid) }, { t: 'تغيير العدد', fn: () => askCount() }]);
   }
   function notesFor(h, n, baseN, day) {
     const L = [];
@@ -1371,7 +1386,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     const hid = S.hall;
     if (S.event === 'katb' || hid === 'mawadda') return katb(hid === 'lotus' ? 'lotus' : hid === 'mawadda' ? 'mawadda' : null);
     if (S.event === 'aqiqa') return aqiqa();
-    if (!K.halls[hid]) { bot('سعر الوجبة الإضافية بيختلف حسب القاعة والمنيو. أنهي قاعة؟'); chips(['akhenaten', 'isis', 'lotus'].map(h => ({ t: HALLNAME[h], fn: () => { S.hall = h; extraMeal(mq); } })).concat([{ t: 'كتب الكتاب', fn: () => katb() }, { t: 'العقيقة', fn: aqiqa }])); return; }
+    if (!K.halls[hid]) { bot('سعر الوجبة الإضافية بيختلف حسب القاعة والمنيو. أنهي قاعة؟'); chips(byCount(['akhenaten', 'isis', 'lotus']).map(h => ({ t: HALLNAME[h], fn: () => { S.hall = h; extraMeal(mq); } })).concat([{ t: 'كتب الكتاب', fn: () => katb() }, { t: 'العقيقة', fn: aqiqa }])); return; }
     const h = K.halls[hid];
     const tb = h.menus[0].tiers
       ? `<table class="dmb-t"><tr><th>المنيو</th><th>أول ٥٠</th><th>٥١ – ١٠٠</th><th>أكثر من ١٠٠</th></tr>${h.menus.map(m => `<tr><td>${A(m.name)}</td><td class="n">${money(m.tiers[0])}</td><td class="n">${money(m.tiers[1])}</td><td class="n">${money(m.tiers[2])}</td></tr>`).join('')}</table>`
@@ -1384,7 +1399,85 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     bot(`<p class="dmb-h">سعات القاعات</p><table class="dmb-t"><tr><td>قاعة أخناتون (أكبر القاعات)</td><td class="n">٢٥٠ – ٦٠٠ فرد</td></tr><tr><td>قاعة إيزيس</td><td class="n">١٥٠ – ٣٠٠ فرد</td></tr><tr><td>قاعة اللوتس</td><td class="n">١٠٠ – ٢٠٠ فرد</td></tr><tr><td>قاعة المودة والرحمة (عقد القران)</td><td class="n">١٠٠ – ١٥٠ فرد</td></tr><tr><td>قاعة أوبن إير – أعياد الميلاد</td><td class="n">٣٠ – ٦٠ فرد</td></tr><tr><td>الروف توب – أعياد الميلاد</td><td class="n">٢٠ – ٤٠ فرد</td></tr></table><p class="dmb-note">للمناسبات الخاصة: قاعة اللؤلؤة باكدج لـ ٥٠ فرد، وقاعة المراسم باكدج لـ ١٠٠ فرد.</p><p class="dmb-src">المصدر: أغلفة المنيوهات ومنيو أعياد الميلاد (ص ٢) والمناسبات الخاصة (ص ٢)</p>`);
     chips([{ t: 'ترشيح قاعة حسب العدد', fn: () => startRec() }, { t: 'أسعار القاعات', q: 'أسعار القاعات' }]);
   }
-  function startRec() {
+  /* ================= جلسة استشارة: أسئلة كتير لفهم احتياج العميل، وبعدها ترشيح مفصّل ومقارنات وعروض وبدائل ================= */
+  let CONS = null, CONSDONE = false;
+  const CBUD = [['أقل من ١٠٠ ألف', 100000], ['من ١٠٠ لـ ١٥٠ ألف', 150000], ['من ١٥٠ لـ ٢٥٠ ألف', 250000], ['من ٢٥٠ لـ ٣٥٠ ألف', 350000], ['أكتر من ٣٥٠ ألف', 0]];
+  function cAsk(html, opts, parse) {
+    bot(html);
+    FLOW = parse ? { wantCount: CONS && CONS.st === 'count', step: (raw, t, e) => { const r = parse(raw, t, e); if (r) { FLOW = null; cNext(); return true; } FLOW = null; return false; } } : null;
+    chips([...opts.map(o => ({ t: o.t, fn: () => { o.fn(); cNext(); } })), { t: 'كفاية أسئلة، رشّح لي', fn: () => { CONS.fast = true; cNext(); } }]);
+  }
+  function startConsult(intro) {
+    if (EN()) return startRec0();
+    CONS = { st: null, asked: 0, keep: K.halls[S.hall] ? S.hall : null };
+    if (intro !== ' ') bot(intro || `<p>يسعدني جداً أساعدك${hon() ? ' يا ' + hon() : ''} 🌷</p><p>عشان أرشّح لك <b>الاختيار الصح</b> مش أي اختيار، هسألك كام سؤال بسيط عن مناسبتك، وبعدها أشرح لك بالتفصيل القاعة والمنيو المناسبين، وأقارن لك بين الاختيارات، وأوريك العروض وطرق التوفير.</p>`);
+    cNext();
+  }
+  function cNext() {
+    if (!CONS) return;
+    const C = CONS, n = S.count;
+    if (!S.event) { C.st = 'ev'; return cAsk('<p><b>المناسبة إيه بإذن الله؟</b></p>', ['wedding', 'engagement', 'katb', 'birthday', 'aqiqa', 'special'].map(e => ({ t: EVNAME[e], fn: () => { S.event = e; } })), (raw, t, e) => { if (e.ev) { S.event = e.ev; if (e.count) S.count = e.count; return true; } return false; }); }
+    if (['katb', 'birthday', 'special', 'aqiqa', 'photo'].includes(S.event)) { CONS = null; return S.count || S.event === 'special' || S.event === 'aqiqa' ? estimate() : askCount(estimate); }
+    if (!n) { C.st = 'count'; return cAsk(`<p>${EVCHEER[S.event] ? EVCHEER[S.event] + ' ' : ''}<b>عدد المعازيم المتوقع كام تقريباً؟</b></p><p class="dmb-note">العدد هو أهم حاجة في الاختيار، لأن كل قاعة ليها سعة، وكل باكدج محسوب على حد أدنى من الأفراد.</p>`, [100, 150, 200, 250, 300, 400].map(x => ({ t: AD(x), fn: () => { S.count = x; } })), (raw, t, e) => { const c = e.count || findCount(t, true); if (c) { S.count = c; return true; } return false; }); }
+    if (C.fast) return consultReport();
+    if (!S.day && !C.day) { C.st = 'day'; return cAsk(`<p>تمام، ${AD(n)} فرد 👌</p><p><b>تفضّل الحفلة في منتصف الأسبوع ولا نهاية الأسبوع؟</b></p><p class="dmb-note">بسأل لأن الخميس والجمعة والسبت عليهم رسوم إضافية، وفي أخناتون ليها باكدج مختلف، فالفرق ممكن يكون كبير.</p>`, [{ t: 'منتصف الأسبوع (الأحد – الأربعاء)', fn: () => { S.day = 'wd'; } }, { t: 'نهاية الأسبوع (الخميس – السبت)', fn: () => { S.day = 'we'; } }, { t: 'لسه مش محدد', fn: () => { C.day = 'x'; } }], (raw, t, e) => { const d = e.day || findDay(t, e.date); if (d) { S.day = d; if (e.date) S.date = e.date; return true; } if (notYet(t)) { C.day = 'x'; return true; } return false; }); }
+    if (!PREF.prio && !C.prio) { C.st = 'prio'; return cAsk('<p><b>إيه أكتر حاجة تفرق معاك في الحفلة؟</b></p><p class="dmb-note">كل عريس وعروسة ليهم أولوية، وأنا هبني ترشيحي عليها.</p>', [['food', 'الأكل والمنيو'], ['decor', 'الديكور والكوشة'], ['photo', 'التصوير'], ['price', 'التوفير والسعر'], ['lux', 'الفخامة والمساحة']].map(([k, l]) => ({ t: l, fn: () => { PREF.prio = k; savePref(); } })).concat([{ t: 'كله مهم', fn: () => { C.prio = 'all'; } }]), (raw, t) => { const k = /اكل|منيو|طعام/.test(t) ? 'food' : /ديكور|كوشه/.test(t) ? 'decor' : /تصوير|صور|فيديو/.test(t) ? 'photo' : /سعر|توفير|ميزاني|ارخص/.test(t) ? 'price' : /فخام|مساح|شياك/.test(t) ? 'lux' : null; if (k) { PREF.prio = k; savePref(); return true; } if (/كله|كل حاجه/.test(t)) { C.prio = 'all'; return true; } return false; }); }
+    if (!PREF.noOB && !PREF.noSM && !C.food && n >= 150) { C.st = 'food'; return cAsk('<p><b>تحب الأكل يتقدّم إزاي؟</b></p><p><b>الست منيو:</b> وجبة كاملة تتقدّم لكل ضيف على ترابيزته، خدمة منظمة وراقية.<br><b>الأوبن بوفيه:</b> بوفيه مفتوح بتشكيلة أوسع وركن كارفن، والضيوف يختاروا بحرية.</p>', [{ t: 'ست منيو على الترابيزة', fn: () => { PREF.noOB = true; savePref(); } }, { t: 'أوبن بوفيه', fn: () => { PREF.noSM = true; savePref(); } }, { t: 'مش فارقة، رشّح لي', fn: () => { C.food = 'x'; } }], (raw, t) => { if (/بوفيه|اوبن/.test(t)) { PREF.noSM = true; savePref(); return true; } if (/ست|سيت|ترابيز/.test(t)) { PREF.noOB = true; savePref(); return true; } if (/فارق|رشح|اي حاجه/.test(t)) { C.food = 'x'; return true; } return false; }); }
+    if (C.bud == null) { C.st = 'bud'; return cAsk('<p><b>الميزانية التقريبية للحفلة في حدود كام؟</b></p><p class="dmb-note">مش عشان أحددك، لكن عشان أوريك أحسن اختيار يستغل ميزانيتك صح، ولو فيه طريقة توفّر لك.</p>', CBUD.map(([l, v]) => ({ t: l, fn: () => { C.bud = v; C.budL = l; } })).concat([{ t: 'لسه مش محددة', fn: () => { C.bud = 0; } }]), (raw, t) => { const b = findBudget(t) || (() => { const m = t.match(/(\d{2,4})/); return m ? +m[1] * (+m[1] < 1000 ? 1000 : 1) : null; })(); if (b) { C.bud = b; C.budL = 'في حدود ' + money(b); return true; } if (notYet(t)) { C.bud = 0; return true; } return false; }); }
+    if (!C.wantsDone) { C.st = 'wants'; const have = PREF.want || []; const left = WANTS.filter(w => !have.includes(w[0])); return cAsk(`<p><b>في إضافات بتفكر فيها للحفلة؟</b>${have.length ? ` <small>(اخترت: ${have.map(k => WANTS.find(x => x[0] === k)[1]).join('، ')})</small>` : ''}</p><p class="dmb-note">اختار اللي يعجبك واحدة واحدة، ولما تخلص اضغط «كده تمام».</p>`, [...left.map(w => ({ t: w[1], fn: () => { PREF.want = [...(PREF.want || []), w[0]]; savePref(); } })), { t: 'كده تمام', fn: () => { C.wantsDone = true; } }], (raw, t) => { const w = wantKeys(t); if (w.length) { PREF.want = [...new Set([...(PREF.want || []), ...w])]; savePref(); return true; } if (/تمام|لا|مش عايز|كفايه|خلاص|مفيش/.test(t)) { C.wantsDone = true; return true; } return false; }); }
+    consultReport();
+  }
+  function consultReport() {
+    const C = CONS || {}; CONS = null; FLOW = null;
+    const n = S.count, d = S.day || 'wd';
+    let fits = ['lotus', 'isis', 'akhenaten'].filter(h => n >= K.halls[h].min && n <= K.halls[h].max);
+    if (!fits.length && n < 100) fits = ['lotus'];
+    if (!fits.length) return recommend();
+    const ppl = m => Math.round(m / n);
+    const pick = C.keep && fits.includes(C.keep) ? C.keep : fits.length > 1 ? pickHall(fits, n, d).pick : fits[0], alt = fits.find(h => h !== pick);
+    const H = K.halls[pick], ms = okMenus(H);
+    const byCost = ms.slice().sort((a, b) => estTotal(H, a, n, d) - estTotal(H, b, n, d));
+    let m = byCost[0];
+    if (PREF.prio === 'food') m = ms.slice().sort((a, b) => itemCount(b) - itemCount(a) || estTotal(H, a, n, d) - estTotal(H, b, n, d))[0];
+    if (PREF.prio === 'lux') m = byCost[byCost.length - 1];
+    if (C.bud) { const inB = byCost.filter(x => estTotal(H, x, n, d) <= C.bud); if (inB.length && PREF.prio !== 'price') m = PREF.prio === 'food' ? inB.sort((a, b) => itemCount(b) - itemCount(a))[0] : inB[inB.length - 1]; else if (inB.length) m = inB[0]; }
+    const tot = estTotal(H, m, n, d), base = H.pk.type === 'wk' ? m[d] : m.price + (d === 'we' ? H.pk.fee : 0);
+    const adds = (PREF.want || []).map(k => { const a = addonFor(k, pick); const p = a && addonPrice(a, n); return a && p != null ? { a, p } : null; }).filter(Boolean);
+    const addT = adds.reduce((x, y) => x + y.p, 0), grand = tot + addT;
+    S.hall = pick; S.menu = { k: m.id.replace(/\d+$/, ''), n: +(m.id.match(/\d+$/) || [0])[0] };
+    const need = [`${EVNAME[S.event] || 'الحفل'} لعدد <b>${AD(n)} فرد</b>`, S.day ? (S.day === 'we' ? 'في نهاية الأسبوع' : 'في منتصف الأسبوع') : 'اليوم لسه مش محدد (حسبت على منتصف الأسبوع)', PREF.prio ? 'أهم حاجة عندك: <b>' + PRIO_AR[PREF.prio] + '</b>' : '', PREF.noOB ? 'تفضّل الست منيو' : PREF.noSM ? 'تفضّل الأوبن بوفيه' : '', C.budL ? 'الميزانية: ' + C.budL : '', (PREF.want || []).length ? 'الإضافات: ' + PREF.want.map(k => WANTS.find(x => x[0] === k)[1]).join('، ') : ''].filter(Boolean);
+    const R = whyHall(pick, n, alt, d);
+    let html = `<p class="dmb-h">ترشيحي لحضرتك بعد ما فهمت احتياجك</p><div class="dmb-sec"><b>اللي فهمته منك:</b><ul>${need.map(x => `<li>${x}</li>`).join('')}</ul></div>`;
+    html += `<div class="dmb-cta">✦ <b>القاعة اللي أرشّحها: ${HALLNAME[pick]}</b><ul>${R.map(x => `<li>${x}</li>`).join('')}</ul></div>`;
+    if (alt) {
+      const A2 = K.halls[alt], am = okMenus(A2).slice().sort((a, b) => estTotal(A2, a, n, d) - estTotal(A2, b, n, d))[0];
+      const full = h => Math.round(n / K.halls[h].max * 100);
+      html += `<p><b>مقارنة بين القاعتين المناسبتين لعددك:</b></p><table class="dmb-t"><tr><th></th><th>${HALLNAME[pick]}</th><th>${HALLNAME[alt]}</th></tr><tr><td>السعة</td><td>${AD(H.min)} – ${AD(H.max)}</td><td>${AD(A2.min)} – ${AD(A2.max)}</td></tr><tr><td>عددك فيها</td><td>${AD(full(pick))}٪ من سعتها</td><td>${AD(full(alt))}٪ من سعتها</td></tr><tr><td>الباكدج محسوب على</td><td>${AD(pkN(H, d))} فرد</td><td>${AD(pkN(A2, d))} فرد</td></tr><tr><td>أقل تكلفة لعددك</td><td><b>${money(lowAt(H, n, d))}</b></td><td><b>${money(lowAt(A2, n, d))}</b></td></tr><tr><td>المنيوهات</td><td>${AD(okMenus(H).length)}${okMenus(H).some(x => /^ob/.test(x.id)) ? ' (منها أوبن بوفيه)' : ''}</td><td>${AD(okMenus(A2).length)}${okMenus(A2).some(x => /^ob/.test(x.id)) ? ' (منها أوبن بوفيه)' : ''}</td></tr></table>`;
+      void am;
+    }
+    html += `<p><b>الباكدج اللي أنصحك بيه: ${A(m.name)} في ${HALLNAME[pick]}</b></p><table class="dmb-t"><tr><td>${A(m.name)} – باكدج ${AD(pkN(H, d))} فرد${d === 'we' ? ' (نهاية الأسبوع)' : ''}</td><td class="n">${money(base)}</td></tr>${tot - base > 0 ? `<tr><td>الوجبات الإضافية والتجهيزات لـ ${AD(Math.max(n - pkN(H, d), 0))} فرد</td><td class="n">${money(tot - base)}</td></tr>` : ''}${adds.map(x => `<tr><td>${nameShort(x.a)}</td><td class="n">${money(x.p)}</td></tr>`).join('')}<tr class="tot"><td>الإجمالي التقديري<br><small>حوالي ${money(ppl(grand))} للفرد</small></td><td class="n">${money(grand)}</td></tr></table>`;
+    if (PREF.prio === 'food') html += `<p class="dmb-note">اخترته لأنه فيه ${AD(itemCount(m))} صنف، وده من أغنى المنيوهات${C.bud ? ' في حدود ميزانيتك' : ''}.</p>`;
+    // set menu vs open buffet
+    const sm = H.menus.filter(x => /^sm/.test(x.id)), ob = H.menus.filter(x => /^ob/.test(x.id));
+    if (sm.length && ob.length) { const a = Math.min(...sm.map(x => estTotal(H, x, n, d))), b = Math.min(...ob.map(x => estTotal(H, x, n, d))); html += `<div class="dmb-sec"><b>ست منيو ولا أوبن بوفيه؟</b><p>في ${HALLNAME[pick]} لعدد ${AD(n)} فرد: أقل ست منيو <b>${money(a)}</b>، وأقل أوبن بوفيه <b>${money(b)}</b>، يعني الفرق حوالي <b>${money(r500(b - a))}</b> (${money(Math.round((b - a) / n))} للفرد). الست منيو خدمة منظمة على الترابيزة، والأوبن بوفيه تنوع أكبر وركن كارفن وأجواء مفتوحة.</p></div>`; }
+    // offers, savings and alternatives
+    const off = [];
+    if (H.pk.type === 'wk' || H.pk.fee) { const wd = estTotal(H, m, n, 'wd'), we = estTotal(H, m, n, 'we'); if (we > wd) off.push(d === 'we' ? `لو نقلت الحفلة لـ<b>منتصف الأسبوع</b> (الأحد – الأربعاء) هتوفّر حوالي <b>${money(r500(we - wd))}</b>.` : `اختيارك لمنتصف الأسبوع موفّر لك حوالي <b>${money(r500(we - wd))}</b> مقارنة بنهاية الأسبوع.`); }
+    if (byCost[0] !== m) off.push(`لو حابب توفّر، <b>${A(byCost[0].name)}</b> في نفس القاعة بـ ${money(estTotal(H, byCost[0], n, d))}، يعني أقل بحوالي ${money(r500(tot - estTotal(H, byCost[0], n, d)))}.`);
+    if (byCost[byCost.length - 1] !== m) { const top = byCost[byCost.length - 1]; off.push(`ولو عايز تجربة أفخم، <b>${A(top.name)}</b> بـ ${money(estTotal(H, top, n, d))} (أكتر بحوالي ${money(r500(estTotal(H, top, n, d) - tot))}).`); }
+    if (alt && lowAt(K.halls[alt], n, d) < lowAt(H, n, d)) off.push(`البديل الأوفر: <b>${HALLNAME[alt]}</b> تبدأ لعددك من ${money(lowAt(K.halls[alt], n, d))}.`);
+    if (n > pkN(H, d) && n - pkN(H, d) <= 30) off.push(`عددك أكبر من عدد الباكدج بـ ${AD(n - pkN(H, d))} فرد بس، فلو العدد النهائي قلّ شوية التكلفة هتقل معاه (كل فرد زيادة محسوب لوحده).`);
+    if (C.bud && grand > C.bud + 2000) { let bb = null; fits.forEach(h => (S.day ? [S.day] : ['wd', 'we']).forEach(dd => okMenus(K.halls[h]).forEach(x => { const v = estTotal(K.halls[h], x, n, dd) + addT; if (v <= C.bud && (!bb || v > bb.v)) bb = { h, dd, x, v }; }))); if (bb) off.push(`وعشان تفضل في حدود ميزانيتك (${C.budL}): <b>${A(bb.x.name)}</b> في ${HALLNAME[bb.h]} ${bb.dd === 'we' ? 'في نهاية الأسبوع' : 'في منتصف الأسبوع'} بإجمالي حوالي <b>${money(bb.v)}</b>${adds.length ? ' شامل الإضافات اللي اخترتها' : ''}.`); else off.push(`الإجمالي أعلى شوية من ميزانيتك (${C.budL})، فممكن نقلل العدد أو نشيل إضافة، وأنا أحسبها لك تاني.`); }
+    if (off.length) html += `<div class="dmb-sec"><b>عروض وطرق توفير وبدائل:</b><ul>${off.map(x => `<li>${x}</li>`).join('')}</ul></div>`;
+    const incs = H.inc.flatMap(sx => sx.o.filter(o => o[0] === 'i').map(o => o[1])).slice(0, 10);
+    if (incs.length) html += `<div class="dmb-sec"><b>وعلى فكرة، الباكدج مش أكل بس، شامل كمان:</b><p>${incs.map(A).join('، ')}… وحاجات تانية كتير بتتحسب منفصلة في أماكن تانية.</p></div>`;
+    html += `<p class="dmb-close">✦ <b>الخطوة الجاية:</b> تحب أكمّل معاك عرض سعر تفصيلي بالإضافات بند بند، ولا تحب تيجي تعاين ${HALLNAME[pick]} على الطبيعة؟ ولو عندك أي سؤال أو حاجة مش مقتنع بيها، قولّي وأنا أوضّح لك.</p>`;
+    CONSDONE = true;
+    bot(html, [{ t: 'صور ' + HALLNAME[pick], q: 'صور ' + HALLNAME[pick] }]);
+    chips([{ t: 'يلا نكمّل الحساب', fn: () => startQuote(quotePre(pick)) }, { t: 'قارن ٣ باكدجات', fn: threePkgAns }, { t: 'خطة الدفع بالأرقام', fn: payPlanAns }, { t: 'حجز موعد معاينة', fn: () => startVisit() }, ...(alt ? [{ t: 'مقارنة كاملة بين القاعتين', fn: () => compareHalls(pick, alt) }] : []), { t: 'محتوى ' + A(m.name), fn: () => menuDetail(S.menu) }, { t: 'غيّر اختياراتي', fn: () => { PREF = {}; savePref(); S.day = null; startConsult('<p>تمام، نبدأ من الأول 👌</p>'); } }, { t: 'جهّز طلبي لفريق الحفلات', fn: () => startClosing() }]);
+  }
+  function startRec() { return EN() ? startRec0() : startConsult(); }
+  function startRec0() {
     if (S.event && S.count) return recommend();
     bot('<p>المناسبة إيه بإذن الله؟</p>');
     chips(['wedding', 'engagement', 'katb', 'birthday', 'aqiqa', 'special', 'photo'].map(e => ({ t: EVNAME[e], fn: () => { S.event = e; if (e === 'photo') return photo(); if (e === 'aqiqa') return aqiqa(); S.count ? recommend() : askCount(recommend); } })));
@@ -1551,7 +1644,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     const H = K.halls;
     bot(`<p class="dmb-h">${ev === 'engagement' ? 'حفلات الخطوبة' : 'حفلات الزفاف'}</p><p>تبدأ أسعار الباكدجات من:</p><table class="dmb-t"><tr><td>قاعة اللوتس <small>(السعة ١٠٠ – ٢٠٠ فرد، الباكدج لـ ١٠٠ فرد)</small></td><td class="n">${money(H.lotus.menus[0].price)}</td></tr><tr><td>قاعة إيزيس <small>(السعة ١٥٠ – ٣٠٠ فرد، الباكدج لـ ١٥٠ فرد)</small></td><td class="n">${money(H.isis.menus[0].price)}</td></tr><tr><td>قاعة أخناتون <small>(السعة ٢٥٠ – ٦٠٠ فرد، الباكدج لـ ٢٥٠ فرد منتصف الأسبوع)</small></td><td class="n">${money(H.akhenaten.menus[0].wd)}</td></tr></table><p>قولّي عدد المعازيم المتوقع، وأنا أرشّح لحضرتك القاعة الأنسب وأحسب لك التكلفة التقديرية.</p>`);
     FLOW = { wantCount: true, step: (raw, t, e) => { const n = e.count || findCount(t, true); if (!n) { FLOW = null; return false; } FLOW = null; S.count = n; recommend(); return true; } };
-    chips(['lotus', 'isis', 'akhenaten'].map(h => ({ t: 'أسعار ' + HALLNAME[h], fn: () => hallPrices(h) })));
+    chips(byCount(['lotus', 'isis', 'akhenaten']).map(h => ({ t: 'أسعار ' + HALLNAME[h], fn: () => hallPrices(h) })));
   }
 
   function menusList() {
@@ -1561,7 +1654,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
   }
   function decor(photosFirst) {
     const hid = K.halls[S.hall] ? S.hall : null;
-    const ds = hid ? [hid] : ['akhenaten', 'isis', 'lotus'];
+    const ds = hid ? [hid] : byCount(['akhenaten', 'isis', 'lotus']);
     const links = ds.map(h => ({ t: 'صور ديكورات ' + HALLNAME[h], go: K.halls[h].decor }));
     if (photosFirst) {
       bot(`<p>تقدر تتفرج على أحدث الكوشات والديكورات لكل قاعة من اللينكات دي، وتختار رقم التصميم وتبعته لفريق الحفلات.</p><p class="dmb-note">الكوشة والسنتربيس مشمولان في باكدجات الأفراح${hid === 'lotus' ? '' : '، مع إمكانية الترقية إلى الكوشة الاسبيشيال بإضافة ٤٬٠٠٠ ج بقاعتي أخناتون وإيزيس'}.</p>`, links);
@@ -1575,7 +1668,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
   }
 
   const TEAM_AM = ['أ. سيد إبراهيم', 'أ. نرفانا عماد'], TEAM_PM = ['أ. سمر إسماعيل', 'أ. إسلام مختار', 'أ. هدى محمد', 'أ. دينا هشام'];
-  const teamHTML = () => `<div class="dmb-sec"><b>فريق الحفلات في خدمتك</b><ul><li><b>أ. سارة سيد</b> – رئيس قسم الحفلات (الفترة المسائية)</li><li><b>الفترة الصباحية:</b> ${TEAM_AM.join('، ')}</li><li><b>الفترة المسائية:</b> ${TEAM_PM.join('، ')}</li></ul></div>`;
+  const teamHTML = () => `<div class="dmb-sec"><b>فريق الحفلات في خدمتك</b><ul><li><b>أ. سارة سيد</b> – رئيس قسم الحفلات (الفترة المسائية)</li><li><b>الفترة الصباحية (١٠ ص – ٥ م):</b> ${TEAM_AM.join('، ')}</li><li><b>الفترة المسائية (٥ م – ١١ م):</b> ${TEAM_PM.join('، ')}</li></ul><p class="dmb-note">مواعيد قسم الحفلات يومياً من ١٠ الصبح لـ ١١ بالليل.</p></div>`;
   // the client asked for a person (or the bot could not help twice): hand over to the events team with everything already known
   function convoSummary() {
     const L = [];
@@ -1588,13 +1681,103 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     if (LEAD.lastQ) L.push('آخر عرض سعر: ' + LEAD.lastQ.sum + ' – ' + LEAD.lastQ.total + ' ج');
     return L;
   }
+  function cairoHour() { try { return +new Intl.DateTimeFormat('en-GB', { hour: 'numeric', hour12: false, timeZone: 'Africa/Cairo' }).format(new Date()) % 24; } catch (e) { return new Date().getHours(); } }
   function humanAns(why) {
-    const h = new Date().getHours(), am = h >= 9 && h < 16;
+    const h = cairoHour(), am = h >= 10 && h < 17, open = h >= 10 && h < 23;
     const L = convoSummary();
     if (LEAD.name) logLead('طلب التواصل مع موظف', { details: L.join('\n') });
-    bot(`<p>${why || 'أكيد يا ' + (hon() || 'فندم') + '، هحوّلك لفريق الحفلات حالاً'} 🌷</p><p>${am ? `في الفترة الصباحية معاك <b>${TEAM_AM.join(' و')}</b>` : `في الفترة المسائية معاك <b>أ. سارة سيد</b> رئيس قسم الحفلات، و<b>${TEAM_PM.join(' و')}</b>`}.</p>${L.length ? `<p>جهّزت لهم ملخص كلامنا عشان محدش يسألك تاني:</p><p class="dmb-note" style="white-space:pre-line">${esc(L.join('\n'))}</p>` : ''}<p>اضغط واتساب والرسالة هتوصلهم جاهزة، أو كلّمهم على طول.</p>`,
+    bot(`<p>${why || 'أكيد يا ' + (hon() || 'فندم') + '، هحوّلك لفريق الحفلات حالاً'} 🌷</p><p>${!open ? `فريق الحفلات متواجد يومياً من <b>١٠ الصبح لـ ١١ بالليل</b>. ابعت رسالتك دلوقتي على واتساب، وهيتواصلوا معاك أول ما يبدأ الشغل الساعة ١٠ الصبح.` : am ? `دلوقتي الفترة الصباحية، ومعاك <b>${TEAM_AM.join(' و')}</b>` : `دلوقتي الفترة المسائية، ومعاك <b>أ. سارة سيد</b> رئيس قسم الحفلات، و<b>${TEAM_PM.join(' و')}</b>`}${open ? '.' : ''}</p>${L.length ? `<p>جهّزت لهم ملخص كلامنا عشان محدش يسألك تاني:</p><p class="dmb-note" style="white-space:pre-line">${esc(L.join('\n'))}</p>` : ''}<p>اضغط واتساب والرسالة هتوصلهم جاهزة، أو كلّمهم على طول.</p>`,
       [waAct(['دار المراسم لضباط الشرطة – أرغب في التواصل مع فريق الحفلات', ...(L.length ? ['', ...L] : []), '', '(عبر مساعد دار المراسم الذكي)'].join('\n'), 'كلّم فريق الحفلات على واتساب'), { t: 'اتصال: ' + PHONES[0], href: 'tel:' + PHONES[0] }, { t: 'اتصال: ' + PHONES[1], href: 'tel:' + PHONES[1] }]);
     chips([{ t: 'حجز موعد معاينة', fn: () => startVisit() }, ...(readyToClose() ? [{ t: 'جهّز طلبي لفريق الحفلات', fn: () => startClosing() }] : []), { t: 'أكمّل مع المساعد', fn: () => { bot('<p>تحت أمرك، اسأل في أي حاجة.</p>'); chips(MAIN()); } }]);
+  }
+  /* ---- (3) the payment plan in numbers (rules art. 33 & 34) ---- */
+  const addDays = (d, k) => { const x = new Date(d); x.setDate(x.getDate() + k); return x; };
+  const partyDate = () => S.date || (LEAD.date ? (() => { const [y, m, d] = LEAD.date.split('-').map(Number); return new Date(y, m - 1, d); })() : null);
+  function curPlan() {
+    const H = K.halls[S.hall], n = S.count; if (!H || !n) return null;
+    const d = S.day || 'wd', m = (S.menu && hallMenu(S.hall, S.menu)) || okMenus(H)[0];
+    const pk = estTotal(H, m, n, d), total = LEAD.lastQ && LEAD.lastQ.total ? LEAD.lastQ.total : pk;
+    const dep = K.deposit.find(r => r[0] === H.name) || [H.name, 0, 0];
+    return { H, m, n, d, pk, total, dep: dep[1], ins: dep[2] };
+  }
+  function payPlanAns() {
+    const P = curPlan();
+    if (!P) { bot('<p>عشان أحسب لك خطة الدفع بالأرقام، محتاج أعرف القاعة وعدد المعازيم الأول.</p>'); return startConsult(' '); }
+    const today = new Date(today0()), pd = partyDate(), near = pd && (pd - today) / 864e5 < 31;
+    const half = Math.ceil(P.pk / 2 / 50) * 50, all = P.total + P.ins;
+    const rows = near ? [[`عند التعاقد (الحفلة بعد أقل من شهر)`, `كامل القيمة + التأمين دفعة واحدة`, all]]
+      : [[`عند التعاقد${pd ? '' : ' (النهارده لو حجزت)'}`, 'مقدم الحجز – بيثبّت التاريخ', P.dep], [`خلال شهر من التعاقد<br><small>قبل ${dateTxt(addDays(today, 30))}</small>`, `اختيار الباكدج + ٥٠٪ على الأقل من قيمته`, half], [`قبل الحفلة بشهر${pd ? `<br><small>قبل ${dateTxt(addDays(pd, -30))}</small>` : ''}`, 'استكمال كامل القيمة بالإضافات + التأمين', null]];
+    bot(`<p class="dmb-h">خطة الدفع – ${P.H.name}</p><p>${A(P.m.name)} لعدد ${AD(P.n)} فرد – الإجمالي التقديري <b>${money(P.total)}</b>${LEAD.lastQ ? ' (حسب آخر عرض سعر)' : ''}، والتأمين ${money(P.ins)} (بيرجع بعد الحفلة لو مفيش تلفيات).</p><table class="dmb-t"><tr><th>الميعاد</th><th>المطلوب</th><th>المبلغ</th></tr>${rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="n">${r[2] == null ? `<small>الإجمالي المطلوب قبلها:</small><br><b>${money(all)}</b>` : '<b>' + money(r[2]) + '</b>'}</td></tr>`).join('')}</table><div class="dmb-cta">✦ <b>نصيحة توفّر عليك:</b> لو اخترت الباكدج وسدّدت قيمته كاملة خلال <b>٣٠ يوم</b> من المقدم، <b>السعر بيتثبّت ليك</b> ومش هيتأثر بأي زيادة في الأسعار بعد كده.</div><p class="dmb-note">يعني المبلغ مقسّم على مراحل ومش مطلوب كله مرة واحدة. ومواعيد السداد ملزمة، والتأخير عليه غرامة ٥٠ ج عن كل يوم حسب شروط الدار. وفريق الحفلات بيأكد لك المبالغ النهائية وقت التعاقد.</p>`);
+    chips([{ t: 'جدول تحضيرات الفرح', fn: timelineAns }, { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'احفظ عرض السعر صورة', fn: saveQuoteImg }, { t: 'جهّز طلبي لفريق الحفلات', fn: () => startClosing() }]);
+  }
+  const today0 = () => new Date(new Date().toDateString());
+  /* ---- (5) the wedding preparation timeline with a countdown ---- */
+  function timelineAns() {
+    const pd = partyDate();
+    if (!pd) { bot('<p>تمام، اختار <b>تاريخ الحفلة</b> وأنا أطلّع لك جدول التحضيرات بالمواعيد:</p>'); return dateInput(dt => { S.date = dt; const w = dt.getDay(); S.day = (w === 4 || w === 5 || w === 6) ? 'we' : 'wd'; timelineAns(); }, '<b>تاريخ الحفلة</b>', { min: today0() }); }
+    const t = today0(), left = Math.round((pd - t) / 864e5);
+    const P = curPlan();
+    const items = [[t, 'النهارده', 'حجز موعد معاينة، واختيار القاعة'], [t, 'عند التعاقد', 'سداد مقدم الحجز' + (P ? ' (' + money(P.dep) + ')' : '') + ' وتوقيع الاستمارة، وده اللي بيثبّت التاريخ'], [addDays(t, 30), 'خلال شهر من التعاقد', 'اختيار الباكدج والخدمات وسداد ٥٠٪ على الأقل من قيمة الباكدج'], [addDays(pd, -30), 'قبل الحفلة بشهر', 'استكمال كامل القيمة بالإضافات والتأمين'], [addDays(pd, -7), 'قبل الحفلة بأسبوع', 'تأكيد العدد النهائي كتابةً، وآخر ميعاد لتعديل المنيو'], [addDays(pd, -2), 'قبل الحفلة بـ ٤٨ ساعة', 'آخر ميعاد لإلغاء أو تعديل أو إضافة أي بند كتابةً'], [pd, 'يوم الفرح', 'مدة الحفلة ٤ ساعات من الميعاد المكتوب في العقد 🎉']];
+    const near = left < 31;
+    bot(`<p class="dmb-h">جدول تحضيرات حفلتك</p><div class="dmb-cta">✦ فاضل <b>${AD(Math.max(left, 0))} يوم</b> على ${dateTxt(pd)}${near ? '، والحفلة بعد أقل من شهر، فالسداد بيكون كامل دفعة واحدة عند التعاقد.' : '.'}</div><table class="dmb-t">${items.filter(x => !near || x[0] >= t).map(x => `<tr><td><b>${x[1]}</b>${x[0] - t > 0 && x[0] - pd !== 0 ? `<br><small>${dateTxt(x[0] < t ? t : x[0])}</small>` : ''}</td><td>${x[2]}</td></tr>`).join('')}</table><p class="dmb-note">المواعيد حسب شروط الحجز بالدار، والتاريخ نفسه بيتأكد من فريق الحفلات حسب التوافر.</p>`);
+    chips([{ t: 'خطة الدفع بالأرقام', fn: payPlanAns }, { t: 'اسأل عن توافر التاريخ', fn: () => humanAns('أكيد، فريق الحفلات هو اللي بيأكد توافر التاريخ') }, { t: 'حجز موعد معاينة', fn: () => startVisit() }]);
+  }
+  /* ---- (4) three packages side by side in the client's hall, for his count ---- */
+  function threePkgAns() {
+    const H = K.halls[S.hall], n = S.count;
+    if (!H || !n) { bot('<p>قولّي القاعة وعدد المعازيم، وأنا أقارن لك الباكدجات جنب بعض.</p>'); return startConsult(' '); }
+    const d = S.day || 'wd', sm = H.menus.filter(m => /^sm/.test(m.id)), ob = H.menus.filter(m => /^ob/.test(m.id));
+    const pick = [sm[0], sm.slice().sort((a, b) => itemCount(b) - itemCount(a) || estTotal(H, a, n, d) - estTotal(H, b, n, d))[0], ob[0] || H.menus.find(m => m.id === 'ht')].filter((x, i, a) => x && a.indexOf(x) === i);
+    const main = m => secItems(m, /الرئيسي|الساخن/).slice(0, 4).map(A).join('، ');
+    const col = f => pick.map(m => `<td>${f(m)}</td>`).join('');
+    bot(`<p class="dmb-h">مقارنة الباكدجات – ${H.name} لعدد ${AD(n)} فرد</p><table class="dmb-t"><tr><th></th>${pick.map(m => `<th>${A(m.name)}</th>`).join('')}</tr><tr><td><b>النوع</b></td>${col(m => /^ob/.test(m.id) ? 'بوفيه مفتوح' : m.id === 'ht' ? 'هاي تي' : 'على الترابيزة')}</tr><tr><td><b>عدد الأصناف</b></td>${col(m => AD(itemCount(m)) + ' صنف')}</tr><tr><td><b>الرئيسي</b></td>${col(m => `<small>${main(m)}</small>`)}</tr><tr><td><b>الإجمالي</b><br><small>${d === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}</small></td>${col(m => `<b>${money(estTotal(H, m, n, d))}</b>`)}</tr><tr><td><b>للفرد</b></td>${col(m => money(Math.round(estTotal(H, m, n, d) / n)))}</tr></table><p class="dmb-note">${pick.length > 1 ? `الفرق بين أوفر اختيار وأغلاه حوالي ${money(r500(Math.max(...pick.map(m => estTotal(H, m, n, d))) - Math.min(...pick.map(m => estTotal(H, m, n, d)))))} لعددك.` : ''} اختار اللي يناسبك وأنا أكمّل معاك الحساب بالإضافات.</p>`);
+    chips([...pick.map(m => ({ t: 'اخترت ' + A(m.name), fn: () => { S.menu = { k: m.id.replace(/\d+$/, ''), n: +(m.id.match(/\d+$/) || [0])[0] }; estimate(); } })), { t: 'يلا نكمّل الحساب', fn: () => startQuote(quotePre(S.hall)) }]);
+  }
+  /* ---- (6) save the quote as an image to share with the family ---- */
+  function saveQuoteImg() {
+    const P = curPlan(), q = LEAD.lastQ;
+    if (!P && !q) { bot('<p>جهّز الأول عرض سعر، وبعدها أحفظهولك صورة.</p>'); return; }
+    const W = 1080, pad = 70, lines = [];
+    if (q && q.msg) q.msg.split('\n').filter(l => l.trim() && !/عبر مساعد|via the/.test(l)).forEach(l => lines.push(l.replace(/^(دار المراسم لضباط الشرطة – )/, '')));
+    else lines.push(`${P.H.name} – ${P.m.name}`, `العدد: ${P.n} فرد`, `${P.d === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}`, `الإجمالي التقديري: ${P.total.toLocaleString('ar-EG')} ج`);
+    const H = 380 + lines.length * 54 + 200, c = document.createElement('canvas'); c.width = W; c.height = H;
+    const x = c.getContext('2d');
+    x.fillStyle = '#0A1120'; x.fillRect(0, 0, W, H);
+    x.strokeStyle = '#C8A464'; x.lineWidth = 4; x.strokeRect(24, 24, W - 48, H - 48);
+    const draw = img => {
+      if (img) x.drawImage(img, W / 2 - 80, 50, 160, 160 * (img.height / img.width || 1));
+      x.direction = 'rtl'; x.textAlign = 'center'; x.fillStyle = '#E9D3A1'; x.font = '700 46px Cairo, Tajawal, sans-serif';
+      x.fillText('دار المراسم لضباط الشرطة', W / 2, 270); x.font = '600 34px Cairo, Tajawal, sans-serif'; x.fillStyle = '#F1DFB5'; x.fillText('عرض سعر تقديري', W / 2, 320);
+      x.textAlign = 'right'; x.font = '500 32px Cairo, Tajawal, sans-serif'; x.fillStyle = '#FCFAF4';
+      lines.forEach((l, i) => { x.fillStyle = /الإجمالي/.test(l) ? '#E9D3A1' : '#FCFAF4'; x.font = (/الإجمالي/.test(l) ? '700 36px' : '500 32px') + ' Cairo, Tajawal, sans-serif'; x.fillText(AD(l.slice(0, 60)), W - pad, 390 + i * 54); });
+      x.textAlign = 'center'; x.font = '500 28px Cairo, Tajawal, sans-serif'; x.fillStyle = '#CFC6B4';
+      x.fillText('للحجز: 01111117958 (واتساب) – 01010107958 – 01222227958', W / 2, H - 110);
+      x.fillText('الزمالك – القاهرة · ' + dateTxt(new Date()), W / 2, H - 66);
+      c.toBlob(b => {
+        if (!b) return;
+        const f = new File([b], 'عرض-سعر-دار-المراسم.png', { type: 'image/png' });
+        const url = URL.createObjectURL(b);
+        const el = bot(`<p>جهّزت لحضرتك عرض السعر صورة 👇 تقدر تحفظها أو تبعتها للأهل.</p><img src="${url}" alt="عرض السعر" style="width:100%;border-radius:12px;margin-top:6px">`, [{ t: 'حفظ الصورة', href: url }, ...(navigator.canShare && navigator.canShare({ files: [f] }) ? [{ t: 'مشاركة', fn: () => navigator.share({ files: [f], title: 'عرض سعر – دار المراسم' }).catch(() => { }) }] : [])]);
+        const a = el.querySelector('a.dmb-btn'); if (a) { a.setAttribute('download', 'عرض-سعر-دار-المراسم.png'); a.removeAttribute('target'); }
+        chips([{ t: 'خطة الدفع بالأرقام', fn: payPlanAns }, { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'جهّز طلبي لفريق الحفلات', fn: () => startClosing() }]);
+      }, 'image/png');
+    };
+    const img = new Image(); img.onload = () => draw(img); img.onerror = () => draw(null); img.src = BASE + 'img/crest.png';
+  }
+  /* ---- (7) before he leaves: offer to keep the summary ---- */
+  let NUDGED = false, NUDGET = 0;
+  function nudgeArm() {
+    clearTimeout(NUDGET);
+    if (NUDGED || EN() || panel.hidden || LEAD.done) return;
+    if (!(LEAD.lastQ || (LASTA && ['est', 'rec'].includes(LASTA.k) && S.count))) return;
+    NUDGET = setTimeout(() => {
+      if (NUDGED || panel.hidden || FLOW || Q || LSTEP) return;
+      const lm = log.lastElementChild; if (lm && lm.querySelector('input, .dmb-form')) return nudgeArm();
+      NUDGED = true;
+      const L = convoSummary();
+      bot(`<p>${hon() ? 'يا ' + hon() + '، ' : ''}قبل ما تمشي 🌷 تحب تحتفظ بملخص اللي اتكلمنا فيه عشان ترجعله أو تشاركه مع الأهل؟</p>`, [{ t: 'ابعت الملخص لنفسي على واتساب', href: 'https://wa.me/?text=' + encodeURIComponent(['دار المراسم لضباط الشرطة – ملخص حفلتي', '', ...L, '', 'للحجز: 01111117958 (واتساب)'].join('\n')) }]);
+      chips([{ t: 'احفظ عرض السعر صورة', fn: saveQuoteImg }, { t: 'كلّم فريق الحفلات', fn: () => humanAns() }, { t: 'لسه عندي أسئلة', fn: () => { bot('<p>تحت أمرك، اسأل في أي حاجة.</p>'); chips(MAIN()); } }]);
+    }, window.DMB_NUDGE_MS || 120000);
   }
   function teamAns() {
     bot(`<p class="dmb-h">فريق الحفلات</p><p>فريق الحفلات بالدار يسعده يتابع مع حضرتك كل تفاصيل مناسبتك:</p>${teamHTML()}<p class="dmb-note">للتواصل: <a href="tel:01111117958" dir="ltr">01111117958</a> (واتساب) – <a href="tel:01010107958" dir="ltr">01010107958</a> – <a href="tel:01222227958" dir="ltr">01222227958</a></p>`, [waAct('دار المراسم لضباط الشرطة – أرغب في التواصل مع فريق الحفلات')]);
@@ -1642,7 +1825,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     let hid = K.halls[S.hall] ? S.hall : null, both = false;
     if (!hid && k === 'sm' && Math.max(a, b) <= 5) { hid = 'isis'; both = true; }
     if (k === 'ob' && (!hid || hid === 'lotus') && [a, b].sort().join() === '1,2') return obNoHall({ k: 'ob', n: 0 }, ' 1 و 2 ');
-    if (!hid && k !== 'cb' && k !== 'ssm') { bot('<p>نقارن في أنهي قاعة؟</p>'); chips(['akhenaten', 'isis', 'lotus'].map(h => ({ t: HALLNAME[h], fn: () => { S.hall = h; compareMenus(k, a, b); } }))); return; }
+    if (!hid && k !== 'cb' && k !== 'ssm') { bot('<p>نقارن في أنهي قاعة؟</p>'); chips(byCount(['akhenaten', 'isis', 'lotus']).map(h => ({ t: HALLNAME[h], fn: () => { S.hall = h; compareMenus(k, a, b); } }))); return; }
     const get = n => k === 'cb' || k === 'ssm' ? K.special.menus.find(m => m.id === k + n) : hallMenu(hid, { k, n });
     const m1 = get(a), m2 = get(b);
     if (!m1 || !m2) return menuDetail({ k, n: a });
@@ -1748,7 +1931,7 @@ ${row('مقدم الحجز', h => dep(h))}
       (H.pk.type === 'wk' ? ['wd', 'we'] : ['wd', 'we']).forEach(d => H.menus.forEach(m => { const v = estTotal(H, m, n, d); if (v <= budget) out.push({ hid, d, m, v }); }));
     });
     if (!out.length) {
-      const cheapest = ['lotus', 'isis', 'akhenaten'].filter(h => n <= K.halls[h].max).map(h => ({ h, v: Math.min(...K.halls[h].menus.map(m => estTotal(K.halls[h], m, n, 'wd'))) })).sort((a, b) => a.v - b.v)[0];
+      const cheapest = ['lotus', 'isis', 'akhenaten'].filter(h => fitN(h, n)).map(h => ({ h, v: Math.min(...K.halls[h].menus.map(m => estTotal(K.halls[h], m, n, 'wd'))) })).sort((a, b) => a.v - b.v)[0];
       bot(`<p>للأسف مفيش باكدج أفراح لعدد ${AD(n)} فرد في حدود ${money(budget)}.${cheapest ? ` وأقل تكلفة تقديرية لهذا العدد ${money(cheapest.v)} بـ${HALLNAME[cheapest.h]} في منتصف الأسبوع.` : ''}</p>`);
       chips([{ t: 'تغيير العدد', fn: () => askCount(() => budgetAns(budget)) }, { t: 'ترشيح قاعة مناسبة', fn: recommend }]);
       return;
@@ -1774,7 +1957,7 @@ ${row('مقدم الحجز', h => dep(h))}
     H.forEach(h => h.inc.forEach(s => s.o.forEach(o => { if (o[0] === 'i' && !all.some(x => norm(x) === norm(o[1]))) all.push(o[1]); })));
     const has = (h, x) => h.inc.some(s => s.o.some(o => o[0] === 'i' && norm(o[1]) === norm(x)));
     bot(`<p class="dmb-h">ما يشمله باكدج الأفراح في كل قاعة</p><table class="dmb-t"><tr><th>الخدمة</th><th>أخناتون</th><th>إيزيس</th><th>اللوتس</th></tr>${all.map(x => `<tr><td><small>${A(x)}</small></td>${H.map(h => `<td>${has(h, x) ? '✓' : '—'}</td>`).join('')}</tr>`).join('')}</table><p class="dmb-note">وتشمل جميع الباكدجات الوجبات بعدد الباكدج من المنيو المختار.</p>${src('akhenaten', 3)}`);
-    chips(['akhenaten', 'isis', 'lotus'].map(h => ({ t: 'تفاصيل ' + HALLNAME[h], fn: () => hallProfile(h) })));
+    chips(byCount(['akhenaten', 'isis', 'lotus']).map(h => ({ t: 'تفاصيل ' + HALLNAME[h], fn: () => hallProfile(h) })));
   }
   /* ---------------- knowledge engine: searches everything the venue documents say ---------------- */
   const STOPW = new Set(['سعر', 'اسعار', 'بكام', 'بكم', 'كام', 'عاوز', 'عايز', 'ابغي', 'اريد', 'ايه', 'هو', 'هي', 'في', 'فى', 'من', 'علي', 'عن', 'لو', 'ممكن', 'يا', 'و', 'او', 'اللي', 'ده', 'دي', 'دا', 'قاعه', 'عندكم', 'عندك', 'فيه', 'فيها', 'بتاع', 'بتاعه', 'بتاعت', 'الف', 'جنيه', 'حفل', 'فرح', 'افراح', 'تمن', 'ثمن', 'تكلفه', 'كم', 'هل', 'انا', 'احنا', 'لينا', 'ليا', 'بيبقي', 'يبقي', 'بقي', 'اعرف', 'تقولي', 'قولي', 'محتاج', 'نفسي', 'لما', 'مع', 'شويه', 'حاجه', 'ازاي', 'ليه', 'كده', 'برضه', 'اضافه', 'اضافات', 'خارج', 'باكدج', 'باكيدج', 'باقه', 'منيو', 'رسوم', 'سعرها', 'سعره', 'فرد', 'افراد', 'شخص', 'اشخاص', 'نفر', 'معزوم', 'معازيم', 'عدد', 'تقريبا', 'حوالي', 'يوم', 'خميس', 'جمعه', 'سبت', 'كتب', 'كتاب', 'عقد', 'قران', 'عيد', 'ميلاد', 'زفاف', 'خطوبه', 'سعه', 'تساع', 'قاعات', 'قاعتين', 'باكدجات', 'منيوهات', 'ارخص', 'اغلي', 'فين', 'كله', 'كلها', 'كل', 'بس', 'طيب', 'طب', 'تمام', 'ok', 'موجود', 'موجوده', 'متاح', 'متاحه', 'متوفر', 'متوفره', 'ينفع', 'مسموح', 'ضمن', 'شامل', 'بيشمل', 'يشمل', 'مجاني', 'ببلاش', 'بفلوس', 'مدفوع', 'معاه', 'معاها', 'عندها', 'بتقدموا', 'تقدموا', 'بتعملوا', 'اقدر', 'نقدر', 'اجيب', 'نجيب', 'نعمل', 'اعمل', 'عشان', 'علشان', 'لازم', 'محتاجين', 'عايزين', 'عاوزين', 'الدار', 'دار', 'المراسم', 'مراسم', 'ج', 'ك', 'كيلو', 'دخوله', 'دخولها', 'دخولهم', 'بره', 'برا', 'الخارج', 'خارجي', 'نجيبه', 'اجيبه', 'ندخل', 'ادخل', 'دخول', 'بوفيه', 'اوبن', 'ست', 'سيت', 'هاي', 'تي', 'كوفي', 'بريك', 'مفتوح', 'the', 'is', 'a', 'of', 'for', 'how', 'much', 'price', 'do', 'you', 'have']);
@@ -2170,7 +2353,19 @@ ${row('مقدم الحجز', h => dep(h))}
     }
     bot(`<p class="dmb-h">أهلاً بحضرتك في دار المراسم لضباط الشرطة</p>${phHTML(['venue'])}<p>نوّرتنا! معاك <b>مساعد دار المراسم الذكي MARASEM AI</b>، أنا موجود ٢٤ ساعة في خدمتك، وأقدر أرشّح لك القاعة والباكدج المناسبين، وأحسب لك تكلفة تقديرية لحفلتك.</p><p><b>أقدر أساعد حضرتك إزاي؟</b></p>`);
     NAMEGATE = true;
-    chips(MAIN());
+    welcomeChips();
+  }
+  // fastest path: occasion → guest count → the right hall (3 taps, no typing)
+  function welcomeChips() {
+    const go = e => () => {
+      S.event = e;
+      if (['wedding', 'engagement'].includes(e)) { bot(`<p>${EVCHEER[e]} 🌷</p><p><b>عدد المعازيم المتوقع كام تقريباً؟</b></p>`); FLOW = { wantCount: true, step: (raw, t, en) => { const n = en.count || findCount(t, true); FLOW = null; if (!n) return false; S.count = n; recommend(); return true; } }; chips([100, 150, 200, 250, 300, 400, 500].map(n => ({ t: AD(n) + ' فرد', fn: () => { FLOW = null; S.count = n; recommend(); } })).concat([{ t: 'لسه مش عارف', fn: () => { FLOW = null; startConsult(); } }])); return; }
+      if (e === 'katb') return S.count ? katb() : askCount(() => katb());
+      if (e === 'birthday') return S.count ? birthday() : askCount(() => birthday());
+      if (e === 'aqiqa') return aqiqa();
+      if (e === 'special') return special();
+    };
+    chips([...['wedding', 'engagement', 'katb', 'birthday', 'aqiqa', 'special'].map(e => ({ t: EVNAME[e], fn: go(e) })), { t: 'كلّم فريق الحفلات', fn: () => humanAns() }, { t: 'المزيد…', fn: () => { bot('<p>اختار اللي تحبه:</p>'); chips(MAINFULL()); } }]);
   }
   /* ---- ask the name after the client's first request, then answer it ---- */
   let NAMEGATE = false, PEND = null;
@@ -2335,7 +2530,7 @@ ${row('مقدم الحجز', h => dep(h))}
         return false;
       });
     }
-    if (LEAD.pkg == null) {
+    if (LEAD.pkg == null && !CLOSING) {
       const H = K && K.halls[LEAD.hall];
       if (!H || ['katb', 'birthday', 'special', 'aqiqa'].includes(LEAD.event)) { LEAD.pkg = ''; saveLead(); return leadNext(); }
       LSTEP = 'pkg';
@@ -2405,6 +2600,14 @@ ${row('مقدم الحجز', h => dep(h))}
     if (skipped) { bot(tr(`<p>ولا يهمك${hon() ? ' يا ' + hon() : ''}، اتفضل اسأل في أي حاجة وأنا تحت أمرك.</p>`, `<p>With pleasure${hon() ? ', ' + hon() : ''}. Please ask me anything; we are happy to help.</p>`)); chips(MAIN()); return; }
     // no «sent» here: the data is saved quietly and the conversation continues with explaining and calculating
     if (EN()) bot(`<p>Thank you, ${hon()}. I have everything I need.</p>`);
+    if (!EN() && CLOSING && !CONSDONE && !LEAD.lastQ && !pkgName() && !['katb', 'birthday', 'special', 'aqiqa'].includes(LEAD.event)) {
+      // he gave his details but hasn't decided yet: don't send — explain, compare and persuade first
+      CLOSING = false; LEAD.done = false; saveLead();
+      if (K.halls[LEAD.hall]) S.hall = LEAD.hall;
+      const keep = K.halls[LEAD.hall] ? LEAD.hall : null;
+      setTimeout(() => { if (CONS && keep) CONS.keep = keep; }, 0);
+      return startConsult(`<p>متشكر يا ${hon() || 'فندم'} 🌷 بياناتك معايا.</p><p>بس قبل ما أبعت طلبك لفريق الحفلات، خليني أساعدك <b>تحدد اختيارك صح</b>، عشان طلبك يوصل كامل وتاخد أحسن قيمة. هسألك كام سؤال، وبعدها أشرح لك وأقارن لك بالتفصيل.</p>`);
+    }
     if (!EN() && CLOSING) {
       CLOSING = false;
       const L = leadBlock(), phone = LEAD.phone && LEAD.phone !== '-' ? LEAD.phone : '';
@@ -2478,14 +2681,14 @@ ${row('مقدم الحجز', h => dep(h))}
       const inc = H.inc.flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1].replace(/\s*—.*$/, ''))).filter(x => !/حجز القاعة|كراسي/.test(x));
       return `<div class="dmb-sg"><b>${H.name} · ${AD(H.min)} – ${AD(H.max)} فرد</b>${A(d.desc || '')}${K.p2[hid] ? ' ' + A(K.p2[hid]) : ''}<ul><li>الكوشة: ${A(d.kosha || 'من تشكيلة كوشات القاعة')}</li><li>${H.menus.length} ${H.menus.some(m => m.id.startsWith('ob')) ? 'اختيارات بين ست منيو وأوبن بوفيه' : 'اختيارات منيو'}</li><li>يشمل الباكدج: ${inc.slice(0, 9).map(A).join('، ')}</li></ul></div>`;
     };
-    bot(`<p class="dmb-h">قاعات دار المراسم</p><p>كل قاعة ليها طابعها الفرعوني الملكي الخاص، واختار اللي يليق بمناسبتك:</p>${['akhenaten', 'isis', 'lotus'].map(card).join('')}<div class="dmb-sg"><b>قاعة المودة والرحمة · ${AD(K.katb.mawadda.min)} – ${AD(K.katb.mawadda.max)} فرد</b>مخصصة لعقد القران، بباكدج يبدأ من ${money(K.katb.mawadda.price)}.</div><div class="dmb-sg"><b>للمناسبات الأصغر</b>الروف توب وقاعة أوبن إير لأعياد الميلاد، وقاعتا اللؤلؤة والمراسم للمؤتمرات والمناسبات الخاصة.</div><p class="dmb-note">${PARKING}.</p>`, [{ t: 'حجز موعد معاينة', cls: 'pri', fn: () => startVisit() }, { t: 'صور ديكورات أخناتون', go: 'decor-akhenaten' }]);
-    chips([{ t: 'مقارنة أخناتون وإيزيس', fn: () => compareHalls('akhenaten', 'isis') }, { t: 'ترشيح قاعة حسب العدد', fn: () => startRec() }, { t: 'مميزات الدار', fn: whyUs }]);
+    bot(`<p class="dmb-h">قاعات دار المراسم</p><p>كل قاعة ليها طابعها الفرعوني الملكي الخاص، واختار اللي يليق بمناسبتك:</p>${byCount(['akhenaten', 'isis', 'lotus']).map(card).join('')}<div class="dmb-sg"><b>قاعة المودة والرحمة · ${AD(K.katb.mawadda.min)} – ${AD(K.katb.mawadda.max)} فرد</b>مخصصة لعقد القران، بباكدج يبدأ من ${money(K.katb.mawadda.price)}.</div><div class="dmb-sg"><b>للمناسبات الأصغر</b>الروف توب وقاعة أوبن إير لأعياد الميلاد، وقاعتا اللؤلؤة والمراسم للمؤتمرات والمناسبات الخاصة.</div><p class="dmb-note">${PARKING}.</p>`, [{ t: 'حجز موعد معاينة', cls: 'pri', fn: () => startVisit() }, { t: 'صور ديكورات أخناتون', go: 'decor-akhenaten' }]);
+    { const fh = byCount(['lotus', 'isis', 'akhenaten']); chips([...(fh.length === 2 ? [{ t: 'مقارنة ' + HALLNAME[fh[0]] + ' و' + HALLNAME[fh[1]], fn: () => compareHalls(fh[0], fh[1]) }] : fh.length === 3 ? [{ t: 'مقارنة أخناتون وإيزيس', fn: () => compareHalls('akhenaten', 'isis') }] : []), { t: 'ترشيح قاعة حسب العدد', fn: () => startRec() }, { t: 'مميزات الدار', fn: whyUs }]); }
   }
   function objDiscount() {
     const n = S.count, L = [];
     const best = (h, d) => Math.min(...K.halls[h].menus.map(m => estTotal(K.halls[h], m, n, d)));
     if (n) {
-      const fit = ['lotus', 'isis', 'akhenaten'].filter(h => n <= K.halls[h].max);
+      const fit = ['lotus', 'isis', 'akhenaten'].filter(h => fitN(h, n));
       if (fit.length) {
         const v = fit.map(h => [h, best(h, 'wd')]).sort((a, b) => a[1] - b[1]);
         L.push(`لعدد ${AD(n)} فرد، أقل تكلفة متاحة <b>${money(v[0][1])}</b> في ${HALLNAME[v[0][0]]} بمنتصف الأسبوع.`);
@@ -2539,7 +2742,7 @@ ${row('مقدم الحجز', h => dep(h))}
     if (K.halls[S.hall] && n) {
       const H = K.halls[S.hall], cur = Math.min(...H.menus.map(m => estTotal(H, m, n, S.day || 'wd')));
       if (S.day === 'we') L.push(`إقامة الحفل في <b>منتصف الأسبوع</b> بقاعة ${H.name.replace('قاعة ', '')} تبدأ من ${money(Math.min(...H.menus.map(m => estTotal(H, m, n, 'wd'))))} لعدد ${AD(n)} فرد.`);
-      const alt = ['lotus', 'isis', 'akhenaten'].filter(h => h !== S.hall && n <= K.halls[h].max).map(h => [h, Math.min(...K.halls[h].menus.map(m => estTotal(K.halls[h], m, n, 'wd')))]).filter(x => x[1] < cur).sort((a, b) => a[1] - b[1])[0];
+      const alt = ['lotus', 'isis', 'akhenaten'].filter(h => h !== S.hall && fitN(h, n)).map(h => [h, Math.min(...K.halls[h].menus.map(m => estTotal(K.halls[h], m, n, 'wd')))]).filter(x => x[1] < cur).sort((a, b) => a[1] - b[1])[0];
       if (alt) L.push(`<b>${HALLNAME[alt[0]]}</b> تساع عددك، وتبدأ من ${money(alt[1])}.`);
       L.push(`أقل منيو في ${H.name} لعدد ${AD(n)} فرد يبدأ من ${money(cur)} في منتصف الأسبوع.`);
     } else {
@@ -2812,7 +3015,7 @@ ${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانت
   // ---- which menu suits me: objective guide built from the data ----
   function bestMenuAns(hid) {
     hid = hid || (K.halls[S.hall] ? S.hall : null);
-    if (!hid) { bot('<p>يسعدني أساعدك تختار المنيو الأنسب. في أنهي قاعة؟</p>'); chips(['akhenaten', 'isis', 'lotus'].map(h => ({ t: HALLNAME[h], fn: () => { S.hall = h; bestMenuAns(h); } }))); return; }
+    if (!hid) { bot('<p>يسعدني أساعدك تختار المنيو الأنسب. في أنهي قاعة؟</p>'); chips(byCount(['akhenaten', 'isis', 'lotus']).map(h => ({ t: HALLNAME[h], fn: () => { S.hall = h; bestMenuAns(h); } }))); return; }
     S.hall = hid;
     const H = K.halls[hid], pr = m => H.pk.type === 'wk' ? m.wd : m.price;
     const rows = H.menus.map(m => `<tr><td><b>${A(m.name)}</b><br><small>${AD(itemCount(m))} صنفاً · الرئيسي: ${secItems(m, /الرئيسي|الساخن/).slice(0, 4).map(A).join('، ')}${secItems(m, /الرئيسي|الساخن/).length > 4 ? '…' : ''}</small></td><td class="n">${money(pr(m))}</td></tr>`).join('');
@@ -2941,7 +3144,7 @@ ${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانت
   // ---- weekday vs weekend ----
   function weekDiff(hid) {
     hid = K.halls[hid] ? hid : (K.halls[S.hall] ? S.hall : null);
-    if (!hid) { bot('<p>في قاعة أخناتون يوجد باكدج مستقل لكل من منتصف الأسبوع ونهايته، وفي قاعتي إيزيس واللوتس تُضاف رسوم ثابتة لأيام الخميس والجمعة والسبت والعطلات. أنهي قاعة تهمك؟</p>'); chips(['akhenaten', 'isis', 'lotus'].map(h => ({ t: HALLNAME[h], fn: () => weekDiff(h) }))); return; }
+    if (!hid) { bot('<p>في قاعة أخناتون يوجد باكدج مستقل لكل من منتصف الأسبوع ونهايته، وفي قاعتي إيزيس واللوتس تُضاف رسوم ثابتة لأيام الخميس والجمعة والسبت والعطلات. أنهي قاعة تهمك؟</p>'); chips(byCount(['akhenaten', 'isis', 'lotus']).map(h => ({ t: HALLNAME[h], fn: () => weekDiff(h) }))); return; }
     S.hall = hid; const H = K.halls[hid];
     if (H.pk.type === 'wk') {
       const rows = H.menus.map(m => `<tr><td>${A(m.name)}</td><td class="n">${money(m.wd)}</td><td class="n">${money(m.we)}</td></tr>`).join('');
@@ -3085,7 +3288,7 @@ ${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانت
   const qTop = d => setTimeout(() => { log.scrollTop += d.getBoundingClientRect().top - log.getBoundingClientRect().top - 10; }, 80);
 
   function qHalls(ev, n) {
-    if (ev === 'wedding' || ev === 'engagement') return ['lotus', 'isis', 'akhenaten'].filter(h => !n || n <= K.halls[h].max);
+    if (ev === 'wedding' || ev === 'engagement') return ['lotus', 'isis', 'akhenaten'].filter(h => fitN(h, n));
     if (ev === 'katb') return ['mawadda', 'lotus'].filter(h => !n || n <= (h === 'mawadda' ? K.katb.mawadda.max : K.halls.lotus.max));
     if (ev === 'birthday') return K.birthday.filter(b => !n || n <= (b.id === 'lotus' ? K.halls.lotus.max : b.max)).map(b => b.id);
     if (ev === 'special') return K.special.halls.filter(h => !n || n <= h.n || (SPCAP[h.id] && n <= SPCAP[h.id])).map(h => h.id);
@@ -3340,6 +3543,7 @@ ${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانت
     const keep = { ev: q.ev, hall: q.hall, n: q.n, day: q.day, pk: q.pk, exN: q.exN, sel: q.sel, groups: q.groups };
     if (!EN() && !LEAD.done) setTimeout(() => offerClose('<p>كده حضرتك عارف التكلفة بالكامل بند بند 👌</p>'), window.DMB_FAST ? 200 : 1200);
     chips([
+      ...(EN() ? [] : [{ t: 'خطة الدفع بالأرقام', fn: payPlanAns }, { t: 'احفظ عرض السعر صورة', fn: saveQuoteImg }, { t: 'جدول تحضيرات الفرح', fn: timelineAns }]),
       { t: tr('احجز ميعاد معاينة', 'Book a viewing'), fn: () => startVisit() },
       { t: tr('مراجعة الإضافات وتعديلها', 'Review & edit add-ons'), fn: () => { Q = Object.assign({}, keep, { gi: 0 }); qNext(); } },
       { t: tr('تغيير الباكدج', 'Change the package'), fn: () => { Q = Object.assign({}, keep, { pk: null, gi: 0 }); qNext(); } },
@@ -3380,7 +3584,7 @@ ${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانت
       S.hall = hid;
       bot(`<p class="dmb-h">${tr('صور', 'Photos –')} ${HALLNAME[hid]}</p>${phHTML([hid])}${phHTML(['venue'], true)}<p>${tr('اضغط على الصورة عشان تكبّرها. ونتشرف بزيارتك تعاين القاعة على الطبيعة يومياً من ١٠ الصبح لـ ١٠ بالليل.', 'Tap a photo to enlarge it. We would be delighted to welcome you for a viewing, daily from 10 am to 10 pm.')}</p>`,
         [{ t: tr('حجز موعد معاينة', 'Book a viewing'), cls: 'pri', fn: () => startVisit() }, { t: tr('الديكورات والكوشات', 'Décor & kosha options'), go: 'decor-' + hid }]);
-      chips([...hk.filter(h => h !== hid).map(h => ({ t: tr('صور ', 'Photos: ') + HALLNAME[h], fn: () => photosAns(h) })), { t: tr('مميزات القاعات', 'Hall features'), fn: hallsFeatures }]);
+      chips([...byCount(hk).filter(h => h !== hid).map(h => ({ t: tr('صور ', 'Photos: ') + HALLNAME[h], fn: () => photosAns(h) })), { t: tr('مميزات القاعات', 'Hall features'), fn: hallsFeatures }]);
       return;
     }
     const other = hid && !hk.includes(hid) ? `<p class="dmb-note">${tr(`ونتشرف بزيارتك تعاين ${HALLNAME[hid]} على الطبيعة.`, `We would be happy to show you ${HALLNAME[hid]} in person.`)}</p>` : '';
@@ -3779,7 +3983,7 @@ ${row('Photo session', 'Up to 6 people', money(5000), 'Session fee')}</table><p 
     const best = {};
     WH.forEach(h => { const Hh = K.halls[h]; if (n > Hh.max) return; ['wd', 'we'].forEach(d => Hh.menus.forEach(m => { const v = estTotal(Hh, m, n, d); if (v <= budget && (!best[h + d] || v > best[h + d].v)) best[h + d] = { h, d, m, v }; })); });
     const L = Object.values(best).sort((a, b) => b.v - a.v);
-    if (!L.length) { const c = WH.filter(h => n <= K.halls[h].max).map(h => ({ h, v: Math.min(...K.halls[h].menus.map(m => estTotal(K.halls[h], m, n, 'wd'))) })).sort((a, b) => a.v - b.v)[0]; bot(`<p>No wedding package for ${n} guests fits within ${money(budget)}.${c ? ` The lowest estimate for this guest count is ${money(c.v)} at ${HALLNAME[c.h]} on a weekday.` : ''}</p>`); chips([{ t: 'Change guest count', fn: () => enAskCount(() => enBudgetAns(budget)) }]); return; }
+    if (!L.length) { const c = WH.filter(h => fitN(h, n)).map(h => ({ h, v: Math.min(...K.halls[h].menus.map(m => estTotal(K.halls[h], m, n, 'wd'))) })).sort((a, b) => a.v - b.v)[0]; bot(`<p>No wedding package for ${n} guests fits within ${money(budget)}.${c ? ` The lowest estimate for this guest count is ${money(c.v)} at ${HALLNAME[c.h]} on a weekday.` : ''}</p>`); chips([{ t: 'Change guest count', fn: () => enAskCount(() => enBudgetAns(budget)) }]); return; }
     bot(`<p>Within a budget of <b>${money(budget)}</b> for <b>${n} guests</b>, the best option in each hall:</p><table class="dmb-t">${L.map(o => `<tr><td><b>${HALLNAME[o.h]}</b> – ${A(o.m.name)}<br><small>${o.d === 'we' ? 'weekend' : 'weekday'}</small></td><td class="n">${money(o.v)}</td></tr>`).join('')}</table><p class="dmb-note">Estimates include the package and extra meals, excluding insurance and add-ons.</p>`);
     chips([...new Set(L.map(o => o.h))].map(h => ({ t: 'Details: ' + HALLNAME[h], fn: () => { S.hall = h; S.menu = null; enEstimate(h); } })));
   }
@@ -3856,7 +4060,7 @@ ${row('Photo session', 'Up to 6 people', money(5000), 'Session fee')}</table><p 
   function enDiscount() {
     const n = S.count, L = [];
     const best = (h, d) => Math.min(...K.halls[h].menus.map(m => estTotal(K.halls[h], m, n, d)));
-    if (n) { const fit = WH.filter(h => n <= K.halls[h].max); if (fit.length) { const v = fit.map(h => [h, best(h, 'wd')]).sort((a, b) => a[1] - b[1]); L.push(`For ${n} guests, the lowest available cost is <b>${money(v[0][1])}</b> at ${HALLNAME[v[0][0]]} on a weekday.`); if (S.day === 'we') { const h = K.halls[S.hall] ? S.hall : v[0][0]; const g = best(h, 'we') - best(h, 'wd'); if (g > 0) L.push(`Moving your event from the weekend to a weekday saves you <b>${money(g)}</b>.`); } } }
+    if (n) { const fit = WH.filter(h => fitN(h, n)); if (fit.length) { const v = fit.map(h => [h, best(h, 'wd')]).sort((a, b) => a[1] - b[1]); L.push(`For ${n} guests, the lowest available cost is <b>${money(v[0][1])}</b> at ${HALLNAME[v[0][0]]} on a weekday.`); if (S.day === 'we') { const h = K.halls[S.hall] ? S.hall : v[0][0]; const g = best(h, 'we') - best(h, 'wd'); if (g > 0) L.push(`Moving your event from the weekend to a weekday saves you <b>${money(g)}</b>.`); } } }
     else { L.push(`Weekday events (Sunday – Wednesday) avoid the weekend fee; at Akhenaten the weekday package starts at ${money(K.halls.akhenaten.menus[0].wd)} versus ${money(K.halls.akhenaten.menus[0].we)} on weekends.`); L.push(`Choosing the hall that matches your guest count matters: Lotus Hall packages start at ${money(K.halls.lotus.menus[0].price)}.`); }
     L.push('The first menu in every hall is complete, and you can start with it and add only what matters to you.');
     bot(`<p>We truly appreciate your interest${LEAD.name ? ', ' + esc(LEAD.name.split(' ')[0]) : ''}, and we would be glad to help you reach the best possible cost.</p><p>Our prices are published and the same for all our clients, out of fairness and transparency, so we do not offer discounts. Together, however, we can lower the cost through the right choices:</p><ul>${L.map(x => `<li>${x}</li>`).join('')}</ul><p>Tell me the budget that suits you and I will recommend the best option within it.</p>`);
@@ -3914,7 +4118,8 @@ ${row('Photo session', 'Up to 6 people', money(5000), 'Session fee')}</table><p 
     if (['photo'].includes(S.event)) return false;
     const go = () => (K.halls[S.hall] || ['katb', 'birthday', 'special', 'aqiqa'].includes(S.event) ? estimate() : recommend());
     bot(`<p>يسعدنا جداً إن حضرتك تختار دار المراسم 🌷</p><p>قبل ما نجهّز طلب الحجز، خليني أساعدك نختار سوا <b>القاعة والمنيو</b> وأحسب لك <b>التكلفة</b>، عشان طلبك يوصل لفريق الحفلات كامل وواضح.</p>`);
-    if (S.count || ['special', 'aqiqa'].includes(S.event)) go(); else askCount(go);
+    if (['special', 'aqiqa', 'katb', 'birthday'].includes(S.event)) { if (S.count || ['special', 'aqiqa'].includes(S.event)) go(); else askCount(go); return true; }
+    startConsult(' ');
     return true;
   }
   function startBook() {
@@ -3973,8 +4178,7 @@ ${row('Photo session', 'Up to 6 people', money(5000), 'Session fee')}</table><p 
     if (ev === 'photo') return [];
     const all = ['lotus', 'isis', 'akhenaten'];
     if (!n || n < 0) return all;
-    const f = all.filter(h => n >= K.halls[h].min && n <= K.halls[h].max);
-    return f.length ? f : all;
+    return byCount(all, n);
   }
   const HRS_AR = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21].map(h => { const h12 = h > 12 ? h - 12 : h, p = h < 12 ? 'صباحاً' : (h < 17 ? 'ظهراً' : 'مساءً'); return `الساعة ${String(h12).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d])} ${h === 12 ? 'ظهراً' : p}`; });
   const HRS_EN = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21].map(h => `${h > 12 ? h - 12 : h} ${h < 12 ? 'am' : 'pm'}`);
