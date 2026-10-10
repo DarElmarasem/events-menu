@@ -10,7 +10,7 @@
 <title>منيوهات دار المراسم</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: the house at night as the opening band, then one row per hall (its cover + a clear "view menu" action), a WhatsApp booking line, and a page-by-page reader tinted in the hall's colour. Single dark look, after the facade lit at night. */
 :root{
@@ -292,6 +292,7 @@ a.home-btn{text-align:center;text-decoration:none;box-sizing:border-box}.dec-r{b
 @media(max-width:620px){.hero .tag{font-size:5.2vw!important;white-space:nowrap}}
 @media(max-width:620px){.tels{flex-wrap:nowrap;gap:6px}.tels .tel{font-size:3.3vw;letter-spacing:0}.tels .sep{font-size:3.5vw}.book>div{min-width:0}}
 .hall,.rules{-webkit-tap-highlight-color:transparent}.go{cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:rgba(203,167,98,.25)}
+.credit{text-align:center;margin:26px auto 8px;padding:0 16px;color:var(--stone-dim);font-size:14px}.credit b{color:var(--brass)}
 </style>
 </head>
 <body>
@@ -371,6 +372,7 @@ a.home-btn{text-align:center;text-decoration:none;box-sizing:border-box}.dec-r{b
       <h2>تابعونا</h2>
       <div class="soc"><a href="https://www.instagram.com/darelmarasem" target="_blank" rel="noopener" class="ig"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4zM17.3 5.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zM12 2c-2.7 0-3 0-4.1.06C4.3 2.2 2.2 4.3 2.06 7.9 2 9 2 9.3 2 12s0 3 .06 4.1c.16 3.6 2.24 5.7 5.84 5.84C9 22 9.3 22 12 22s3 0 4.1-.06c3.6-.16 5.7-2.24 5.84-5.84C22 15 22 14.7 22 12s0-3-.06-4.1C21.78 4.3 19.7 2.22 16.1 2.06 15 2 14.7 2 12 2zm0 1.8c2.67 0 2.98 0 4.04.06 2.7.12 3.97 1.4 4.1 4.1.04 1.06.06 1.37.06 4.04s0 2.98-.06 4.04c-.13 2.7-1.4 3.97-4.1 4.1-1.06.04-1.37.06-4.04.06s-2.98 0-4.04-.06c-2.71-.13-3.97-1.41-4.1-4.1C3.82 14.98 3.8 14.67 3.8 12s0-2.98.06-4.04c.13-2.7 1.4-3.97 4.1-4.1C9.02 3.82 9.33 3.8 12 3.8z"/></svg><span dir="ltr">Instagram</span></a><a href="https://www.facebook.com/share/1FXFmzZdxc/" target="_blank" rel="noopener" class="fb"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12z"/></svg><span dir="ltr">Facebook</span></a></div>
     </section>
+    <p class="credit">إعداد وتصميم المنيوهات والمساعد الذكي: <b>عميد / محمد المغازي</b> – مدير دار المراسم لضباط الشرطة</p>
   </main>
 <div class="setm" id="setM" hidden role="dialog" aria-modal="true" aria-labelledby="setT">
   <div class="setc">
@@ -721,7 +723,7 @@ function show() {
   const dv = document.getElementById('decorV'); dv.hidden = true;
   if (CURID.startsWith('decor-') && DEC[CURID.slice(6)]) { renderDecor(CURID.slice(6)); home.hidden = true; reader.hidden = true; dv.hidden = false; window.scrollTo({ top: 0, behavior: 'instant' }); return; }
   const h = CURID, m = h === 'rules' ? RULES : MENUS.find(x => x.id === h);
-  if (!m) { reader.hidden = true; home.hidden = false; fab.href = waLink(GENERAL); document.title = 'منيوهات دار المراسم'; return; }
+  if (!m) { if (window.DMMenu) window.DMMenu.clear(); reader.hidden = true; home.hidden = false; fab.href = waLink(GENERAL); document.title = 'منيوهات دار المراسم'; return; }
   const msg = m.id === 'rules' ? GENERAL : `دار المراسم لضباط الشرطة – أرغب في الاستفسار عن حجز ${m.name}`;
   document.getElementById('rtitle').textContent = m.id === 'rules' ? m.name : 'منيو ' + m.name;
   document.getElementById('rcount').textContent = AR(m.n) + ' صفحة';
@@ -730,6 +732,7 @@ function show() {
   document.getElementById('waHall').href = waLink(msg); fab.href = waLink(msg);
   reader.style.setProperty('--hall', BAR[m.id]);
   document.getElementById('pages').innerHTML = Array.from({ length: m.n }, (_, k) => `<img src="${pg(m, k + 1)}" alt="${m.name} – صفحة ${AR(k + 1)}" width="1100" height="1560" ${k > 1 ? 'loading="lazy"' : ''}>`).join('');
+  if (window.DMMenu) { window.DMMenu.render(document.getElementById('pages'), m.id); document.getElementById('rcount').textContent = ''; }
   home.hidden = true; reader.hidden = false; window.scrollTo(0, 0);
 }
 function go(id) { CURID = id; try { history.pushState(null, '', '#' + id); } catch (e) { } show(); }
@@ -774,6 +777,8 @@ window.addEventListener('popstate', () => { CURID = location.hash.slice(1); show
 show();
 </script>
 
+<script src="menu/menu.js"></script>
+<script>if (location.hash.length > 1) show();</script>
 <script src="bot/bot.js" defer></script>
 </body>
 </html>
