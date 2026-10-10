@@ -319,8 +319,8 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   const panel = document.createElement('section');
   panel.className = 'dmb-panel'; panel.hidden = true; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', 'مساعد دار المراسم الذكي');
   panel.innerHTML = `<div class="dmb-hd"><img src="logo.png" alt=""><div class="dmb-tt"><div class="dmb-nm"><b class="en">Dar El-Marasem AI</b><small><i aria-hidden="true"></i><span class="ar">مساعد دار المراسم الذكي</span></small></div></div><button type="button" class="dmb-lg" aria-label="English" title="English">EN</button><button type="button" class="dmb-rs" aria-label="محادثة جديدة" title="محادثة جديدة">↺</button><button type="button" class="dmb-x" aria-label="إغلاق" title="إغلاق">✕</button></div>
-<div class="dmb-nav"><button type="button" class="dmb-back"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M13.6 5.3 12.2 6.7 16.5 11H4v2h12.5l-4.3 4.3 1.4 1.4L20.3 12z"/></svg><span>رجوع</span></button><button type="button" class="dmb-home"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3 2 11.5l1.3 1.5L5 11.6V20h5v-5h4v5h5v-8.4l1.7 1.4 1.3-1.5z"/></svg><span>الرئيسية</span></button><button type="button" class="dmb-qrb"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 3v13h10V5zm5 14.2a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg><span>كمّل على موبايلك</span></button></div><div class="dmb-tels"><a class="twa" href="https://wa.me/201111117958" target="_blank" rel="noopener"><svg viewBox="0 0 32 32" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M16 3a13 13 0 0 0-11.2 19.6L3 29l6.6-1.7A13 13 0 1 0 16 3zm5.8 15.7c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1a8.7 8.7 0 0 1-4.3-3.8c-.3-.6.3-.5.9-1.7.1-.2 0-.4 0-.5l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6a1.2 1.2 0 0 0-.9.4 3.7 3.7 0 0 0-1.1 2.7 6.4 6.4 0 0 0 1.3 3.4 14.6 14.6 0 0 0 5.6 5c2.1.9 2.9 1 4 .8a3.4 3.4 0 0 0 2.2-1.6 2.8 2.8 0 0 0 .2-1.6c-.1-.1-.3-.2-.6-.4z"/></svg><span dir="ltr">01111117958</span><small>واتساب</small></a><a href="tel:01010107958"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg><span dir="ltr">01010107958</span></a><a href="tel:01222227958"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg><span dir="ltr">01222227958</span></a></div><div class="dmb-log" aria-live="polite"></div><div class="dmb-chips"></div>
-<form class="dmb-in" autocomplete="off"><input type="text" enterkeyhint="send" placeholder="اكتب سؤالك… مثلاً: سعر قاعة إيزيس لـ ٢٠٠ فرد" aria-label="اكتب سؤالك"><button type="button" class="dmb-send" aria-label="إرسال">${ICON_SEND}<span>إرسال</span></button></form><div class="dmb-cr">صُمّم وأُعِدّ بمعرفة <b>عميد / محمد المغازي – مدير الدار</b>، ليكون دليلكم في التخطيط لمناسبتكم</div>`;
+<div class="dmb-nav"><button type="button" class="dmb-back"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M13.6 5.3 12.2 6.7 16.5 11H4v2h12.5l-4.3 4.3 1.4 1.4L20.3 12z"/></svg><span>رجوع</span></button><button type="button" class="dmb-home"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3 2 11.5l1.3 1.5L5 11.6V20h5v-5h4v5h5v-8.4l1.7 1.4 1.3-1.5z"/></svg><span>الرئيسية</span></button><button type="button" class="dmb-zm" data-z="-1" aria-label="تصغير الخط">أ−</button><button type="button" class="dmb-zm" data-z="1" aria-label="تكبير الخط">أ+</button><button type="button" class="dmb-qrb"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 3v13h10V5zm5 14.2a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg><span>كمّل على موبايلك</span></button></div><div class="dmb-tels"><a class="twa" href="https://wa.me/201111117958" target="_blank" rel="noopener"><svg viewBox="0 0 32 32" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M16 3a13 13 0 0 0-11.2 19.6L3 29l6.6-1.7A13 13 0 1 0 16 3zm5.8 15.7c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1a8.7 8.7 0 0 1-4.3-3.8c-.3-.6.3-.5.9-1.7.1-.2 0-.4 0-.5l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6a1.2 1.2 0 0 0-.9.4 3.7 3.7 0 0 0-1.1 2.7 6.4 6.4 0 0 0 1.3 3.4 14.6 14.6 0 0 0 5.6 5c2.1.9 2.9 1 4 .8a3.4 3.4 0 0 0 2.2-1.6 2.8 2.8 0 0 0 .2-1.6c-.1-.1-.3-.2-.6-.4z"/></svg><span dir="ltr">01111117958</span><small>واتساب</small></a><a href="tel:01010107958"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg><span dir="ltr">01010107958</span></a><a href="tel:01222227958"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg><span dir="ltr">01222227958</span></a></div><div class="dmb-log" aria-live="polite"></div><div class="dmb-chips"></div>
+<form class="dmb-in" autocomplete="off"><input type="text" enterkeyhint="send" placeholder="اكتب سؤالك… مثلاً: سعر قاعة إيزيس لـ ٢٠٠ فرد" aria-label="اكتب سؤالك"><button type="button" class="dmb-send" aria-label="إرسال">${ICON_SEND}<span>إرسال</span></button></form><div class="dmb-cr">صُمّم وطُوِّر بمعرفة <b>عميد / محمد المغازي – مدير الدار</b>، ليكون دليلكم في التخطيط لمناسبتكم</div><div class="dmb-sig"><b>MARASEM AI</b><span>Designed &amp; Developed by Colonel Mohamed El-Moghazi</span></div>`;
   document.body.appendChild(launch); document.body.appendChild(panel);
   // big launcher sits inside the page under the title; a compact floating orb appears once it scrolls out of view
   const mini = launch.cloneNode(true); mini.classList.add('dmb-fl'); const tg0 = mini.querySelector('.tg'); if (tg0) tg0.remove();
@@ -430,7 +430,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
     panel.hidden = false; document.documentElement.classList.add('dmb-open');
     if (MOB()) lockPage(true);
     fitVV();
-    loadKB(() => { if (!started) { started = true; welcome(); } idleArm(); });
+    loadKB(() => { if (!started) { started = true; welcome(); if (DL) setTimeout(applyDL, window.DMB_FAST ? 200 : 900); } idleArm(); });
     if (!TOUCH) setTimeout(() => input.focus({ preventScroll: true }), 60);
   }
   const vv = window.visualViewport;
@@ -488,7 +488,17 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   ['pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel'].forEach(ev => window.addEventListener(ev, () => { if (panel.hidden && started) idleArm(); }, { passive: true }));
   launch.addEventListener('click', open); mini.addEventListener('click', open);
   // QR «?ai=1» opens the assistant straight away
+  let DL = null, DLSRC = '';
+  try { const u = new URLSearchParams(location.search); const src = u.get('src'); if (src) DLSRC = src.slice(0, 40); if (u.get('ev') || u.get('hall')) DL = { ev: u.get('ev'), hall: u.get('hall') }; } catch (e) { }
   if (/[?&]ai=1(?:&|$)/.test(location.search)) { setTimeout(open, 250); try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) { } }
+  // a campaign or hall QR link starts the conversation at the right place
+  function applyDL() {
+    const d = DL; DL = null; if (!d || EN()) return;
+    if (d.hall && K.halls[d.hall]) { S.hall = d.hall; S.event = S.event || 'wedding'; return hallProfile(d.hall); }
+    if (d.hall === 'mawadda') { S.event = 'katb'; return katb('mawadda'); }
+    if (d.hall && ['glass', 'roof'].includes(d.hall)) { S.hall = d.hall; return hallBrief(d.hall); }
+    if (d.ev && EVNAME[d.ev]) startEvent(d.ev);
+  }
   const preload = () => loadKB(() => {});
   if ('requestIdleCallback' in window) requestIdleCallback(preload, { timeout: 4000 }); else setTimeout(preload, 2500);
   panel.querySelector('.dmb-x').addEventListener('click', close);
@@ -506,6 +516,11 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   panel.querySelector('.dmb-qrb').addEventListener('click', () => showQR());
   panel.querySelector('.dmb-back').addEventListener('click', () => { goBack(); idleArm(); });
   panel.querySelector('.dmb-home').addEventListener('click', () => { close(); hideRet(); siteHome(); });
+  // text size for older readers (parents): 4 steps, remembered on this device
+  { const Z = [0.9, 1, 1.12, 1.25]; let zi = 1; try { zi = Math.min(3, Math.max(0, +localStorage.getItem('dmb-z') || 1)); } catch (e) { }
+    const setZ = () => { panel.style.setProperty('--dmb-z', Z[zi]); panel.querySelectorAll('.dmb-zm').forEach(b => { b.disabled = (b.dataset.z === '1' && zi === 3) || (b.dataset.z === '-1' && zi === 0); }); try { localStorage.setItem('dmb-z', zi); } catch (e) { } };
+    panel.querySelectorAll('.dmb-zm').forEach(b => b.addEventListener('click', () => { zi = Math.min(3, Math.max(0, zi + +b.dataset.z)); setZ(); scroll(); }));
+    setZ(); }
   navSync();
   panel.querySelector('.dmb-rs').addEventListener('click', () => { log.innerHTML = ''; reset(); HIST = []; navSync(); welcome(); });
   const lgBtn = panel.querySelector('.dmb-lg');
@@ -519,7 +534,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
     const rs = panel.querySelector('.dmb-rs'); rs.title = tr('محادثة جديدة', 'New conversation'); rs.setAttribute('aria-label', rs.title);
     const x = panel.querySelector('.dmb-x'); x.title = tr('إغلاق', 'Close'); x.setAttribute('aria-label', x.title);
     panel.querySelector('.dmb-back span').textContent = tr('رجوع', 'Back'); panel.querySelector('.dmb-home span').textContent = tr('الرئيسية', 'Home');
-    panel.querySelector('.dmb-cr').innerHTML = tr('صُمّم وأُعِدّ بمعرفة <b>عميد / محمد المغازي – مدير الدار</b>، ليكون دليلكم في التخطيط لمناسبتكم', 'Designed and prepared by <b>Brig. Gen. Mohamed El-Maghazy – Director of Dar El-Marasem</b>, to guide you in planning your event');
+    panel.querySelector('.dmb-cr').innerHTML = tr('صُمّم وطُوِّر بمعرفة <b>عميد / محمد المغازي – مدير الدار</b>، ليكون دليلكم في التخطيط لمناسبتكم', 'Designed and developed by <b>Brig. Gen. Mohamed El-Maghazy – Director of Dar El-Marasem</b>, to guide you in planning your event');
   }
   function setLang(l, restart) {
     if (l === LANG) return;
@@ -619,7 +634,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
     { t: 'مميزات الدار والقاعات', fn: whyUs }, { t: 'مقترحات لحفلتك', fn: () => suggestAns() }, { t: 'سياسة الحجز والسداد', q: 'ازاي احجز' },
     { t: 'العنوان والتواصل', q: 'العنوان والتليفون' }, { t: 'كلّم فريق الحفلات', fn: () => humanAns() }
   ];
-  function welcome() { if (LEAD.done) return welcomeBack(); if (LEAD.skipped) return EN() ? enWelcome() : welcomeMain(); startLead(); }
+  function welcome() { if (LEAD.done || (LEAD.name && LEAD.last && !EN())) return welcomeBack(); if (LEAD.skipped) return EN() ? enWelcome() : welcomeMain(); startLead(); }
   function welcomeMain() {
     bot(`<p class="dmb-h">أهلاً بحضرتك في دار المراسم لضباط الشرطة</p><p>نوّرتنا! معاك <b>مساعد دار المراسم</b>، وأنا موجود ٢٤ ساعة عشان أساعدك تخطط لمناسبتك من أول سؤال لحد عرض السعر:</p><ul><li>أرشّح لك القاعة والباكدج الأنسب لعددك وميزانيتك</li><li>أعرض لك أسعار ومكونات كل منيو، وأقارن بين القاعات والباكدجات</li><li>أجهّز لك <b>عرض سعر تفصيلي</b> بند بند، ومقترحات تكمّل حفلتك</li><li>أشرح لك شروط الحجز والسداد، وأحجز لك ميعاد معاينة</li></ul><p>يلا نبدأ: <b>المناسبة إيه بإذن الله؟</b></p>`);
     chips([
@@ -639,8 +654,8 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   }
 
   function creditAns() {
-    bot(tr(`<p>مدير دار المراسم لضباط الشرطة هو <b style="font-size:1.25em">عميد / محمد المغازي</b>، وهو اللي صمّم وأعدّ المساعد الذكي ده ومنيوهات الحفلات الإلكترونية <b>لخدمة حضرتك ومساعدتك في الاختيار</b>، عشان تلاقي كل المعلومات والأسعار في أي وقت وبكل سهولة.</p><p>وهدفنا إن فرحتكم تبدأ من هنا وتفضل ذكرى جميلة طول العمر، ودار المراسم هتفضل دايماً بيتكم في أسعد لحظاتكم.</p><p>ولو حابب تتواصل مع فريق الحفلات: <a href="tel:01111117958" dir="ltr">01111117958</a> (واتساب) – <a href="tel:01010107958" dir="ltr">01010107958</a> – <a href="tel:01222227958" dir="ltr">01222227958</a></p>`,
-      `<p>The Director of Dar El-Marasem is <b style="font-size:1.25em">Brig. Gen. Mohamed El-Maghazy</b>, who designed and prepared this AI assistant and the digital event menus <b>to serve you and help you choose</b>, so you can find every detail and price anytime with ease.</p><p>Our wish is that your happiness begins here and stays a beautiful lifelong memory; Dar El-Marasem will always be your home for your happiest moments.</p><p>Events team: <a href="tel:01111117958">01111117958</a> (WhatsApp) – <a href="tel:01010107958">01010107958</a> – <a href="tel:01222227958">01222227958</a></p>`));
+    bot(tr(`<p>مدير دار المراسم لضباط الشرطة هو <b style="font-size:1.25em">عميد / محمد المغازي</b>، وهو اللي صمّم وطوّر المساعد الذكي ده ومنيوهات الحفلات الإلكترونية <b>لخدمة حضرتك ومساعدتك في الاختيار</b>، عشان تلاقي كل المعلومات والأسعار في أي وقت وبكل سهولة.</p><p>وهدفنا إن فرحتكم تبدأ من هنا وتفضل ذكرى جميلة طول العمر، ودار المراسم هتفضل دايماً بيتكم في أسعد لحظاتكم.</p><p>ولو حابب تتواصل مع فريق الحفلات: <a href="tel:01111117958" dir="ltr">01111117958</a> (واتساب) – <a href="tel:01010107958" dir="ltr">01010107958</a> – <a href="tel:01222227958" dir="ltr">01222227958</a></p>`,
+      `<p>The Director of Dar El-Marasem is <b style="font-size:1.25em">Brig. Gen. Mohamed El-Maghazy</b>, who designed and developed this AI assistant and the digital event menus <b>to serve you and help you choose</b>, so you can find every detail and price anytime with ease.</p><p>Our wish is that your happiness begins here and stays a beautiful lifelong memory; Dar El-Marasem will always be your home for your happiest moments.</p><p>Events team: <a href="tel:01111117958">01111117958</a> (WhatsApp) – <a href="tel:01010107958">01010107958</a> – <a href="tel:01222227958">01222227958</a></p>`));
     chips(MAIN());
   }
   const CREDIT_AR = /(مين|من) (اللي )?(عمل|عامل|صمم|مصمم|برمج|طور|عملك|صممك|برمجك|عمل الشات|عمل البوت)|مين مدير الدار|مدير الدار|مين صاحب|مين المسيول|مين المسوول|مين عملك/;
@@ -703,7 +718,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   let LASTA = null;
   const fitHalls = n => ['lotus', 'isis', 'akhenaten'].filter(h => !n || (n >= K.halls[h].min && n <= K.halls[h].max) || (h === 'lotus' && n < 100));
   { const _r = recommend; recommend = function () { LASTA = { k: 'rec', halls: fitHalls(S.count) }; return _r.apply(this, arguments); }; }
-  { const _e = estimate; estimate = function () { LASTA = { k: 'est', halls: [S.hall] }; return _e.apply(this, arguments); }; }
+  { const _e = estimate; estimate = function () { LASTA = { k: 'est', halls: [S.hall] }; if (K.halls[S.hall] && S.count) setLast('est'); return _e.apply(this, arguments); }; }
   { const _p = hallPrices; hallPrices = function (hid) { LASTA = { k: 'prices', halls: [hid] }; return _p.apply(this, arguments); }; }
   { const _h = hallProfile; hallProfile = function (hid) { LASTA = { k: 'profile', halls: [hid] }; return _h.apply(this, arguments); }; }
   { const _c = compareHalls; compareHalls = function (a, b) { LASTA = { k: 'cmp', halls: [a, b] }; return _c.apply(this, arguments); }; }
@@ -923,6 +938,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   function brain2Route(t, o) {
     const { W, halls, count } = o;
     if (!EN() && W('خطه الدفع', 'خطه السداد', 'هدفع امتي', 'هدفع ازاي', 'الدفع ازاي', 'السداد ازاي', 'ادفع علي دفعات', 'علي دفعات', 'اقساط', 'تقسيط', 'بالتقسيط', 'مواعيد الدفع', 'مواعيد السداد', 'جدول السداد', 'هدفع كام دلوقتي', 'المطلوب دلوقتي', 'ادفع كام الاول') && (K.halls[S.hall] && S.count)) { payPlanAns(); return true; }
+    if (!EN() && W('حاسبه', 'الحاسبه', 'احسبها بنفسي', 'احسب بنفسي', 'اجرب الاسعار', 'اغير العدد واشوف')) { calcCard(halls[0]); return true; }
     if (!EN() && W('جدول التحضيرات', 'تحضيرات الفرح', 'فاضل كام يوم', 'العد التنازلي', 'خطوات التحضير', 'امتي اعمل ايه', 'الجدول الزمني', 'المواعيد المهمه')) { timelineAns(); return true; }
     if (!EN() && W('قارن الباكدجات', 'مقارنه الباكدجات', 'قارنلي الباكدجات', 'قارن المنيوهات', 'مقارنه المنيوهات', 'الفرق بين المنيوهات', 'انهي منيو احسن') && K.halls[S.hall] && S.count) { threePkgAns(); return true; }
     if (!EN() && W('احفظ عرض السعر', 'صوره لعرض السعر', 'عرض السعر صوره', 'ابعتلي عرض السعر')) { saveQuoteImg(); return true; }
@@ -1358,7 +1374,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
       bot(`<p class="dmb-h">تكلفة تقديرية – ${h.name}</p><p>${AD(n)} فرد${dayTxt ? ' – ' + dayTxt : ''}${dateNote}</p><table class="dmb-t"><tr><th>المنيو</th><th>الإجمالي التقديري</th></tr>${rows.join('')}</table>${notesFor(h, n, baseN, day)}${ctaLine(hid)}${src(hid)}`, [{ t: 'عرض سعر تفصيلي بالإضافات', fn: () => startQuote({ ev: ['wedding', 'engagement'].includes(S.event) ? S.event : 'wedding', hall: hid, n, day }), cls: 'pri' }, { t: 'تجهيز طلب الحجز', fn: () => startBook() }]);
     }
     // ordered by what clients need next: the menus → set menu or buffet → the other day → viewing → add-ons → change the count
-    chips([...h.menus.filter(menuOK).slice(0, 2).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.replace(/\d+$/, ''), n: +(m.id.match(/\d+$/) || [0])[0] }) })), { t: 'قارن ٣ باكدجات', fn: threePkgAns }, ...(h.menus.some(m => /^ob/.test(m.id)) ? [{ t: 'ست منيو ولا أوبن بوفيه؟', q: 'الفرق بين الست منيو والاوبن بوفيه' }] : []), ...(h.pk.type === 'wk' || h.pk.fee ? [{ t: day === 'we' ? 'احسب لمنتصف الأسبوع' : 'احسب لنهاية الأسبوع', fn: () => { S.day = day === 'we' ? 'wd' : 'we'; S.date = null; estimate(); } }] : []), { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'مقترحات لحفلتك', fn: () => suggestAns(hid) }, { t: 'تغيير العدد', fn: () => askCount() }]);
+    chips([{ t: 'احسبها بنفسك', fn: () => calcCard(hid) }, ...h.menus.filter(menuOK).slice(0, 2).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.replace(/\d+$/, ''), n: +(m.id.match(/\d+$/) || [0])[0] }) })), { t: 'قارن ٣ باكدجات', fn: threePkgAns }, ...(h.menus.some(m => /^ob/.test(m.id)) ? [{ t: 'ست منيو ولا أوبن بوفيه؟', q: 'الفرق بين الست منيو والاوبن بوفيه' }] : []), ...(h.pk.type === 'wk' || h.pk.fee ? [{ t: day === 'we' ? 'احسب لمنتصف الأسبوع' : 'احسب لنهاية الأسبوع', fn: () => { S.day = day === 'we' ? 'wd' : 'we'; S.date = null; estimate(); } }] : []), { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'مقترحات لحفلتك', fn: () => suggestAns(hid) }, { t: 'تغيير العدد', fn: () => askCount() }]);
   }
   function notesFor(h, n, baseN, day) {
     const L = [];
@@ -1417,7 +1433,15 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     if (!CONS) return;
     const C = CONS, n = S.count;
     if (!S.event) { C.st = 'ev'; return cAsk('<p><b>المناسبة إيه بإذن الله؟</b></p>', ['wedding', 'engagement', 'katb', 'birthday', 'aqiqa', 'special'].map(e => ({ t: EVNAME[e], fn: () => { S.event = e; } })), (raw, t, e) => { if (e.ev) { S.event = e.ev; if (e.count) S.count = e.count; return true; } return false; }); }
-    if (['katb', 'birthday', 'special', 'aqiqa', 'photo'].includes(S.event)) { CONS = null; return S.count || S.event === 'special' || S.event === 'aqiqa' ? estimate() : askCount(estimate); }
+    if (S.event === 'photo') { CONS = null; return photo(); }
+    if (['katb', 'birthday', 'special', 'aqiqa'].includes(S.event)) {
+      if (!n) { C.st = 'count'; const ns = { katb: [50, 80, 100, 150, 200], birthday: [20, 30, 40, 60, 75], aqiqa: [50, 75, 100, 150], special: [30, 50, 100, 200] }[S.event]; const why = { katb: 'قاعة المودة والرحمة لحد ١٥٠ فرد، واللوتس لحد ٢٠٠ فرد، والعدد هو اللي بيحدد الأنسب والأوفر.', birthday: 'عندنا ٣ أماكن لأعياد الميلاد بسعات مختلفة: الروف توب، وأوبن إير، واللوتس.', aqiqa: 'باكدجات العقيقة محسوبة على عدد معين، والزيادة بتتحسب بالفرد.', special: 'عندنا قاعات بسعات مختلفة للمؤتمرات والاجتماعات، والمنيو بيتحسب بالفرد.' }[S.event]; return cAsk(`<p>${EVCHEER[S.event] || ''} <b>عدد الحضور المتوقع كام؟</b></p><p class="dmb-note">${why}</p>`, ns.map(x => ({ t: AD(x), fn: () => { S.count = x; } })), (raw, t, e) => { const c = e.count || findCount(t, true); if (c) { S.count = c; return true; } return false; }); }
+      CONS = null; CONSDONE = true;
+      if (S.event === 'katb') return n <= 150 ? katbCompare() : katb('lotus');
+      if (S.event === 'birthday') return birthday();
+      if (S.event === 'aqiqa') return aqiqa();
+      return special();
+    }
     if (!n) { C.st = 'count'; return cAsk(`<p>${EVCHEER[S.event] ? EVCHEER[S.event] + ' ' : ''}<b>عدد المعازيم المتوقع كام تقريباً؟</b></p><p class="dmb-note">العدد هو أهم حاجة في الاختيار، لأن كل قاعة ليها سعة، وكل باكدج محسوب على حد أدنى من الأفراد.</p>`, [100, 150, 200, 250, 300, 400].map(x => ({ t: AD(x), fn: () => { S.count = x; } })), (raw, t, e) => { const c = e.count || findCount(t, true); if (c) { S.count = c; return true; } return false; }); }
     if (C.fast) return consultReport();
     if (!S.day && !C.day) { C.st = 'day'; return cAsk(`<p>تمام، ${AD(n)} فرد 👌</p><p><b>تفضّل الحفلة في منتصف الأسبوع ولا نهاية الأسبوع؟</b></p><p class="dmb-note">بسأل لأن الخميس والجمعة والسبت عليهم رسوم إضافية، وفي أخناتون ليها باكدج مختلف، فالفرق ممكن يكون كبير.</p>`, [{ t: 'منتصف الأسبوع (الأحد – الأربعاء)', fn: () => { S.day = 'wd'; } }, { t: 'نهاية الأسبوع (الخميس – السبت)', fn: () => { S.day = 'we'; } }, { t: 'لسه مش محدد', fn: () => { C.day = 'x'; } }], (raw, t, e) => { const d = e.day || findDay(t, e.date); if (d) { S.day = d; if (e.date) S.date = e.date; return true; } if (notYet(t)) { C.day = 'x'; return true; } return false; }); }
@@ -1456,6 +1480,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
       void am;
     }
     html += `<p><b>الباكدج اللي أنصحك بيه: ${A(m.name)} في ${HALLNAME[pick]}</b></p><table class="dmb-t"><tr><td>${A(m.name)} – باكدج ${AD(pkN(H, d))} فرد${d === 'we' ? ' (نهاية الأسبوع)' : ''}</td><td class="n">${money(base)}</td></tr>${tot - base > 0 ? `<tr><td>الوجبات الإضافية والتجهيزات لـ ${AD(Math.max(n - pkN(H, d), 0))} فرد</td><td class="n">${money(tot - base)}</td></tr>` : ''}${adds.map(x => `<tr><td>${nameShort(x.a)}</td><td class="n">${money(x.p)}</td></tr>`).join('')}<tr class="tot"><td>الإجمالي التقديري<br><small>حوالي ${money(ppl(grand))} للفرد</small></td><td class="n">${money(grand)}</td></tr></table>`;
+    html += upTier(pick, m, n, d);
     if (PREF.prio === 'food') html += `<p class="dmb-note">اخترته لأنه فيه ${AD(itemCount(m))} صنف، وده من أغنى المنيوهات${C.bud ? ' في حدود ميزانيتك' : ''}.</p>`;
     // set menu vs open buffet
     const sm = H.menus.filter(x => /^sm/.test(x.id)), ob = H.menus.filter(x => /^ob/.test(x.id));
@@ -1472,9 +1497,9 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     const incs = H.inc.flatMap(sx => sx.o.filter(o => o[0] === 'i').map(o => o[1])).slice(0, 10);
     if (incs.length) html += `<div class="dmb-sec"><b>وعلى فكرة، الباكدج مش أكل بس، شامل كمان:</b><p>${incs.map(A).join('، ')}… وحاجات تانية كتير بتتحسب منفصلة في أماكن تانية.</p></div>`;
     html += `<p class="dmb-close">✦ <b>الخطوة الجاية:</b> تحب أكمّل معاك عرض سعر تفصيلي بالإضافات بند بند، ولا تحب تيجي تعاين ${HALLNAME[pick]} على الطبيعة؟ ولو عندك أي سؤال أو حاجة مش مقتنع بيها، قولّي وأنا أوضّح لك.</p>`;
-    CONSDONE = true;
+    CONSDONE = true; setLast('consult');
     bot(html, [{ t: 'صور ' + HALLNAME[pick], q: 'صور ' + HALLNAME[pick] }]);
-    chips([{ t: 'يلا نكمّل الحساب', fn: () => startQuote(quotePre(pick)) }, { t: 'قارن ٣ باكدجات', fn: threePkgAns }, { t: 'خطة الدفع بالأرقام', fn: payPlanAns }, { t: 'حجز موعد معاينة', fn: () => startVisit() }, ...(alt ? [{ t: 'مقارنة كاملة بين القاعتين', fn: () => compareHalls(pick, alt) }] : []), { t: 'محتوى ' + A(m.name), fn: () => menuDetail(S.menu) }, { t: 'غيّر اختياراتي', fn: () => { PREF = {}; savePref(); S.day = null; startConsult('<p>تمام، نبدأ من الأول 👌</p>'); } }, { t: 'جهّز طلبي لفريق الحفلات', fn: () => startClosing() }]);
+    chips([{ t: 'يلا نكمّل الحساب', fn: () => startQuote(quotePre(pick)) }, { t: 'احسبها بنفسك', fn: () => calcCard(pick) }, { t: 'قارن ٣ باكدجات', fn: threePkgAns }, { t: 'خطة الدفع بالأرقام', fn: payPlanAns }, { t: 'حجز موعد معاينة', fn: () => startVisit() }, ...(alt ? [{ t: 'مقارنة كاملة بين القاعتين', fn: () => compareHalls(pick, alt) }] : []), { t: 'محتوى ' + A(m.name), fn: () => menuDetail(S.menu) }, { t: 'غيّر اختياراتي', fn: () => { PREF = {}; savePref(); S.day = null; startConsult('<p>تمام، نبدأ من الأول 👌</p>'); } }, { t: 'جهّز طلبي لفريق الحفلات', fn: () => startClosing() }]);
   }
   function startRec() { return EN() ? startRec0() : startConsult(); }
   function startRec0() {
@@ -1690,6 +1715,28 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
       [waAct(['دار المراسم لضباط الشرطة – أرغب في التواصل مع فريق الحفلات', ...(L.length ? ['', ...L] : []), '', '(عبر مساعد دار المراسم الذكي)'].join('\n'), 'كلّم فريق الحفلات على واتساب'), { t: 'اتصال: ' + PHONES[0], href: 'tel:' + PHONES[0] }, { t: 'اتصال: ' + PHONES[1], href: 'tel:' + PHONES[1] }]);
     chips([{ t: 'حجز موعد معاينة', fn: () => startVisit() }, ...(readyToClose() ? [{ t: 'جهّز طلبي لفريق الحفلات', fn: () => startClosing() }] : []), { t: 'أكمّل مع المساعد', fn: () => { bot('<p>تحت أمرك، اسأل في أي حاجة.</p>'); chips(MAIN()); } }]);
   }
+  /* ---- interactive calculator: the client moves the count, the day and the menu, and sees the total live ---- */
+  function calcCard(hid) {
+    hid = K.halls[hid] ? hid : (K.halls[S.hall] ? S.hall : null);
+    if (!hid) { bot('<p>تحب تحسب في أنهي قاعة؟</p>'); return chips(byCount(['lotus', 'isis', 'akhenaten']).map(h => ({ t: HALLNAME[h], fn: () => calcCard(h) }))); }
+    const H = K.halls[hid];
+    let n = Math.min(H.max, Math.max(H.min, S.count || (H.pk.type === 'wk' ? H.pk.wd.n : H.pk.n))), d = S.day || 'wd';
+    let mid = ((S.menu && hallMenu(hid, S.menu)) || okMenus(H)[0]).id;
+    const el = bot(`<p class="dmb-h">احسبها بنفسك – ${H.name}</p><p class="dmb-note">حرّك العدد واختار اليوم والمنيو، والإجمالي هيتغير قدامك على طول.</p><div class="dmb-calc"><label>عدد المعازيم: <b class="cn"></b></label><input type="range" min="${H.min}" max="${H.max}" step="5" value="${n}" aria-label="عدد المعازيم"><div class="seg"><button type="button" data-d="wd">منتصف الأسبوع</button><button type="button" data-d="we">نهاية الأسبوع</button></div><select aria-label="المنيو">${H.menus.map(m => `<option value="${m.id}"${m.id === mid ? ' selected' : ''}>${A(m.name)}</option>`).join('')}</select><div class="out"></div></div>`,
+      [{ t: 'اعتمد الحساب ده', cls: 'pri', fn: () => { S.hall = hid; S.count = n; S.day = d; S.menu = { k: mid.replace(/\d+$/, ''), n: +(mid.match(/\d+$/) || [0])[0] }; estimate(); } }]);
+    const rg = el.querySelector('input[type=range]'), out = el.querySelector('.out'), cn = el.querySelector('.cn'), sel = el.querySelector('select');
+    const upd = () => {
+      const m = H.menus.find(x => x.id === mid), v = estTotal(H, m, n, d), base = pkN(H, d);
+      cn.textContent = AD(n) + ' فرد';
+      el.querySelectorAll('.seg button').forEach(b => b.classList.toggle('on', b.dataset.d === d));
+      out.innerHTML = `الإجمالي التقديري<br><b>${money(v)}</b><br><small>حوالي ${money(Math.round(v / n))} للفرد · الباكدج محسوب على ${AD(base)} فرد${n > base ? ` + ${AD(n - base)} فرد إضافي` : ''}</small>`;
+    };
+    rg.addEventListener('input', () => { n = +rg.value; upd(); idleArm(); });
+    el.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => { d = b.dataset.d; upd(); }));
+    sel.addEventListener('change', () => { mid = sel.value; upd(); });
+    upd();
+    chips([{ t: 'قارن ٣ باكدجات', fn: threePkgAns }, { t: 'خطة الدفع بالأرقام', fn: payPlanAns }, { t: 'حجز موعد معاينة', fn: () => startVisit() }]);
+  }
   /* ---- (3) the payment plan in numbers (rules art. 33 & 34) ---- */
   const addDays = (d, k) => { const x = new Date(d); x.setDate(x.getDate() + k); return x; };
   const partyDate = () => S.date || (LEAD.date ? (() => { const [y, m, d] = LEAD.date.split('-').map(Number); return new Date(y, m - 1, d); })() : null);
@@ -1701,7 +1748,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     return { H, m, n, d, pk, total, dep: dep[1], ins: dep[2] };
   }
   function payPlanAns() {
-    const P = curPlan();
+    const P = curPlan(); if (P) setLast('pay');
     if (!P) { bot('<p>عشان أحسب لك خطة الدفع بالأرقام، محتاج أعرف القاعة وعدد المعازيم الأول.</p>'); return startConsult(' '); }
     const today = new Date(today0()), pd = partyDate(), near = pd && (pd - today) / 864e5 < 31;
     const half = Math.ceil(P.pk / 2 / 50) * 50, all = P.total + P.ins;
@@ -1711,10 +1758,18 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     chips([{ t: 'جدول تحضيرات الفرح', fn: timelineAns }, { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'احفظ عرض السعر صورة', fn: saveQuoteImg }, { t: 'جهّز طلبي لفريق الحفلات', fn: () => startClosing() }]);
   }
   const today0 = () => new Date(new Date().toDateString());
+  const LASTLBL = { est: 'حساب التكلفة', consult: 'ترشيحي لحفلتك', pay: 'خطة الدفع', tl: 'جدول التحضيرات', pkg3: 'مقارنة الباكدجات', quote: 'عرض السعر' };
+  function setLast(k) { try { LEAD.last = { k, hall: S.hall || null, count: S.count || null, day: S.day || null, ev: S.event || null, menu: S.menu || null }; saveLead(); } catch (e) { } }
+  function resumeLast() {
+    const L = LEAD.last; if (!L) return;
+    if (L.hall) S.hall = L.hall; if (L.count) S.count = L.count; if (L.day) S.day = L.day; if (L.ev) S.event = L.ev; if (L.menu) S.menu = L.menu;
+    ({ est: estimate, consult: () => { CONS = { fast: true }; consultReport(); }, pay: payPlanAns, tl: timelineAns, pkg3: threePkgAns, quote: () => startQuote(quotePre(S.hall)) }[L.k] || estimate)();
+  }
   /* ---- (5) the wedding preparation timeline with a countdown ---- */
   function timelineAns() {
     const pd = partyDate();
     if (!pd) { bot('<p>تمام، اختار <b>تاريخ الحفلة</b> وأنا أطلّع لك جدول التحضيرات بالمواعيد:</p>'); return dateInput(dt => { S.date = dt; const w = dt.getDay(); S.day = (w === 4 || w === 5 || w === 6) ? 'we' : 'wd'; timelineAns(); }, '<b>تاريخ الحفلة</b>', { min: today0() }); }
+    setLast('tl');
     const t = today0(), left = Math.round((pd - t) / 864e5);
     const P = curPlan();
     const items = [[t, 'النهارده', 'حجز موعد معاينة، واختيار القاعة'], [t, 'عند التعاقد', 'سداد مقدم الحجز' + (P ? ' (' + money(P.dep) + ')' : '') + ' وتوقيع الاستمارة، وده اللي بيثبّت التاريخ'], [addDays(t, 30), 'خلال شهر من التعاقد', 'اختيار الباكدج والخدمات وسداد ٥٠٪ على الأقل من قيمة الباكدج'], [addDays(pd, -30), 'قبل الحفلة بشهر', 'استكمال كامل القيمة بالإضافات والتأمين'], [addDays(pd, -7), 'قبل الحفلة بأسبوع', 'تأكيد العدد النهائي كتابةً، وآخر ميعاد لتعديل المنيو'], [addDays(pd, -2), 'قبل الحفلة بـ ٤٨ ساعة', 'آخر ميعاد لإلغاء أو تعديل أو إضافة أي بند كتابةً'], [pd, 'يوم الفرح', 'مدة الحفلة ٤ ساعات من الميعاد المكتوب في العقد 🎉']];
@@ -1726,6 +1781,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
   function threePkgAns() {
     const H = K.halls[S.hall], n = S.count;
     if (!H || !n) { bot('<p>قولّي القاعة وعدد المعازيم، وأنا أقارن لك الباكدجات جنب بعض.</p>'); return startConsult(' '); }
+    setLast('pkg3');
     const d = S.day || 'wd', sm = H.menus.filter(m => /^sm/.test(m.id)), ob = H.menus.filter(m => /^ob/.test(m.id));
     const pick = [sm[0], sm.slice().sort((a, b) => itemCount(b) - itemCount(a) || estTotal(H, a, n, d) - estTotal(H, b, n, d))[0], ob[0] || H.menus.find(m => m.id === 'ht')].filter((x, i, a) => x && a.indexOf(x) === i);
     const main = m => secItems(m, /الرئيسي|الساخن/).slice(0, 4).map(A).join('، ');
@@ -2325,7 +2381,7 @@ ${row('مقدم الحجز', h => dep(h))}
     } };
     chips([...opts.map(o => ({ t: o.t, fn: () => { o.fn(); saveLead(); if (!consultAfter(stepNow)) leadNext(); } })), ...(KEEPCH || []), skipChip()]);
   }
-  const isQuestion = raw => /[?؟]/.test(raw) || /^(ايه|إيه|كام|بكام|هل|ممكن|فين|امتى|إمتى|ازاي|إزاي|عاوز|عايز|سعر|اسعار|أسعار|what|how|where|when|which|is|are|do|does|can|could|price|prices|cost)\b/i.test(raw.trim());
+  const isQuestion = raw => /[?؟]/.test(raw) || /^(مين|مين اللي|ايه|إيه|كام|بكام|هل|ممكن|فين|امتى|إمتى|ازاي|إزاي|عاوز|عايز|سعر|اسعار|أسعار|what|how|where|when|which|is|are|do|does|can|could|price|prices|cost)\b/i.test(raw.trim());
   const notYet = t => /لسه|لم احدد|مش عارف|مش محدد|معرفش|not sure|not yet|dont know|undecided|no idea|tbd/.test(t);
   const LSTEPS = ['name', 'event', 'month', 'count', 'hall', 'pkg', 'job', 'phone'];
   const ASKMORE = false; // المناسبة والميزانية وموعد الحسم ومصدر المعرفة: لا تُسأل، وتُفهم لو العميل ذكرها
@@ -2346,7 +2402,7 @@ ${row('مقدم الحجز', h => dep(h))}
   let CHEER = '';
   function startLead() {
     CLOSING = false; OFFERED = 0; TURNS = 0;
-    if (LEAD.done) return welcomeBack();
+    if (LEAD.done || (LEAD.name && LEAD.last && !EN())) return welcomeBack();
     if (EN()) {
       bot(`<p class="dmb-h">Welcome to Dar El-Marasem</p>${phHTML(['venue'])}<p>It is my pleasure to assist you. I am the <b>Dar El-Marasem AI assistant</b>, here around the clock to help you plan your event step by step: the right hall and package, and a detailed quote.</p><p>To advise you properly, may I ask <b>a few quick questions</b>?</p>`);
       return leadNext();
@@ -2356,8 +2412,10 @@ ${row('مقدم الحجز', h => dep(h))}
     welcomeChips();
   }
   // fastest path: occasion → guest count → the right hall (3 taps, no typing)
+  function startEvent(e) { if (!welcomeGo) { const keep = ACT; welcomeChips(); chips(keep); } return welcomeGo(e)(); }
+  let welcomeGo = null;
   function welcomeChips() {
-    const go = e => () => {
+    const go = welcomeGo = e => () => {
       S.event = e;
       if (['wedding', 'engagement'].includes(e)) { bot(`<p>${EVCHEER[e]} 🌷</p><p><b>عدد المعازيم المتوقع كام تقريباً؟</b></p>`); FLOW = { wantCount: true, step: (raw, t, en) => { const n = en.count || findCount(t, true); FLOW = null; if (!n) return false; S.count = n; recommend(); return true; } }; chips([100, 150, 200, 250, 300, 400, 500].map(n => ({ t: AD(n) + ' فرد', fn: () => { FLOW = null; S.count = n; recommend(); } })).concat([{ t: 'لسه مش عارف', fn: () => { FLOW = null; startConsult(); } }])); return; }
       if (e === 'katb') return S.count ? katb() : askCount(() => katb());
@@ -2373,7 +2431,7 @@ ${row('مقدم الحجز', h => dep(h))}
   const greetReply = t => { const g = GREET.find(x => x[0].test(t)); return g ? g[1] : ''; };
   const GREETW = /^(?: *(?:مساء|صباح|الخير|النور|الفل|الورد|السلام|عليكم|ورحمه|الله|وبركاته|سلام|اهلا|وسهلا|هاي|هلو|مرحبا|الو|ازيك|ازيكم|عامل|عاملين|ايه|يا|فندم|باشا|استاذ|حضرتك|hi|hello|hey))+ *$/;
   const onlyGreeting = t => GREETW.test(t.trim());
-  const NAMEBAD = /(^| )(هفكر|بفكر|افكر|هشوف|هرد|هكلمك|بعدين|تمام|ماشي|اوك|شكرا|سعر|اسعار|منيو|قاعه|القاعات|فرح|حفله|خطوبه|كتب|عيد|باكدج|عرض|عاوز|عايز|محتاج|لو سمحت|ممكن|بكام|كام|فين|ايه|ازاي|امتي|هل|معاينه|حجز|احجز|price|menu|hall|wedding|quote|book)( |$)/;
+  const NAMEBAD = /(^| )(مين|مدير|الدار|هفكر|بفكر|افكر|هشوف|هرد|هكلمك|بعدين|تمام|ماشي|اوك|شكرا|سعر|اسعار|منيو|قاعه|القاعات|فرح|حفله|خطوبه|كتب|عيد|باكدج|عرض|عاوز|عايز|محتاج|لو سمحت|ممكن|بكام|كام|فين|ايه|ازاي|امتي|هل|معاينه|حجز|احجز|price|menu|hall|wedding|quote|book)( |$)/;
   function cleanName(raw) { return raw.replace(/[.،,!؟?]+/g, ' ').replace(/^\s*(?:لا|لأ|معلش|عفوا|غلط|مش كده)?\s*،?\s*(?:انا اسمي|أنا اسمي|انا إسمي|اسمي|إسمي|الاسم|انا|أنا|معاك|my name is|i am|im|this is)\s+/i, '').replace(/\s+(?:مش|وليس)\s+.*$/, '').trim().split(/\s+/).slice(0, 3).join(' ').slice(0, 40); }
   // returns true (saved) | 'retry' (handled, ask again) | false (not a name — a real question)
   function nameStep(raw, t, e) {
@@ -2412,8 +2470,9 @@ ${row('مقدم الحجز', h => dep(h))}
   }
   function gateName(action, raw) {
     if (!NAMEGATE || EN() || LEAD.name || LEAD.noname || LEAD.skipped || LEAD.done || LSTEP || FLOW || Q) return false;
-    NAMEGATE = false;
     const t = raw ? fixSpell(norm(raw)) : '';
+    if (raw && CREDIT_AR.test(t)) return false;
+    NAMEGATE = false;
     if (raw && onlyGreeting(t)) { bot(`<p>${greetReply(t) || 'أهلاً بيك يا فندم!'} نوّرتنا. <b>أتشرف باسم حضرتك؟</b></p>`); askName(); return true; }
     if (raw && looksLikeName(raw, t)) { LEAD.name = cleanName(raw); PEND = null; afterName(); return true; }
     if (raw && /(^| )(?:انا اسمي|اسمي|إسمي)( |$)/.test(' ' + raw + ' ')) { const nm = cleanName(raw); if (nm && !NAMEBAD.test(norm(nm))) { LEAD.name = nm; PEND = null; afterName(); return true; } }
@@ -2612,8 +2671,8 @@ ${row('مقدم الحجز', h => dep(h))}
       CLOSING = false;
       const L = leadBlock(), phone = LEAD.phone && LEAD.phone !== '-' ? LEAD.phone : '';
       const q = LEAD.lastQ;
-      const EL = bot(`<p class="dmb-h">متشكر جداً يا ${hon() || 'فندم'}</p><p>ده ملخص طلبك:</p><p style="white-space:pre-line">${esc(L.join('\n'))}</p>${q ? `<p>عرض السعر: <b>${esc(q.sum)}</b> – الإجمالي التقديري <b>${money(q.total)}</b></p>` : ''}<p>فريق الحفلات هيراجع طلبك${phone ? ' ويتواصل مع حضرتك على رقمك' : ''} عشان يأكد التاريخ ويكمّل معاك الحجز. ولو حابب تبعته بنفسك على واتساب، اضغط الزرار.</p><p class="dmb-note">الحجز بيتثبّت بسداد مقدم الحجز وتوقيع استمارة التعاقد.</p>`,
-        [waAct(['دار المراسم لضباط الشرطة – طلب عميل', '', ...L, ...(q ? ['', q.msg] : []), '', '(عبر مساعد دار المراسم الذكي)'].join('\n'), 'إرسال طلبي لفريق الحفلات على واتساب'), { t: 'حجز موعد معاينة', cls: 'pri', fn: () => startVisit() }]);
+      const EL = bot(`<p class="dmb-h">متشكر جداً يا ${hon() || 'فندم'}</p><p>ده ملخص طلبك – <b>رقم الطلب: <span dir="ltr">${refNo()}</span></b></p><p style="white-space:pre-line">${esc(L.join('\n'))}</p>${q ? `<p>عرض السعر: <b>${esc(q.sum)}</b> – الإجمالي التقديري <b>${money(q.total)}</b></p>` : ''}<p>فريق الحفلات هيراجع طلبك${phone ? ' ويتواصل مع حضرتك على رقمك' : ''} عشان يأكد التاريخ ويكمّل معاك الحجز. ولو حابب تبعته بنفسك على واتساب، اضغط الزرار.</p><p class="dmb-note">احتفظ برقم الطلب <b dir="ltr">${refNo()}</b>، ولما تكلّم فريق الحفلات قولّه الرقم وهيلاقي كل التفاصيل قدامه. والحجز بيتثبّت بسداد مقدم الحجز وتوقيع استمارة التعاقد.</p>`,
+        [waAct(['دار المراسم لضباط الشرطة – طلب عميل – رقم ' + refNo(), '', ...L, ...(q ? ['', q.msg] : []), '', '(عبر مساعد دار المراسم الذكي)'].join('\n'), 'إرسال طلبي لفريق الحفلات على واتساب'), { t: 'حجز موعد معاينة', cls: 'pri', fn: () => startVisit() }]);
       markSent(SENT, EL, 'طلبك');
       chips([{ t: 'صور القاعات', q: 'صور القاعات' }, { t: 'تعديل بياناتي', fn: () => { const n = LEAD.name; LEAD = { name: n, greeted: true, logged0: true, id: LEAD.id }; saveLead(); startClosing(); } }, ...MAIN().slice(0, 2)]);
       return;
@@ -2665,6 +2724,7 @@ ${row('مقدم الحجز', h => dep(h))}
     if (q) acts.push({ t: 'اعرض آخر عرض سعر', fn: () => { bot(`<p class="dmb-h">آخر عرض سعر</p><p style="white-space:pre-line">${esc(q.msg)}</p>`, [waAct(q.msg, 'إرسال عرض السعر لفريق الحفلات عبر واتساب')]); chips([{ t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'عرض سعر جديد', fn: () => startQuote() }, ...MAIN().slice(1, 4)]); } });
     acts.push({ t: 'حجز موعد معاينة', fn: () => startVisit() });
     if (!q && LEAD.count) acts.push({ t: 'عرض سعر تفصيلي', fn: () => startQuote() });
+    if (LEAD.last && LASTLBL[LEAD.last.k] && !EN()) acts.unshift({ t: 'نكمّل من: ' + LASTLBL[LEAD.last.k] + (HALLNAME[LEAD.last.hall] ? ' – ' + HALLNAME[LEAD.last.hall] : ''), fn: resumeLast });
     chips([...acts, ...MAIN()].slice(0, 8));
   }
 
@@ -2725,7 +2785,7 @@ ${row('مقدم الحجز', h => dep(h))}
     const gap = estTotal(H, nx, cnt, d) - estTotal(H, m, cnt, d);
     if (gap <= 0) return '';
     if (EN()) return `<div class="dmb-cta">✦ <b>Suggested upgrade:</b> for ${money(gap)} more${n ? ` for ${n} guests (about ${money(Math.round(gap / n / 5) * 5)} per guest)` : ' on the package'} you move up to <b>${A(nx.name)}</b>${add.length ? `, which adds: ${add.map(A).join(', ')}` : ''}.</div>`;
-    return `<div class="dmb-cta">✦ <b>ترقية مقترحة:</b> بفارق ${money(gap)}${n ? ` لعدد ${AD(n)} فرد (نحو ${money(Math.round(gap / n / 5) * 5)} للفرد)` : ' على الباكدج'} تنقل لـ <b>${A(nx.name)}</b>${add.length ? `، ويضيف: ${add.map(A).join('، ')}` : ''}.</div>`;
+    return n ? `<div class="dmb-cta">✦ <b>بزيادة ${money(Math.round(gap / n / 5) * 5)} بس للفرد</b> تنقل لـ <b>${A(nx.name)}</b>${add.length ? `، وتاخد زيادة: ${add.map(A).join('، ')}` : ''}. <small>(الفرق الإجمالي ${money(gap)} لعدد ${AD(n)} فرد)</small></div>` : `<div class="dmb-cta">✦ <b>ترقية مقترحة:</b> بفارق ${money(gap)} على الباكدج تنقل لـ <b>${A(nx.name)}</b>${add.length ? `، ويضيف: ${add.map(A).join('، ')}` : ''}.</div>`;
   }
   // best fit pick under a recommendation table
   function recPick(fits, n) {
@@ -2882,7 +2942,7 @@ ${row('مقدم الحجز', h => dep(h))}
     if (add.length) chips((add[0] && /نكمّل الحساب/.test(add[0].t) ? [add[0], ...ACT, ...add.slice(1)] : [...ACT, ...add]).slice(0, 7));
     scroll();
   }
-  { const st = document.createElement('style'); st.textContent = '.dmb-qrb{margin-inline-start:auto}.dmb-qrh{display:inline-flex;align-items:center;gap:8px;margin:14px auto 0;padding:10px 20px;border-radius:26px;border:1px solid rgba(200,164,100,.6);background:rgba(10,17,32,.6);color:#E9D3A1;font:700 15px/1.2 Cairo,Tajawal,sans-serif;cursor:pointer}.dmb-qrh:hover{background:rgba(200,164,100,.14)}@media(max-width:700px){.dmb-qrb,.dmb-qrh{display:none!important}}.dmb-qrm{position:fixed;inset:0;z-index:140;background:rgba(5,9,18,.82);display:flex;align-items:center;justify-content:center;padding:18px}.dmb-qrm[hidden]{display:none}.dmb-qrc{position:relative;max-height:94vh;display:flex;flex-direction:column;align-items:center;gap:10px}.dmb-qrc img{max-height:78vh;width:auto;max-width:92vw;border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.6)}.dmb-qrt{margin:0;text-align:center;color:#F1DFB5;font:700 22px/1.5 Cairo,Tajawal,sans-serif}.dmb-qrt small{font-weight:500;font-size:15px;color:#CFC6B4}.dmb-qrx{position:absolute;top:-6px;left:-6px;width:42px;height:42px;border-radius:50%;border:1px solid rgba(200,164,100,.6);background:#0A1120;color:#E9D3A1;font-size:18px;cursor:pointer}.dmb-tels{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 8px;padding:7px var(--gut,14px);background:#0B1324;border-bottom:1px solid rgba(200,164,100,.18)}.dmb-tels a{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:18px;border:1px solid rgba(200,164,100,.4);color:#F1DFB5;text-decoration:none;font:700 14px/1.2 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}.dmb-tels a.twa{background:#1DA851;border-color:#1DA851;color:#fff}.dmb-tels a.twa small{font:600 11.5px/1 var(--sans);opacity:.9}@media(max-width:420px){.dmb-tels{gap:4px;flex-wrap:nowrap;padding-inline:8px}.dmb-tels a{font-size:11.5px;letter-spacing:-.2px;padding:4px 7px;gap:3px}.dmb-tels svg{width:13px;height:13px}.dmb-tels a.twa small{display:none}}.dmb-launch.inl{position:relative!important;right:auto!important;left:auto!important;bottom:auto!important;top:auto!important;margin:22px auto 4px;animation:none!important;z-index:2}.dmb-launch.inl:before,.dmb-launch.inl:after{animation-play-state:running}.dmb-mic{flex:none;width:48px;height:48px;border-radius:50%;border:1.5px solid rgba(200,164,100,.7);background:transparent;color:#E9D3A1;display:flex;align-items:center;justify-content:center;cursor:pointer}.dmb-mic:hover{background:rgba(200,164,100,.14)}.dmb-mic.rec{background:#B3261E;border-color:#B3261E;color:#fff;animation:dmbMic 1.1s infinite}@keyframes dmbMic{0%{box-shadow:0 0 0 0 rgba(179,38,30,.55)}100%{box-shadow:0 0 0 14px rgba(179,38,30,0)}}.dmb-cap{max-width:560px;margin:12px auto 0;padding:0 18px;text-align:center;color:#CFC6B4;font:500 16px/1.85 Cairo,Tajawal,sans-serif;cursor:pointer}.dmb-cap b{color:#F1DFB5;font-weight:700}.dmb-cap em{display:block;margin-top:4px;font-style:normal;font-weight:700;color:#D9B979}.dmb-cap em:before{content:"⬆ "}@media(max-width:560px){.dmb-cap{font-size:15px;padding:0 6px}}.dmb-launch.dmb-fl{animation:none!important;position:fixed!important;top:calc(12px + env(safe-area-inset-top,0px))!important;right:12px!important;bottom:auto!important;left:auto!important;margin:0!important;z-index:31;transform-origin:top right;transform:scale(.86) translateY(-14px);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}.dmb-launch.dmb-fl.on{opacity:1;transform:scale(.86);pointer-events:auto}.dmb-launch.dmb-fl.rd{top:calc(78px + env(safe-area-inset-top,0px))!important}html.dmb-open .dmb-launch.dmb-fl{display:none}@media(max-width:560px){.dmb-launch.dmb-fl{transform:scale(.78) translateY(-14px)}.dmb-launch.dmb-fl.on{transform:scale(.78)}.dmb-launch.dmb-fl.rd{top:calc(70px + env(safe-area-inset-top,0px))!important}}html.dmb-pad body{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}@media(max-width:560px){.dmb-launch.inl{margin-top:18px}}.dmb-hd .dmb-x{display:none!important}.dmb-nav{display:flex;align-items:center;gap:8px;padding:8px var(--gut,14px);background:#0B1324;border-bottom:1px solid rgba(200,164,100,.18)}.dmb-nav button,.dmb-nav a{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:20px;border:1px solid rgba(200,164,100,.45);background:transparent;color:#F1DFB5;font:600 15px/1 var(--sans);cursor:pointer;text-decoration:none;white-space:nowrap}.dmb-nav button:hover,.dmb-nav a:hover{background:rgba(200,164,100,.14)}.dmb-nav button:disabled{opacity:.35;cursor:default}.dmb-nav .dmb-tel{margin-inline-start:auto;background:linear-gradient(180deg,#E9D3A1,#C8A464);color:#1A1406;border-color:transparent;font-weight:700;font-variant-numeric:tabular-nums}.dmb-cr{padding:2px var(--gut,14px) calc(8px + env(safe-area-inset-bottom,0px));text-align:center;color:#9C8E70;font:500 12.5px/1.6 var(--sans)}.dmb-cr b{color:#E9D3A1;font-weight:800;font-size:1.3em}@media(max-width:420px){.dmb-nav{gap:6px}.dmb-nav button,.dmb-nav a{height:34px;padding:0 10px;font-size:14px}.dmb-cr{font-size:11.5px}}.dmb-ret{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:125;display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:30px;border:1px solid rgba(200,164,100,.6);background:rgba(10,17,32,.94);color:#F1DFB5;font:700 15px/1 Cairo,Tajawal,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.45);cursor:pointer;direction:rtl}.dmb-ret img{width:26px;height:26px}.dmb-log,.dmb-chips{--serif:"Cairo","Tajawal",sans-serif}.dmb-panel{font-size:18px}.dmb-b{line-height:1.8}.dmb-h{font-size:23px!important;line-height:1.45!important}.dmb-t{font-size:16px}.dmb-t th{font-size:15px}.dmb-t tr.tot td.n{font-size:17.5px}.dmb-note{font-size:15px}.dmb-btn{font-size:15.5px}.dmb-chips button{font-size:15.5px}.dmb-in input{font-size:17.5px}.dmb-in button{font-size:16.5px}.dmb-sec>b{font-size:17.5px}.dmb-sec p{font-size:15.5px}.dmb-law summary{font-size:16px}.dmb-law p{font-size:15px}.dmb-cols{font-size:15.5px}.dmb-close{font-size:16.5px}.dmb-cta{font-size:16px}.dmb-sg>b{font-size:17px}.dmb-step{font-size:13px}.dmb-tag{font-size:12.5px}.dmb-qc{font-size:16px}.dmb-qc .nm small{font-size:13.5px}.dmb-qq input{font-size:17px}.dmb-qq .ut{font-size:14px}.dmb-qs{font-size:15px}.dmb-qs b{font-size:17px}.dmb-qb .dmb-btn{font-size:16.5px}.dmb-qk .pick{font-size:16.5px}.dmb-qk .pick small{font-size:13.5px}.dmb-qk details{font-size:15px}.dmb-qk summary{font-size:14px}.dmb-form input{font-size:18px}.dmb-form .dmb-hint{font-size:14px}.dmb-u{font-size:18px}.dmb-t small{font-size:14px}@media(max-width:560px){.dmb-chips{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;justify-content:flex-start!important;padding-bottom:10px!important}.dmb-chips::-webkit-scrollbar{display:none}.dmb-chips button{flex:0 0 auto;white-space:nowrap}}.dmb-step{display:table;margin:0 0 6px;padding:1px 10px;border-radius:20px;background:linear-gradient(180deg,#F4E6C4,#E9D3A1);color:#5A4210;font:700 11.5px/1.7 var(--sans)}.dmb-close{margin-top:10px;padding-top:9px;border-top:1px dashed var(--line);color:#2A3350;font-size:13.5px}.dmb-close b{color:var(--wine)}.dmb-panel.dmb-kb .dmb-nav,.dmb-panel.dmb-kb .dmb-tels,.dmb-panel.dmb-kb .dmb-cr{display:none!important}.dmb-panel.dmb-kb .dmb-hd{padding-top:6px!important;padding-bottom:6px!important}.dmb-panel.dmb-kb .dmb-hd img{max-height:32px}.dmb-panel.dmb-kb .dmb-chips{padding-top:4px!important;padding-bottom:4px!important}.dmb-launch{background:linear-gradient(180deg,#F6E3B4 0%,#D9B66F 55%,#B8904A 100%)!important;box-shadow:0 0 0 2px #FFF3D6,0 0 0 7px rgba(200,164,100,.35),0 18px 44px rgba(0,0,0,.55),0 0 80px rgba(233,211,161,.6)!important}.dmb-launch .dmb-lt .en{background:none!important;-webkit-text-fill-color:#0A1120!important;color:#0A1120!important}.dmb-launch .dmb-lt .ar{color:#0A1120!important}.dmb-launch .dmb-lt .tg{color:#2A1C05!important;opacity:1!important}.dmb-launch.inl{transform:scale(1.15);transform-origin:center}.dmb-launch.dmb-fl{transform:scale(1) translateY(-14px)}.dmb-launch.dmb-fl.on{transform:scale(1)}@media(max-width:560px){.dmb-launch.dmb-fl{transform:scale(.9) translateY(-14px)}.dmb-launch.dmb-fl.on{transform:scale(.9)}.dmb-launch.inl{margin-top:26px}}.dmb-sent{margin:8px 0 2px;padding:6px 10px;border-radius:10px;background:#E8F5EC;color:#1B6B3A;font-weight:700;font-size:15px}'; document.head.appendChild(st); }
+  { const st = document.createElement('style'); st.textContent = '.dmb-qrb{margin-inline-start:auto}.dmb-qrh{display:inline-flex;align-items:center;gap:8px;margin:14px auto 0;padding:10px 20px;border-radius:26px;border:1px solid rgba(200,164,100,.6);background:rgba(10,17,32,.6);color:#E9D3A1;font:700 15px/1.2 Cairo,Tajawal,sans-serif;cursor:pointer}.dmb-qrh:hover{background:rgba(200,164,100,.14)}@media(max-width:700px){.dmb-qrb,.dmb-qrh{display:none!important}}.dmb-qrm{position:fixed;inset:0;z-index:140;background:rgba(5,9,18,.82);display:flex;align-items:center;justify-content:center;padding:18px}.dmb-qrm[hidden]{display:none}.dmb-qrc{position:relative;max-height:94vh;display:flex;flex-direction:column;align-items:center;gap:10px}.dmb-qrc img{max-height:78vh;width:auto;max-width:92vw;border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.6)}.dmb-qrt{margin:0;text-align:center;color:#F1DFB5;font:700 22px/1.5 Cairo,Tajawal,sans-serif}.dmb-qrt small{font-weight:500;font-size:15px;color:#CFC6B4}.dmb-qrx{position:absolute;top:-6px;left:-6px;width:42px;height:42px;border-radius:50%;border:1px solid rgba(200,164,100,.6);background:#0A1120;color:#E9D3A1;font-size:18px;cursor:pointer}.dmb-tels{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 8px;padding:7px var(--gut,14px);background:#0B1324;border-bottom:1px solid rgba(200,164,100,.18)}.dmb-tels a{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:18px;border:1px solid rgba(200,164,100,.4);color:#F1DFB5;text-decoration:none;font:700 14px/1.2 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}.dmb-tels a.twa{background:#1DA851;border-color:#1DA851;color:#fff}.dmb-tels a.twa small{font:600 11.5px/1 var(--sans);opacity:.9}@media(max-width:420px){.dmb-tels{gap:4px;flex-wrap:nowrap;padding-inline:8px}.dmb-tels a{font-size:11.5px;letter-spacing:-.2px;padding:4px 7px;gap:3px}.dmb-tels svg{width:13px;height:13px}.dmb-tels a.twa small{display:none}}.dmb-launch.inl{position:relative!important;right:auto!important;left:auto!important;bottom:auto!important;top:auto!important;margin:22px auto 4px;animation:none!important;z-index:2}.dmb-launch.inl:before,.dmb-launch.inl:after{animation-play-state:running}.dmb-mic{flex:none;width:48px;height:48px;border-radius:50%;border:1.5px solid rgba(200,164,100,.7);background:transparent;color:#E9D3A1;display:flex;align-items:center;justify-content:center;cursor:pointer}.dmb-mic:hover{background:rgba(200,164,100,.14)}.dmb-mic.rec{background:#B3261E;border-color:#B3261E;color:#fff;animation:dmbMic 1.1s infinite}@keyframes dmbMic{0%{box-shadow:0 0 0 0 rgba(179,38,30,.55)}100%{box-shadow:0 0 0 14px rgba(179,38,30,0)}}.dmb-cap{max-width:560px;margin:12px auto 0;padding:0 18px;text-align:center;color:#CFC6B4;font:500 16px/1.85 Cairo,Tajawal,sans-serif;cursor:pointer}.dmb-cap b{color:#F1DFB5;font-weight:700}.dmb-cap em{display:block;margin-top:4px;font-style:normal;font-weight:700;color:#D9B979}.dmb-cap em:before{content:"⬆ "}@media(max-width:560px){.dmb-cap{font-size:15px;padding:0 6px}}.dmb-launch.dmb-fl{animation:none!important;position:fixed!important;top:calc(12px + env(safe-area-inset-top,0px))!important;right:12px!important;bottom:auto!important;left:auto!important;margin:0!important;z-index:31;transform-origin:top right;transform:scale(.86) translateY(-14px);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}.dmb-launch.dmb-fl.on{opacity:1;transform:scale(.86);pointer-events:auto}.dmb-launch.dmb-fl.rd{top:calc(78px + env(safe-area-inset-top,0px))!important}html.dmb-open .dmb-launch.dmb-fl{display:none}@media(max-width:560px){.dmb-launch.dmb-fl{transform:scale(.78) translateY(-14px)}.dmb-launch.dmb-fl.on{transform:scale(.78)}.dmb-launch.dmb-fl.rd{top:calc(70px + env(safe-area-inset-top,0px))!important}}html.dmb-pad body{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}@media(max-width:560px){.dmb-launch.inl{margin-top:18px}}.dmb-hd .dmb-x{display:none!important}.dmb-nav{display:flex;align-items:center;gap:8px;padding:8px var(--gut,14px);background:#0B1324;border-bottom:1px solid rgba(200,164,100,.18)}.dmb-nav button,.dmb-nav a{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:20px;border:1px solid rgba(200,164,100,.45);background:transparent;color:#F1DFB5;font:600 15px/1 var(--sans);cursor:pointer;text-decoration:none;white-space:nowrap}.dmb-nav button:hover,.dmb-nav a:hover{background:rgba(200,164,100,.14)}.dmb-nav button:disabled{opacity:.35;cursor:default}.dmb-nav .dmb-tel{margin-inline-start:auto;background:linear-gradient(180deg,#E9D3A1,#C8A464);color:#1A1406;border-color:transparent;font-weight:700;font-variant-numeric:tabular-nums}.dmb-cr{padding:2px var(--gut,14px) calc(8px + env(safe-area-inset-bottom,0px));text-align:center;color:#9C8E70;font:500 12.5px/1.6 var(--sans)}.dmb-cr b{color:#E9D3A1;font-weight:800;font-size:1.3em}@media(max-width:420px){.dmb-nav{gap:6px}.dmb-nav button,.dmb-nav a{height:34px;padding:0 10px;font-size:14px}.dmb-cr{font-size:11.5px}}.dmb-ret{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:125;display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:30px;border:1px solid rgba(200,164,100,.6);background:rgba(10,17,32,.94);color:#F1DFB5;font:700 15px/1 Cairo,Tajawal,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.45);cursor:pointer;direction:rtl}.dmb-ret img{width:26px;height:26px}.dmb-log,.dmb-chips{--serif:"Cairo","Tajawal",sans-serif}.dmb-panel{font-size:18px}.dmb-b{line-height:1.8}.dmb-h{font-size:23px!important;line-height:1.45!important}.dmb-t{font-size:16px}.dmb-t th{font-size:15px}.dmb-t tr.tot td.n{font-size:17.5px}.dmb-note{font-size:15px}.dmb-btn{font-size:15.5px}.dmb-chips button{font-size:15.5px}.dmb-in input{font-size:17.5px}.dmb-in button{font-size:16.5px}.dmb-sec>b{font-size:17.5px}.dmb-sec p{font-size:15.5px}.dmb-law summary{font-size:16px}.dmb-law p{font-size:15px}.dmb-cols{font-size:15.5px}.dmb-close{font-size:16.5px}.dmb-cta{font-size:16px}.dmb-sg>b{font-size:17px}.dmb-step{font-size:13px}.dmb-tag{font-size:12.5px}.dmb-qc{font-size:16px}.dmb-qc .nm small{font-size:13.5px}.dmb-qq input{font-size:17px}.dmb-qq .ut{font-size:14px}.dmb-qs{font-size:15px}.dmb-qs b{font-size:17px}.dmb-qb .dmb-btn{font-size:16.5px}.dmb-qk .pick{font-size:16.5px}.dmb-qk .pick small{font-size:13.5px}.dmb-qk details{font-size:15px}.dmb-qk summary{font-size:14px}.dmb-form input{font-size:18px}.dmb-form .dmb-hint{font-size:14px}.dmb-u{font-size:18px}.dmb-t small{font-size:14px}@media(max-width:560px){.dmb-chips{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;justify-content:flex-start!important;padding-bottom:10px!important}.dmb-chips::-webkit-scrollbar{display:none}.dmb-chips button{flex:0 0 auto;white-space:nowrap}}.dmb-step{display:table;margin:0 0 6px;padding:1px 10px;border-radius:20px;background:linear-gradient(180deg,#F4E6C4,#E9D3A1);color:#5A4210;font:700 11.5px/1.7 var(--sans)}.dmb-close{margin-top:10px;padding-top:9px;border-top:1px dashed var(--line);color:#2A3350;font-size:13.5px}.dmb-close b{color:var(--wine)}.dmb-panel.dmb-kb .dmb-nav,.dmb-panel.dmb-kb .dmb-tels,.dmb-panel.dmb-kb .dmb-cr{display:none!important}.dmb-panel.dmb-kb .dmb-hd{padding-top:6px!important;padding-bottom:6px!important}.dmb-panel.dmb-kb .dmb-hd img{max-height:32px}.dmb-panel.dmb-kb .dmb-chips{padding-top:4px!important;padding-bottom:4px!important}.dmb-launch{background:linear-gradient(180deg,#F6E3B4 0%,#D9B66F 55%,#B8904A 100%)!important;box-shadow:0 0 0 2px #FFF3D6,0 0 0 7px rgba(200,164,100,.35),0 18px 44px rgba(0,0,0,.55),0 0 80px rgba(233,211,161,.6)!important}.dmb-launch .dmb-lt .en{background:none!important;-webkit-text-fill-color:#0A1120!important;color:#0A1120!important}.dmb-launch .dmb-lt .ar{color:#0A1120!important}.dmb-launch .dmb-lt .tg{color:#2A1C05!important;opacity:1!important}.dmb-launch.inl{transform:scale(1.15);transform-origin:center}.dmb-launch.dmb-fl{transform:scale(1) translateY(-14px)}.dmb-launch.dmb-fl.on{transform:scale(1)}@media(max-width:560px){.dmb-launch.dmb-fl{transform:scale(.9) translateY(-14px)}.dmb-launch.dmb-fl.on{transform:scale(.9)}.dmb-launch.inl{margin-top:26px}}.dmb-log,.dmb-chips{zoom:var(--dmb-z,1)}.dmb-nav .dmb-zm{min-width:40px;padding:0 10px!important;justify-content:center;font:800 16px/1 Cairo,Tajawal,sans-serif!important}.dmb-calc{display:grid;gap:10px;margin-top:6px}.dmb-calc label{font-size:15.5px}.dmb-calc input[type=range]{width:100%;accent-color:#8C6A2E;height:28px}.dmb-calc .seg{display:flex;gap:6px}.dmb-calc .seg button{flex:1;padding:8px;border-radius:10px;border:1px solid #C8A464;background:#fff;color:#1B2336;font:600 14.5px Cairo,Tajawal,sans-serif;cursor:pointer}.dmb-calc .seg button.on{background:#0A1120;color:#E9D3A1;border-color:#0A1120}.dmb-calc select{padding:9px;border-radius:10px;border:1px solid #C8A464;font:600 15px Cairo,Tajawal,sans-serif;background:#fff;color:#1B2336}.dmb-calc .out{padding:10px 12px;border-radius:12px;background:#F5EEDD;text-align:center;font-size:16px}.dmb-calc .out b{font-size:22px;color:#5E1B2C}.dmb-sig{text-align:center;direction:ltr;padding:0 var(--gut,14px) calc(10px + env(safe-area-inset-bottom,0px));line-height:1.25}.dmb-sig b{display:block;font:700 22px/1.2 "Cormorant Garamond",Cormorant,Didot,Georgia,serif;letter-spacing:.16em;background:linear-gradient(180deg,#FFF3D6 0%,#EBCB8A 60%,#CFA55E 100%);-webkit-background-clip:text;background-clip:text;color:transparent}.dmb-sig span{display:block;margin-top:2px;font:600 15px/1.35 Cairo,Tajawal,sans-serif;color:#E9D3A1;letter-spacing:.02em}.dmb-panel .dmb-cr{padding-bottom:2px!important}@media(max-width:420px){.dmb-sig b{font-size:19px}.dmb-sig span{font-size:13px}}.dmb-panel.dmb-kb .dmb-sig{display:none!important}.dmb-sent{margin:8px 0 2px;padding:6px 10px;border-radius:10px;background:#E8F5EC;color:#1B6B3A;font-weight:700;font-size:15px}'; document.head.appendChild(st); }
 
   /* ---------------- sales consultant layer ---------------- */
   const SCSS = `
@@ -3538,6 +3598,7 @@ ${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانت
     bot(`<p class="dmb-h">${tr('عرض السعر المبدئي', 'Your preliminary quote')}</p><p>${sum}</p><table class="dmb-t">${rows.join('')}</table>${notes.map(x => `<p class="dmb-note">${x}</p>`).join('')}${qMissing(q)}<p class="dmb-note">${tr('<b>ده عرض سعر تقديري</b> وفق الأسعار المنشورة بالمنيو، لحين التواصل مع فريق الحفلات لتأكيد التوافر والأسعار النهائية وتفاصيل التعاقد.', '<b>This is an estimated quote</b> based on the published menu prices, pending contact with our events team to confirm availability, final prices and contract details.')}</p>${src(QDOC(q))}`,
       [waAct(msg, tr('إرسال عرض السعر لفريق الحفلات عبر واتساب', 'Send this quote to our team on WhatsApp')), { t: tr('تجهيز طلب الحجز', 'Booking request'), cls: 'pri', fn: () => { S.event = q.ev; S.hall = q.hall; S.count = q.n; startBook(); } }]);
     try { LEAD.lastQ = { sum: sum.replace(/<[^>]+>/g, ''), total, msg }; saveLead(); } catch (e) { }
+    try { S.hall = q.hall || S.hall; S.count = q.n || S.count; S.day = q.day || S.day; setLast('quote'); } catch (e) { }
     logLead('عرض سعر', { total, details: msg });
     S.event = q.ev; if (q.hall) S.hall = q.hall; if (q.n) S.count = q.n; if (q.day) S.day = q.day;
     const keep = { ev: q.ev, hall: q.hall, n: q.n, day: q.day, pk: q.pk, exN: q.exN, sel: q.sel, groups: q.groups };
@@ -3596,12 +3657,13 @@ ${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانت
   const LOG_URL = window.DMB_LOG_URL || 'https://script.google.com/macros/s/AKfycbyLhYKrvKr6kzHtjMg-x6bkk-dHDMRFWwKXLxffVFIPd6FyReQCvHzOFcJXTCVnv0qCuA/exec';
   let LASTRAW = '';
   // ---- every client (and each step he reaches) is recorded in the Google Sheet «العملاء» ----
+  function refNo() { if (!LEAD.id) { LEAD.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6); saveLead(); } let h = 0; for (const c of LEAD.id) h = (h * 31 + c.charCodeAt(0)) % 9000; return 'MR-' + (1000 + h); }
   function logLead(stage, extra) {
     if (!LOG_URL) return null;
     try {
-      if (!LEAD.id) { LEAD.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6); saveLead(); }
+      refNo();
       const dt = LEAD.date ? (() => { const [y, m, d] = LEAD.date.split('-').map(Number); return dateTxt(new Date(y, m - 1, d)); })() : (LEAD.month && LEAD.month !== '-' ? monthTxt(LEAD.month) : '');
-      const body = JSON.stringify(Object.assign({ kind: 'lead', stage, id: LEAD.id, name: LEAD.name || '', job: LEAD.job && LEAD.job !== '-' ? LEAD.job : '', phone: LEAD.phone && LEAD.phone !== '-' ? LEAD.phone : '', count: LEAD.count || S.count || '', date: dt, hall: HALLNAME[LEAD.hall] || HALLNAME[S.hall] || '', event: EVNAME[LEAD.event] || EVNAME[S.event] || '', budget: LEAD.budget && LEAD.budget !== '-' ? LEAD.budget : '', pkg: pkgName(), prio: LEAD.done ? leadPrio() : '', lang: LANG, page: location.href.split('#')[0] }, extra || {}));
+      const body = JSON.stringify(Object.assign({ kind: 'lead', stage, id: LEAD.id, name: LEAD.name || '', job: LEAD.job && LEAD.job !== '-' ? LEAD.job : '', phone: LEAD.phone && LEAD.phone !== '-' ? LEAD.phone : '', count: LEAD.count || S.count || '', date: dt, hall: HALLNAME[LEAD.hall] || HALLNAME[S.hall] || '', event: EVNAME[LEAD.event] || EVNAME[S.event] || '', budget: LEAD.budget && LEAD.budget !== '-' ? LEAD.budget : '', pkg: pkgName(), ref: refNo(), src: (DLSRC && !LEAD.src2 ? (LEAD.src2 = DLSRC) : LEAD.src2) || '', prio: LEAD.done ? leadPrio() : '', lang: LANG, page: location.href.split('#')[0] }, extra || {}));
       return fetch(LOG_URL, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body }).then(() => true, () => false);
     } catch (e) { return Promise.resolve(false); }
   }
@@ -4163,6 +4225,7 @@ ${row('Photo session', 'Up to 6 people', money(5000), 'Session fee')}</table><p 
       if (B.count > 0) L.push(tr('العدد المتوقع: ', 'Expected guests: ') + AD(B.count) + tr(' فرد', ''));
       L.push('', tr('(تم التجهيز عبر مساعد دار المراسم الذكي)', '(via the Dar El-Marasem AI assistant)'));
       const msg = L.join('\n');
+      L.splice(1, 0, tr('رقم الطلب: ', 'Ref: ') + refNo());
       const SENT = logLead('طلب حجز', { details: msg, name: LEAD.name || B.name, count: B.count > 0 ? B.count : (LEAD.count || '') });
       const EL = bot(`<p class="dmb-h">${tr('ملخص طلبك', 'Your request')}</p><p style="white-space:pre-line">${esc(L.slice(2, -2).join('\n'))}</p>${tr('<p>أول ما تضغط على الزرار، الطلب هيوصل لفريق الحفلات على واتساب، وهيكلموك يأكدوا التوافر والتفاصيل.</p><p class="dmb-note">الحجز لا يُثبَّت إلا بسداد مقدم الحجز وتوقيع استمارة التعاقد.</p>', '<p>Tap the button to send your request to our events team on WhatsApp; they will contact you to confirm availability and details.</p><p class="dmb-note">A booking is only secured once the deposit is paid and the booking form is signed.</p>')}`, [waAct(msg, tr('إرسال الطلب عبر واتساب', 'Send the request on WhatsApp'))]);
       markSent(SENT, EL, 'طلبك');
@@ -4215,13 +4278,25 @@ ${row('Photo session', 'Up to 6 people', money(5000), 'Session fee')}</table><p 
         return;
       }
       const allH = tr('كل القاعات', 'All halls');
-      const msg = [tr('دار المراسم لضباط الشرطة – طلب موعد معاينة', 'Dar El-Marasem – viewing appointment request'), '', tr('الاسم: ', 'Name: ') + V.name, tr('اليوم: ', 'Day: ') + dateTxt(V.date), tr('الموعد: ', 'Time: ') + V.time, tr('القاعة: ', 'Hall: ') + (V.hall === 'all' ? allH : HALLNAME[V.hall] || allH), '', tr('(تم التجهيز عبر مساعد دار المراسم الذكي)', '(via the Dar El-Marasem AI assistant)')].join('\n');
+      const msg = [tr('دار المراسم لضباط الشرطة – طلب موعد معاينة', 'Dar El-Marasem – viewing appointment request'), tr('رقم الطلب: ', 'Ref: ') + refNo(), '', tr('الاسم: ', 'Name: ') + V.name, tr('اليوم: ', 'Day: ') + dateTxt(V.date), tr('الموعد: ', 'Time: ') + V.time, tr('القاعة: ', 'Hall: ') + (V.hall === 'all' ? allH : HALLNAME[V.hall] || allH), '', tr('(تم التجهيز عبر مساعد دار المراسم الذكي)', '(via the Dar El-Marasem AI assistant)')].join('\n');
       const SENT = logLead('طلب معاينة', { details: msg.join ? msg.join('\n') : String(msg), name: LEAD.name || V.name, visit: dateTxt(V.date) + ' – ' + V.time });
       const EL = bot(`<p class="dmb-h">${tr('موعد المعاينة', 'Viewing appointment')}</p><p>${esc(V.name)} – ${dateTxt(V.date)} – ${V.time} – ${V.hall === 'all' ? allH : HALLNAME[V.hall]}</p><p>${tr('اضغط على الزرار والميعاد هيوصل لفريق الحفلات على واتساب عشان يأكدوه.', 'Tap the button to send the appointment to our events team on WhatsApp for confirmation.')}</p><p><b>${tr('العنوان:', 'Address:')}</b> ${tr(ADDRESS, EN_ADDRESS)}</p>`, [waAct(msg, tr('تأكيد الموعد عبر واتساب', 'Confirm on WhatsApp')), { t: tr('الموقع على الخريطة', 'Location on the map'), href: MAP }]);
       markSent(SENT, EL, 'طلبك');
+      try { addIcsBtn(EL, V); } catch (e) { }
       chips(MAIN());
     };
     next();
+  }
+  // «أضف للتقويم»: the viewing goes into the client's phone calendar with reminders (a day before and 2 hours before)
+  function addIcsBtn(el, V) {
+    const hr = HRS_AR.indexOf(V.time) >= 0 ? HRS_AR.indexOf(V.time) + 10 : HRS_EN.indexOf(V.time) >= 0 ? HRS_EN.indexOf(V.time) + 10 : 18;
+    const d = V.date, p2 = x => String(x).padStart(2, '0');
+    const st = `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}T${p2(hr)}0000`, en = `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}T${p2(hr + 1)}0000`;
+    const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Dar El-Marasem//AI//AR', 'BEGIN:VEVENT', 'UID:' + refNo() + '-' + st + '@darelmarasem', 'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z', 'DTSTART;TZID=Africa/Cairo:' + st, 'DTEND;TZID=Africa/Cairo:' + en, 'SUMMARY:معاينة القاعة – دار المراسم لضباط الشرطة', 'LOCATION:' + ADDRESS.replace(/<[^>]+>/g, ''), 'DESCRIPTION:رقم الطلب ' + refNo() + ' – للتواصل 01111117958', 'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY', 'DESCRIPTION:بكرة معاينة القاعة في دار المراسم', 'END:VALARM', 'BEGIN:VALARM', 'TRIGGER:-PT2H', 'ACTION:DISPLAY', 'DESCRIPTION:بعد ساعتين معاينة القاعة في دار المراسم', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+    const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+    const a = document.createElement('a'); a.className = 'dmb-btn'; a.href = url; a.download = 'معاينة-دار-المراسم.ics'; a.textContent = tr('📅 أضف الميعاد للتقويم', '📅 Add to calendar');
+    let w = el.querySelector('.dmb-acts'); if (!w) { w = document.createElement('div'); w.className = 'dmb-acts'; el.appendChild(w); }
+    w.appendChild(a);
   }
 
   // expose a tiny API for testing
