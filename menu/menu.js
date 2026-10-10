@@ -21,7 +21,7 @@
   const T = s => AR(esc(s)).replace(/(\d|[٠-٩]),(?=[٠-٩]{3})/g, '$1٬');
   const money = n => AR(Number(n).toLocaleString('en-US')).replace(/,/g, '٬') + ' ج';
   const PH = ['01111117958', '01010107958', '01222227958'];
-  const CREDIT = 'إعداد وتصميم: <b>عميد / محمد المغازي</b> – مدير دار المراسم لضباط الشرطة';
+  const CREDIT = 'صُمّم بمعرفة <b>عميد / محمد المغازي</b> – مدير الدار، ليكون دليلكم في التخطيط لمناسبتكم';
 
   const sec = (title, body, cls) => `<section class="mh-s${cls ? ' ' + cls : ''}"><h3>${title}</h3>${body}</section>`;
   const items = o => {
