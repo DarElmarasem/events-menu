@@ -95,11 +95,31 @@
   const depositOf = hall => { const r = K.deposit.find(x => x[0] === (HN[hall] || '')) || K.deposit.find(x => x[0].includes((HN[hall] || '###').replace('قاعة ', ''))); return r ? { dep: r[1], ins: r[2] } : { dep: 0, ins: 0 }; };
 
   /* ---------- state ---------- */
-  const Q = { ev: 'wedding', n: 200, date: null, day: 'wd', hall: null, pk: null, adds: {}, name: '', phone: '' };
+  const Q = { no: '', ev: 'wedding', n: 200, date: null, day: 'wd', hall: null, pk: null, adds: {}, name: '', phone: '', prio: '', bud: '', src: '', notes: '' };
+  let OPTS = [];
   let ME = null;
 
   /* ---------- login ---------- */
-  async function sha(s) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+  // SHA-256: built-in when the page is on https, and a small fallback for an internal server on plain http
+  function sha256js(str) {
+    const K2 = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+    const b = [...new TextEncoder().encode(str)], l = b.length * 8; b.push(0x80); while (b.length % 64 !== 56) b.push(0);
+    for (let i = 7; i >= 0; i--) b.push(i > 3 ? 0 : (l >>> (i * 8)) & 255);
+    let H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+    const r = (x, n) => (x >>> n) | (x << (32 - n));
+    for (let o = 0; o < b.length; o += 64) {
+      const w = new Array(64);
+      for (let i = 0; i < 16; i++) w[i] = (b[o + 4 * i] << 24) | (b[o + 4 * i + 1] << 16) | (b[o + 4 * i + 2] << 8) | b[o + 4 * i + 3];
+      for (let i = 16; i < 64; i++) { const s0 = r(w[i - 15], 7) ^ r(w[i - 15], 18) ^ (w[i - 15] >>> 3), s1 = r(w[i - 2], 17) ^ r(w[i - 2], 19) ^ (w[i - 2] >>> 10); w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0; }
+      let [a, bb, c, d, e, f, g, h] = H;
+      for (let i = 0; i < 64; i++) { const t1 = (h + (r(e, 6) ^ r(e, 11) ^ r(e, 25)) + ((e & f) ^ (~e & g)) + K2[i] + w[i]) | 0, t2 = ((r(a, 2) ^ r(a, 13) ^ r(a, 22)) + ((a & bb) ^ (a & c) ^ (bb & c))) | 0; h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = bb; bb = a; a = (t1 + t2) | 0; }
+      H = H.map((x, i) => (x + [a, bb, c, d, e, f, g, h][i]) | 0);
+    }
+    return H.map(x => (x >>> 0).toString(16).padStart(8, '0')).join('');
+  }
+  async function sha(s) { try { if (window.crypto && crypto.subtle) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); } } catch (e) { } return sha256js(s); }
+  // copy that also works on plain http
+  function copyText(t) { if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t); return new Promise(res => { const a = document.createElement('textarea'); a.value = t; a.style.position = 'fixed'; a.style.opacity = '0'; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); } catch (e) { } a.remove(); res(); }); }
   $('#lgUser').innerHTML = USERS.map(u => `<option value="${u.id}">${u.name} – ${u.role}</option>`).join('');
   function enter(u) { ME = u; $('#login').hidden = true; $('#app').hidden = false; $('#meName').textContent = u.name; $('#meRole').textContent = u.role; try { sessionStorage.setItem('dm-staff', u.id); } catch (e) { } renderAll(); }
   $('.lg').addEventListener('submit', async e => {
@@ -116,7 +136,7 @@
   $$('#nav button').forEach(b => b.addEventListener('click', () => {
     $$('#nav button').forEach(x => x.classList.toggle('on', x === b));
     $$('main section').forEach(s => { const on = s.id === 't-' + b.dataset.t; s.hidden = !on; s.classList.toggle('on', on); });
-    ({ quote: renderQuote, rec: renderRec, obj: renderObj, plan: renderPlan, rules: renderRules, call: renderCall }[b.dataset.t] || (() => { }))();
+    ({ home: renderHome, quote: renderQuote, rec: renderRec, budget: renderBudget, obj: renderObj, plan: renderPlan, msgs: renderMsgs, hist: renderHist, rules: renderRules, call: renderCall }[b.dataset.t] || (() => { }))();
     window.scrollTo(0, 0);
   }));
   const goTab = t => $(`#nav button[data-t="${t}"]`).click();
@@ -130,6 +150,7 @@
   $('#qDate').addEventListener('change', e => { const v = e.target.value; if (v) { const [y, m, d] = v.split('-').map(Number); Q.date = new Date(y, m - 1, d); const w = Q.date.getDay(); Q.day = (w === 4 || w === 5 || w === 6) ? 'we' : 'wd'; } else Q.date = null; renderQuote(); });
   $('#qName').addEventListener('input', e => { Q.name = e.target.value.trim(); renderOut(); });
   $('#qPhone').addEventListener('input', e => { Q.phone = e.target.value.trim(); renderOut(); });
+  [['#qPrio', 'prio'], ['#qBud', 'bud'], ['#qSrc', 'src'], ['#qNotes', 'notes']].forEach(([id, k]) => $(id).addEventListener('input', e => { Q[k] = e.target.value; }));
 
   function computeQuote() {
     if (!Q.hall) return null;
@@ -158,16 +179,18 @@
     $$('#qHalls .hall').forEach(b => b.onclick = () => { Q.hall = b.dataset.h; Q.pk = null; Q.adds = {}; renderQuote(); });
     $('#qHallNote').innerHTML = (Q.ev === 'wedding' || Q.ev === 'engagement') && okH.length === 2 ? `<div class="tip">لعدد ${AD(Q.n)} فرد فيه قاعتين مناسبين. شوف «ترشيح ومقارنة» عشان تعرض على العميل الفرق بينهم.</div>` : (Q.hall && !(hs.find(h => h.id === Q.hall) || {}).ok ? '<div class="tip">القاعة دي مش مناسبة للعدد ده.</div>' : '');
     // packages
-    if (!Q.hall) { $('#qPk').innerHTML = '<div class="empty">اختار القاعة الأول.</div>'; $('#qAdds').innerHTML = '<div class="empty">اختار القاعة والباكدج الأول.</div>'; return renderOut(); }
+    if (!Q.hall) { $('#qBundles').innerHTML = ''; $('#qPk').innerHTML = '<div class="empty">اختار القاعة الأول.</div>'; $('#qAdds').innerHTML = '<div class="empty">اختار القاعة والباكدج الأول.</div>'; return renderOut(); }
     const P = packagesFor(Q.ev, Q.hall, Q.n, Q.day);
     if (!Q.pk && P.length === 1) Q.pk = P[0].id;
     const minT = Math.min(...P.map(p => p.total));
-    $('#qPk').innerHTML = P.map(p => `<label class="pkr${p.id === Q.pk ? ' on' : ''}" data-p="${p.id}"><input type="radio" name="pk" ${p.id === Q.pk ? 'checked' : ''}><span class="nm"><b>${ar(p.name)}</b><small>${esc(AD(p.sub || ''))}${p.total === minT && P.length > 1 ? ' · الأوفر' : ''}</small></span><span class="pr">${money(p.total)}<span class="pp">${money(Math.round(p.total / Q.n))} للفرد</span></span></label>`).join('');
-    $$('#qPk .pkr').forEach(l => l.onclick = () => { Q.pk = l.dataset.p; renderQuote(); });
+    $('#qPk').innerHTML = P.map(p => `<label class="pkr${p.id === Q.pk ? ' on' : ''}" data-p="${p.id}"><input type="radio" name="pk" ${p.id === Q.pk ? 'checked' : ''}><span class="nm"><b>${ar(p.name)}</b><small>${esc(AD(p.sub || ''))}${p.total === minT && P.length > 1 ? ' · الأوفر' : ''}</small></span><span class="pr">${money(p.total)}<span class="pp">${money(Math.round(p.total / Q.n))} للفرد</span></span>${p.m || p.c ? `<button type="button" class="see" data-see="${p.id}">الأصناف</button>` : ''}</label>`).join('');
+    $$('#qPk .pkr').forEach(l => l.onclick = e => { if (e.target.closest('.see')) return; Q.pk = l.dataset.p; renderQuote(); });
+    $$('#qPk .see').forEach(b => b.onclick = e => { e.preventDefault(); e.stopPropagation(); const p = P.find(x => x.id === b.dataset.see); showMenu(p); });
     // add-ons
     const sc = scopeFor(Q.ev, Q.hall), groups = {};
     K.addons.forEach((a, i) => { if (a.s !== sc || /^فرد إضافي/.test(a.n)) return; (groups[a.g] = groups[a.g] || []).push(i); });
     $('#qAdds').innerHTML = Object.keys(groups).length ? Object.entries(groups).map(([g, ids]) => { const cnt = ids.filter(i => Q.adds[i]).length; return `<details class="grp"${cnt ? ' open' : ''}><summary>${esc(g)} <em>${cnt ? AD(cnt) + ' مختار' : AD(ids.length) + ' بند'}</em></summary>${ids.map(i => { const a = K.addons[i], pr = priceOf(a), s = Q.adds[i]; return `<div class="ad"><input type="checkbox" id="ad${i}" data-i="${i}"${s ? ' checked' : ''}><label for="ad${i}">${ar(a.n)}</label>${pr.kind === 'opts' && s ? `<select data-o="${i}">${pr.opts.map((o, k) => `<option value="${k}"${(s.opt || 0) === k ? ' selected' : ''}>${ar(o[0])} – ${money(o[1])}</option>`).join('')}</select>` : ''}${s && (pr.kind === 'fixed' || pr.kind === 'from') ? `<input type="number" min="1" value="${s.qty || 1}" data-q="${i}" title="الكمية">` : ''}<span class="p">${pr.label}</span></div>`; }).join('')}</details>`; }).join('') : '<div class="empty">مفيش إضافات مسجلة للمناسبة دي.</div>';
+    renderBundles(sc);
     $$('#qAdds input[type=checkbox]').forEach(c => c.onchange = () => { const i = c.dataset.i; if (c.checked) Q.adds[i] = { qty: 1, opt: 0 }; else delete Q.adds[i]; renderQuote(); });
     $$('#qAdds input[data-q]').forEach(c => c.oninput = () => { Q.adds[c.dataset.q].qty = Math.max(1, +c.value || 1); renderOut(); });
     $$('#qAdds select[data-o]').forEach(c => c.onchange = () => { Q.adds[c.dataset.o].opt = +c.value; renderOut(); });
@@ -207,6 +230,7 @@
 
   function renderOut() {
     const R = computeQuote(), el = $('#qOut');
+    renderSteps(R); renderBar(R); renderOpts();
     if (!R || !R.pk) { el.innerHTML = `<h3>عرض السعر</h3><div class="empty">${!Q.hall ? 'اختار القاعة' : 'اختار الباكدج'} عشان يظهر العرض.</div>`; return; }
     const per = Math.round(R.total / Q.n);
     el.innerHTML = `<h3>عرض السعر ${Q.name ? '– ' + esc(Q.name) : ''}</h3>
@@ -215,12 +239,13 @@
 <div class="kpis"><div class="kpi"><small>للفرد</small><b>${money(per)}</b></div><div class="kpi"><small>مقدم الحجز</small><b>${R.dep ? money(R.dep) : '—'}</b></div><div class="kpi"><small>التأمين (مسترد)</small><b>${R.ins ? money(R.ins) : '—'}</b></div></div>
 ${R.notes.length ? `<div class="tip">${R.notes.map(esc).join('<br>')}</div>` : ''}
 <div class="printhide">${upgradeTip(R)}${saveTips(R)}</div>
-<div class="btns"><button class="btn wa" id="bWa">إرسال للعميل على واتساب</button><button class="btn" id="bCopy">نسخ العرض</button><button class="btn" id="bImg">حفظ صورة</button><button class="btn" id="bPrint">طباعة</button><button class="btn pri" id="bPlan">خطة الدفع</button></div>`;
-    $('#bWa').onclick = () => window.open(waLink(quoteText(R)), '_blank');
-    $('#bCopy').onclick = () => { navigator.clipboard.writeText(quoteText(R)).then(() => toast('اتنسخ العرض ✓')); };
-    $('#bPrint').onclick = () => window.print();
+${whatIfHTML()}
+<div class="btns"><button class="btn" id="bCopy">نسخ العرض</button><button class="btn" id="bImg">حفظ صورة</button><button class="btn" id="bOpt">＋ أضف كاختيار للمقارنة</button><button class="btn" id="bPlan">خطة الدفع</button></div>`;
+    $('#bCopy').onclick = () => { copyText(quoteText(R)).then(() => toast('اتنسخ العرض ✓')); };
     $('#bPlan').onclick = () => goTab('plan');
-    $('#bImg').onclick = () => quoteImg(R);
+    $('#bImg').onclick = () => { saveHist(R, 'img'); quoteImg(R); };
+    $('#bOpt').onclick = () => addOpt(R);
+    bindWhatIf(R);
   }
   function quoteImg(R) {
     const W = 1080, rows = R.lines.length, H = 470 + rows * 50 + 230, c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -372,7 +397,7 @@ ${R.notes.length ? `<div class="tip">${R.notes.map(esc).join('<br>')}</div>` : '
     const o = OBJ.find(x => x[0] === OSEL), r = objScript(OSEL), c = ctxNums();
     $('#oOut').innerHTML = `<div class="card"><h3>«${o[1]}»</h3>${c.total ? `<p class="ctx">محسوب على: ${EVNAME[Q.ev]} · ${c.hall} · ${AD(Q.n)} فرد · ${money(c.total)}</p>` : ''}<div class="say">${r.S.map(p => `<p>${p}</p>`).join('')}</div>${r.ref ? `<p class="ctx">المرجع: ${r.ref}</p>` : ''}${r.tip ? `<div class="tip">${r.tip}</div>` : ''}<div class="btns"><button class="btn" id="oCopy">نسخ الرد</button>${c.total ? '<button class="btn wa" id="oWa">إرسال للعميل على واتساب</button>' : ''}</div></div>`;
     const plain = () => r.S.map(p => p.replace(/<br>/g, '\n').replace(/<[^>]+>/g, '')).join('\n');
-    $('#oCopy').onclick = () => navigator.clipboard.writeText(plain()).then(() => toast('اتنسخ الرد ✓'));
+    $('#oCopy').onclick = () => copyText(plain()).then(() => toast('اتنسخ الرد ✓'));
     if ($('#oWa')) $('#oWa').onclick = () => window.open(waLink(plain()), '_blank');
   }
 
@@ -395,7 +420,7 @@ ${R.notes.length ? `<div class="tip">${R.notes.map(esc).join('<br>')}</div>` : '
     html += `<div class="btns"><button class="btn wa" id="pWa">إرسال الخطة للعميل على واتساب</button><button class="btn" id="pCopy">نسخ</button><button class="btn" id="pPrint">طباعة</button></div>`;
     $('#pOut').innerHTML = html;
     $('#pWa').onclick = () => window.open(waLink(txt()), '_blank');
-    $('#pCopy').onclick = () => navigator.clipboard.writeText(txt()).then(() => toast('اتنسخت الخطة ✓'));
+    $('#pCopy').onclick = () => copyText(txt()).then(() => toast('اتنسخت الخطة ✓'));
     $('#pPrint').onclick = () => window.print();
   }
 
@@ -434,5 +459,217 @@ ${R.notes.length ? `<div class="tip">${R.notes.map(esc).join('<br>')}</div>` : '
     $('#cOut').innerHTML = steps.map(s => `<li><b>${s[0]}</b><q>${s[1]}</q></li>`).join('');
   }
 
-  function renderAll() { renderQuote(); renderRules(); renderCall(); }
+
+  /* =========================================================
+     v2: numbering, history, stats
+     ========================================================= */
+  const HK = () => 'dmst-hist-' + (ME ? ME.id : 'x'), SK = () => 'dmst-stat-' + (ME ? ME.id : 'x');
+  const lsGet = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } };
+  const ymd = d => `${String(d.getFullYear()).slice(2)}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+  function newNo() { const k = 'dmst-seq-' + ymd(new Date()), n = (lsGet(k, 0) || 0) + 1; lsSet(k, n); return `DM-${ymd(new Date())}-${(ME ? ME.id.slice(0, 2).toUpperCase() : 'XX')}${String(n).padStart(2, '0')}`; }
+  function logStat(type, total) { const L = lsGet(SK(), []); L.push({ type, total: total || 0, at: Date.now() }); lsSet(SK(), L.slice(-2000)); }
+  function snap() { return Object.assign({}, Q, { date: Q.date ? Q.date.toISOString() : null, adds: JSON.parse(JSON.stringify(Q.adds)) }); }
+  function loadSnap(x) { Object.assign(Q, x, { date: x.date ? new Date(x.date) : null, adds: x.adds || {} }); fillForm(); }
+  function fillForm() { $('#qEv').value = Q.ev; $('#qN').value = Q.n; $('#qDate').value = Q.date ? `${Q.date.getFullYear()}-${String(Q.date.getMonth() + 1).padStart(2, '0')}-${String(Q.date.getDate()).padStart(2, '0')}` : ''; $('#qName').value = Q.name || ''; $('#qPhone').value = Q.phone || ''; $('#qPrio').value = Q.prio || ''; $('#qBud').value = Q.bud || ''; $('#qSrc').value = Q.src || ''; $('#qNotes').value = Q.notes || ''; }
+  function saveHist(R, why) {
+    R = R || computeQuote(); if (!R || !R.pk) return;
+    if (!Q.no) Q.no = newNo();
+    const H = lsGet(HK(), []), i = H.findIndex(x => x.no === Q.no);
+    const e = { no: Q.no, at: Date.now(), total: R.total, name: Q.name, phone: Q.phone, label: `${EVNAME[Q.ev]} · ${HN[Q.hall] || ''} · ${Q.n} فرد · ${R.pk.name}`, snap: snap() };
+    if (i >= 0) H.splice(i, 1); H.unshift(e); lsSet(HK(), H.slice(0, 80));
+    logStat(why || 'save', R.total); $('#qNo').textContent = 'رقم العرض: ' + Q.no;
+  }
+  function resetQuote() { Object.assign(Q, { no: '', ev: 'wedding', n: 200, date: null, day: 'wd', hall: null, pk: null, adds: {}, name: '', phone: '', prio: '', bud: '', src: '', notes: '' }); OPTS = []; fillForm(); $('#qNo').textContent = ''; }
+
+  /* ---------- steps bar & bottom bar ---------- */
+  function renderSteps(R) {
+    const st = [['cs1', 'البيانات', Q.n > 0], ['cs2', 'القاعة', !!Q.hall], ['cs3', 'الباكدج', !!(R && R.pk)], ['cs4', 'الإضافات', Object.keys(Q.adds).length > 0], ['cs5', 'العميل', !!(Q.name || Q.phone)]];
+    const cur = st.findIndex(x => !x[2]);
+    $('#qSteps').innerHTML = st.map((x, i) => `<button type="button" data-go="${x[0]}" class="${x[2] ? 'done' : i === cur ? 'cur' : ''}"><span>${x[2] ? '✓' : AD(i + 1)}</span>${x[1]}</button>`).join('');
+    $$('#qSteps button').forEach(b => b.onclick = () => document.getElementById(b.dataset.go).scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+  function renderBar(R) {
+    const ok = R && R.pk;
+    $('#qBar').innerHTML = `<div class="t">الإجمالي التقديري<b>${ok ? money(R.total) : '—'}</b>${ok ? ` <small>(${money(Math.round(R.total / Q.n))} للفرد)</small>` : ''}</div><div class="sp"><button class="btn" id="bbNew">عرض جديد</button><button class="btn" id="bbSave" ${ok ? '' : 'disabled'}>حفظ</button><button class="btn wa" id="bbWa" ${ok ? '' : 'disabled'}>واتساب للعميل</button><button class="btn pri" id="bbDoc" ${ok ? '' : 'disabled'}>العرض الرسمي (A4)</button></div>`;
+    $('#bbNew').onclick = () => { resetQuote(); renderQuote(); window.scrollTo(0, 0); };
+    if (!ok) return;
+    $('#bbSave').onclick = () => { saveHist(R, 'save'); toast('اتحفظ العرض ✓ ' + Q.no); };
+    $('#bbWa').onclick = () => { saveHist(R, 'wa'); window.open(waLink(quoteText(R)), '_blank'); };
+    $('#bbDoc').onclick = () => { saveHist(R, 'doc'); openDoc([optFrom(R)]); };
+  }
+
+  /* ---------- what-if (count) ---------- */
+  function whatIfHTML() { const hs = hallsFor(Q.ev, Q.n).find(h => h.id === Q.hall); const H = K.halls[Q.hall]; const mx = H ? H.max : (Q.ev === 'katb' ? katbMax(Q.hall) : Math.max(Q.n * 2, 100)); return `<div class="whatif"><div class="r"><b>لو العدد اتغيّر؟</b><span id="wiOut"></span></div><input type="range" id="wiR" min="${H ? Math.max(1, Math.min(H.min, Q.n)) : 1}" max="${mx}" step="5" value="${Q.n}"><div class="r"><small class="ctx">حرّك العدد وانت مع العميل على الخط</small><button class="btn" id="wiApply" style="padding:3px 12px">اعتمد العدد</button></div></div>`; }
+  function bindWhatIf(R) {
+    const r = $('#wiR'); if (!r) return;
+    const upd = () => { const n0 = Q.n, n1 = +r.value; Q.n = n1; const R1 = computeQuote(); Q.n = n0; const d = R1 && R1.pk ? R1.total - R.total : 0; $('#wiOut').innerHTML = R1 && R1.pk ? `${AD(n1)} فرد ← <b>${money(R1.total)}</b> <small>(${d >= 0 ? '+' : '−'}${money(Math.abs(d))})</small>` : ''; };
+    r.oninput = upd; upd();
+    $('#wiApply').onclick = () => { Q.n = +r.value; $('#qN').value = Q.n; renderQuote(); };
+  }
+
+  /* ---------- menu contents ---------- */
+  function showMenu(p) {
+    const m = p.m, sec = m ? m.c : null;
+    const body = sec ? sec.map(s => `<h4>${ar(s.h || 'الأصناف')}</h4><ul>${s.o.map(o => o[0] === 'i' ? `<li>${ar(o[1])}</li>` : `<li><small>${ar(o[1])}</small></li>`).join('')}</ul>`).join('') : '<p>مفيش أصناف مسجّلة للباكدج ده.</p>';
+    const inc = Q.ev === 'wedding' || Q.ev === 'engagement' ? (K.halls[Q.hall].inc || []).map(s => `<h4>${ar(s.h || 'ما يشمله الباكدج')}</h4><ul>${s.o.filter(o => o[0] === 'i').map(o => `<li>${ar(o[1])}</li>`).join('')}</ul>`).join('') : '';
+    modal(`<h3>${ar(p.name)} – ${HN[Q.hall] || ''}</h3><p class="ctx">${AD(itemCount(m || { c: [] }))} صنف · ${money(p.total)} لعدد ${AD(Q.n)} فرد</p><div class="mc">${body}${inc ? `<hr style="border:0;border-top:1px dashed #E2D7BD;margin:14px 0"><h3 style="font-size:16px">ما يشمله الباكدج غير الأكل</h3>${inc}` : ''}</div>`);
+  }
+  function modal(html) { $('#modalBody').innerHTML = html; $('#modal').hidden = false; }
+  $('#modalX').onclick = () => { $('#modal').hidden = true; };
+  $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') $('#modal').hidden = true; });
+
+  /* ---------- add-on bundles ---------- */
+  const BUNDLES = [
+    ['الأكثر طلباً', ['شو فاير كلاسيك', 'زفه دمياطي', 'سويت اضافي day use', 'غرفه اضافيه day use']],
+    ['باقة التصوير الكاملة', ['تصوير فوتوغرافي full day', 'برومو فيديو', 'البوم 30×80']],
+    ['باقة الزفة والشو', ['زفه دمياطي', 'شو فاير كلاسيك', 'شو ليزر']],
+    ['باقة الديكور', ['ترقيه الكوشه', 'ديكور سويت العروسه', 'welcome board', 'ديكور جيست بوك']]
+  ];
+  function renderBundles(sc) {
+    const avail = BUNDLES.map(([n, keys]) => [n, keys.map(k => K.addons.findIndex(a => a.s === sc && norm(a.n).includes(norm(k).trim()))).filter(i => i >= 0)]).filter(b => b[1].length >= 2);
+    $('#qBundles').innerHTML = avail.map(([n, ids], i) => `<button type="button" data-b="${i}">＋ ${n} <small>(${AD(ids.length)})</small></button>`).join('');
+    $$('#qBundles button').forEach(b => b.onclick = () => { avail[+b.dataset.b][1].forEach(i => { if (!Q.adds[i]) Q.adds[i] = { qty: 1, opt: 0 }; }); renderQuote(); toast('اتضافت ' + avail[+b.dataset.b][0]); });
+  }
+
+  /* ---------- multiple options in one offer ---------- */
+  function optFrom(R) { return { label: `${HN[Q.hall] || ''} – ${R.pk.name}`, hall: HN[Q.hall] || '', pk: R.pk.name, day: Q.day, n: Q.n, lines: R.lines.map(l => ({ t: l.t, v: l.v, g: l.g })), total: R.total, dep: R.dep, ins: R.ins, notes: R.notes }; }
+  function addOpt(R) { if (OPTS.length >= 3) return toast('أقصى حاجة ٣ اختيارات'); const o = optFrom(R); if (OPTS.some(x => x.label === o.label && x.total === o.total && x.n === o.n)) return toast('الاختيار ده موجود'); OPTS.push(o); renderOpts(); toast('اتضاف للمقارنة ✓'); }
+  function renderOpts() {
+    const el = $('#qOpts'); if (!el) return;
+    if (!OPTS.length) { el.innerHTML = '<h3>عرض بأكتر من اختيار</h3><p class="ctx">جهّز اختيار ودوس «أضف كاختيار للمقارنة»، وغيّر القاعة أو المنيو وضيف التاني. العميل هيشوفهم جنب بعض في عرض واحد.</p>'; return; }
+    el.innerHTML = `<h3>اختيارات العرض (${AD(OPTS.length)} من ٣)</h3><div class="optlist">${OPTS.map((o, i) => `<div class="opt"><b>${AD(i + 1)}. ${ar(o.label)} <small class="ctx">${AD(o.n)} فرد</small></b><span>${money(o.total)}</span><button data-del="${i}" title="حذف">✕</button></div>`).join('')}</div><div class="btns"><button class="btn pri" id="oDoc" ${OPTS.length < 2 ? 'disabled' : ''}>عرض المقارنة الرسمي</button><button class="btn wa" id="oWa2" ${OPTS.length < 2 ? 'disabled' : ''}>إرسال المقارنة واتساب</button><button class="btn" id="oClr">مسح</button></div>`;
+    $$('#qOpts [data-del]').forEach(b => b.onclick = () => { OPTS.splice(+b.dataset.del, 1); renderOpts(); });
+    $('#oClr').onclick = () => { OPTS = []; renderOpts(); };
+    if (OPTS.length >= 2) { $('#oDoc').onclick = () => { logStat('doc', 0); openDoc(OPTS); }; $('#oWa2').onclick = () => { logStat('wa', 0); window.open(waLink(optsText()), '_blank'); }; }
+  }
+  function optsText() {
+    const L = ['دار المراسم لضباط الشرطة – عرض سعر باختيارات', Q.name ? `السادة / ${Q.name}` : '', `${EVNAME[Q.ev]}${Q.date ? ' – ' + dateTxt(Q.date) : ''}`, ''];
+    OPTS.forEach((o, i) => { L.push(`الاختيار ${i + 1}: ${o.label} – ${o.n} فرد – ${o.day === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}`, `الإجمالي التقديري: ${fmt(o.total)} ج (حوالي ${fmt(o.total / o.n)} ج للفرد)`, ''); });
+    L.push('الأسعار تقديرية حسب قوائم الدار الحالية، ويسعدنا نستقبلكم لمعاينة القاعات يومياً من ١٠ ص لـ ١٠ م.', `للتواصل: ${PHONES[0]} (واتساب) – ${PHONES[1]}`, `مع تحيات ${ME ? ME.name : ''} – قسم الحفلات`);
+    return L.filter((x, i, a) => !(x === '' && a[i - 1] === '')).join('\n');
+  }
+
+  /* ---------- official A4 document ---------- */
+  function openDoc(opts) {
+    if (!Q.no) { Q.no = newNo(); $('#qNo').textContent = 'رقم العرض: ' + Q.no; }
+    const multi = opts.length > 1, o = opts[0], t = new Date();
+    const head = `<div class="lh"><img src="../bot/img/crest.png" alt=""><div class="n"><b>دار المراسم لضباط الشرطة</b><small>قسم الحفلات – شارع حديقة الزهرية، الزمالك – القاهرة</small></div><div class="no">رقم العرض<b>${esc(Q.no || '—')}</b>${dateTxt(t)}</div></div>`;
+    const meta = `<div class="meta"><div><span>السادة:</span> ${esc(Q.name || '—')}</div><div><span>الموبايل:</span> <span dir="ltr">${esc(Q.phone || '—')}</span></div><div><span>المناسبة:</span> ${EVNAME[Q.ev]}</div><div><span>تاريخ الحفل:</span> ${Q.date ? dateTxt(Q.date) : 'لم يُحدَّد بعد'}</div>${multi ? '' : `<div><span>القاعة:</span> ${esc(o.hall)}</div><div><span>العدد:</span> ${AD(o.n)} فرد – ${o.day === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}</div>`}</div>`;
+    let body = '';
+    if (!multi) {
+      body = `<table><tr><th>البند</th><th style="width:28%">المبلغ</th></tr>${o.lines.map((l, i) => `${i && o.lines[i - 1].g !== l.g ? `<tr class="sec"><td colspan="2">${esc(l.g)}</td></tr>` : ''}<tr><td>${ar(l.t)}</td><td class="n">${money(l.v)}</td></tr>`).join('')}<tr class="tot"><td>الإجمالي التقديري (حوالي ${money(Math.round(o.total / o.n))} للفرد)</td><td class="n">${money(o.total)}</td></tr></table>
+<table><tr><th>مقدم الحجز</th><th>التأمين (مسترد بعد الحفل)</th><th>خلال شهر من التعاقد</th><th>قبل الحفل بشهر</th></tr><tr><td class="n">${money(o.dep)}</td><td class="n">${money(o.ins)}</td><td>٥٠٪ على الأقل من قيمة الباكدج</td><td>استكمال كامل القيمة والتأمين</td></tr></table>`;
+    } else {
+      const lo = Math.min(...opts.map(x => x.total));
+      body = `<table class="cmpt"><tr><th style="width:18%"></th>${opts.map((x, i) => `<th>الاختيار ${AD(i + 1)}</th>`).join('')}</tr>
+<tr><td><b>القاعة</b></td>${opts.map(x => `<td>${esc(x.hall)}</td>`).join('')}</tr>
+<tr><td><b>الباكدج</b></td>${opts.map(x => `<td>${ar(x.pk)}</td>`).join('')}</tr>
+<tr><td><b>العدد واليوم</b></td>${opts.map(x => `<td>${AD(x.n)} فرد – ${x.day === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}</td>`).join('')}</tr>
+<tr><td><b>الإضافات</b></td>${opts.map(x => `<td><small>${x.lines.filter(l => l.g !== 'الباكدج').map(l => ar(l.t)).join('، ') || '—'}</small></td>`).join('')}</tr>
+<tr><td><b>مقدم الحجز</b></td>${opts.map(x => `<td class="n">${money(x.dep)}</td>`).join('')}</tr>
+<tr><td><b>للفرد</b></td>${opts.map(x => `<td class="n">${money(Math.round(x.total / x.n))}</td>`).join('')}</tr>
+<tr class="tot"><td>الإجمالي التقديري</td>${opts.map(x => `<td class="n${x.total === lo ? ' best' : ''}">${money(x.total)}</td>`).join('')}</tr></table>`;
+    }
+    const terms = `<ol class="terms"><li>الأسعار تقديرية وفق قوائم أسعار الدار السارية في تاريخ العرض، ويُعتمد السعر النهائي عند التعاقد.</li><li>لا يُعدّ الحجز مؤكداً إلا بعد سداد مقدم الحجز كاملاً وتوقيع استمارة التعاقد، وتُخصَّص المواعيد بأسبقية الاستيفاء.</li><li>تُثبَّت الأسعار باختيار الباكدج وسداد كامل قيمته خلال ثلاثين يوماً من تاريخ سداد المقدم.</li><li>يُؤكَّد العدد النهائي للمدعوين كتابةً قبل الحفل بسبعة أيام على الأقل، وتُحتسب الزيادة بسعر الوجبة الإضافية.</li></ol>`;
+    const html = `<div class="tb"><button class="btn pri" id="dPrint">طباعة / حفظ PDF</button>${Q.phone ? '<button class="btn wa" id="dWa">إرسال النص واتساب</button>' : ''}<button class="btn" id="dClose">إغلاق</button></div><div class="a4">${head}<h1>${multi ? 'عرض سعر – مقارنة اختيارات' : 'عرض سعر تقديري'}</h1>${meta}${body}${terms}<div class="sign"><div>مسؤول الحجز<i>${esc(ME ? ME.name : '')}</i></div><div>رئيس قسم الحفلات<i>أ. سارة سيد</i></div></div><div class="ft">للحجز والاستفسار: ${PHONES[0]} (واتساب) – ${PHONES[1]} – ${PHONES[2]} · المعاينة يومياً من ١٠ صباحاً حتى ١٠ مساءً</div></div>`;
+    $('#doc').innerHTML = html; $('#doc').hidden = false; document.body.style.overflow = 'hidden';
+    $('#dClose').onclick = closeDoc;
+    $('#dPrint').onclick = () => { document.body.classList.add('doc-print'); window.print(); setTimeout(() => document.body.classList.remove('doc-print'), 500); };
+    if ($('#dWa')) $('#dWa').onclick = () => window.open(waLink(multi ? optsText() : quoteText(computeQuote())), '_blank');
+  }
+  function closeDoc() { $('#doc').hidden = true; document.body.style.overflow = ''; }
+
+  /* ---------- home ---------- */
+  function renderHome() {
+    const h = new Date().getHours(), greet = h < 12 ? 'صباح الخير' : 'مساء الخير';
+    const S = lsGet(SK(), []), t0 = today0().getTime(), m0 = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+    const cnt = (from, ty) => S.filter(x => x.at >= from && (!ty || ty.includes(x.type))).length;
+    const H = lsGet(HK(), []), sumM = H.filter(x => x.at >= m0).reduce((a, x) => a + x.total, 0);
+    $('#homeOut').innerHTML = `<div class="hello"><img src="../bot/img/crest.png" alt="" style="height:64px"><div><h2>${greet} يا ${esc(ME.name)}</h2><p>${esc(ME.role)} · قسم الحفلات</p></div><div class="dt">${dateTxt(new Date())}<br><small>مواعيد القسم ١٠ ص – ١١ م</small></div></div>
+<div class="acts"><button class="act" data-go="new"><i>🧾</i><b>عرض سعر جديد</b><small>احسب وابعت في دقيقة</small></button><button class="act" data-go="rec"><i>🏛️</i><b>ترشيح قاعة</b><small>حسب العدد والفرق بينهم</small></button><button class="act" data-go="obj"><i>💬</i><b>رد على اعتراض</b><small>غالي، هفكر، خصم…</small></button><button class="act" data-go="budget"><i>💰</i><b>الأنسب للميزانية</b><small>أحسن اختيار في حدودها</small></button></div>
+<div class="stats"><div class="stat"><small>عروض النهارده</small><b>${AD(cnt(t0, ['save', 'wa', 'doc', 'img']))}</b></div><div class="stat"><small>اتبعتت واتساب النهارده</small><b>${AD(cnt(t0, ['wa']))}</b></div><div class="stat"><small>عروض الشهر</small><b>${AD(H.filter(x => x.at >= m0).length)}</b></div><div class="stat"><small>قيمة عروض الشهر</small><b>${money(sumM)}</b></div></div>
+<div class="card"><h3>آخر عروضي</h3>${histTable(H.slice(0, 6))}</div>`;
+    $$('#homeOut .act').forEach(b => b.onclick = () => { const g = b.dataset.go; if (g === 'new') { resetQuote(); goTab('quote'); } else goTab(g); });
+    bindHist('#homeOut');
+  }
+  function histTable(H) {
+    if (!H.length) return '<div class="empty">لسه معملتش عروض. ابدأ بـ «عرض سعر جديد».</div>';
+    return `<table class="q hist"><tr><th>رقم العرض</th><th>العميل</th><th>التفاصيل</th><th>التاريخ</th><th style="text-align:left">الإجمالي</th><th></th></tr>${H.map(x => { const d = new Date(x.at); return `<tr><td><b dir="ltr">${esc(x.no)}</b></td><td>${esc(x.name || '—')}<br><small class="ctx" dir="ltr">${esc(x.phone || '')}</small></td><td><small>${ar(x.label)}</small></td><td><small>${dateTxt(d)}</small></td><td class="n">${money(x.total)}</td><td style="white-space:nowrap"><button class="btn" data-open="${x.no}">فتح</button> <button class="btn" data-dup="${x.no}">نسخة</button> <button class="btn" data-del="${x.no}" title="حذف">✕</button></td></tr>`; }).join('')}</table>`;
+  }
+  function bindHist(root) {
+    const H = () => lsGet(HK(), []);
+    $$(root + ' [data-open]').forEach(b => b.onclick = () => { const x = H().find(e => e.no === b.dataset.open); if (!x) return; loadSnap(x.snap); Q.no = x.no; $('#qNo').textContent = 'رقم العرض: ' + Q.no; goTab('quote'); });
+    $$(root + ' [data-dup]').forEach(b => b.onclick = () => { const x = H().find(e => e.no === b.dataset.dup); if (!x) return; loadSnap(x.snap); Object.assign(Q, { no: '', name: '', phone: '', notes: '' }); fillForm(); $('#qNo').textContent = 'نسخة جديدة'; goTab('quote'); toast('اتعملت نسخة – اكتب بيانات العميل الجديد'); });
+    $$(root + ' [data-del]').forEach(b => b.onclick = () => { if (!confirm('حذف العرض ' + b.dataset.del + '؟')) return; lsSet(HK(), H().filter(e => e.no !== b.dataset.del)); root === '#homeOut' ? renderHome() : renderHist(); });
+  }
+  $('#hQ').addEventListener('input', () => renderHist());
+  function renderHist() { const q = norm($('#hQ').value).trim(); const H = lsGet(HK(), []).filter(x => !q || norm(x.no + ' ' + x.name + ' ' + x.phone + ' ' + x.label).includes(q)); $('#hOut').innerHTML = histTable(H); bindHist('#hOut'); }
+
+  /* ---------- budget ---------- */
+  let BD = 'wd';
+  ['#bB', '#bN'].forEach(id => $(id).addEventListener('input', () => renderBudget()));
+  function renderBudget() {
+    seg('#bDay', BD, d => { BD = d; renderBudget(); });
+    const B = +$('#bB').value || 0, n = +$('#bN').value || 0; if (!B || !n) { $('#bOut').innerHTML = ''; return; }
+    const days = BD === 'any' ? ['wd', 'we'] : [BD], fits = WED.filter(h => fitWed(h, n));
+    const all = []; fits.forEach(h => days.forEach(d => K.halls[h].menus.forEach(m => all.push({ h, d, m, v: estTotal(K.halls[h], m, n, d) }))));
+    if (!all.length) { $('#bOut').innerHTML = '<div class="card"><div class="tip">العدد ده أكبر من سعة القاعات.</div></div>'; return; }
+    const inB = all.filter(x => x.v <= B).sort((a, b) => b.v - a.v), cheap = all.slice().sort((a, b) => a.v - b.v)[0];
+    const row = (x, tag) => `<tr${tag ? ' class="best"' : ''}><td><b>${HN[x.h]}</b> – ${ar(x.m.name)}<br><small class="ctx">${x.d === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'} · ${AD(itemCount(x.m))} صنف</small></td><td class="n">${money(x.v)}</td><td class="n">${money(Math.round(x.v / n))}</td><td class="n">${B - x.v >= 0 ? money(B - x.v) : '<span style="color:#9B1C1C">−' + money(x.v - B) + '</span>'}</td><td><button class="btn" data-use="${x.h}|${x.d}|${x.m.id}">استخدم</button></td></tr>`;
+    let html = '';
+    if (inB.length) {
+      const best = inB[0], left = B - best.v, sc = best.h;
+      const extras = ['شو فاير كلاسيك', 'زفه دمياطي', 'تصوير فوتوغرافي full day', 'سويت اضافي day use', 'ترقيه الكوشه'].map(k => K.addons.find(a => a.s === sc && norm(a.n).includes(norm(k).trim()))).filter(Boolean).map(a => [a, priceOf(a)]).filter(([a, p]) => p.kind === 'fixed' || p.kind === 'pp');
+      let rem = left; const fit = []; extras.forEach(([a, p]) => { const v = p.kind === 'pp' ? p.v * n : p.v; if (v <= rem) { fit.push([a, v]); rem -= v; } });
+      html += `<div class="card"><h3>أحسن اختيار في حدود ${money(B)} لعدد ${AD(n)} فرد</h3><div class="tip g">✦ <b>${HN[best.h]} – ${ar(best.m.name)}</b> ${best.d === 'we' ? 'في نهاية الأسبوع' : 'في منتصف الأسبوع'} بـ <b>${money(best.v)}</b>، ويتبقى ${money(left)}.${fit.length ? `<br>والمتبقي يكفي يضيف: ${fit.map(([a, v]) => `${ar(a.n)} (${money(v)})`).join('، ')}، بإجمالي ${money(best.v + fit.reduce((s2, x) => s2 + x[1], 0))}.` : ''}</div>
+<table class="q"><tr><th>الاختيار</th><th style="text-align:left">الإجمالي</th><th style="text-align:left">للفرد</th><th style="text-align:left">المتبقي</th><th></th></tr>${inB.slice(0, 8).map((x, i) => row(x, i === 0)).join('')}</table></div>`;
+    } else html += `<div class="card"><div class="tip">مفيش اختيار في حدود ${money(B)} لعدد ${AD(n)} فرد. أقرب اختيار: <b>${HN[cheap.h]} – ${ar(cheap.m.name)}</b> ${cheap.d === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'} بـ ${money(cheap.v)} (أكتر بـ ${money(cheap.v - B)}). اقترح على العميل يقلل العدد أو يختار منتصف الأسبوع.</div><table class="q">${row(cheap, true)}</table></div>`;
+    $('#bOut').innerHTML = html;
+    $$('#bOut [data-use]').forEach(b => b.onclick = () => { const [h, d, m] = b.dataset.use.split('|'); Object.assign(Q, { ev: 'wedding', n, day: d, hall: h, pk: m, adds: {}, bud: B }); fillForm(); goTab('quote'); });
+  }
+
+  /* ---------- client messages ---------- */
+  const MT = [['follow', 'متابعة بعد عرض السعر'], ['visit', 'تأكيد ميعاد المعاينة'], ['thanks', 'شكر بعد المعاينة'], ['pay', 'تذكير بميعاد الدفعة'], ['welcome', 'ترحيب بعد الحجز']];
+  $('#mT').innerHTML = MT.map(m => `<option value="${m[0]}">${m[1]}</option>`).join('');
+  ['#mT', '#mName', '#mPhone'].forEach(id => $(id).addEventListener('input', () => buildMsg()));
+  function renderMsgs() { if (!$('#mName').value) $('#mName').value = Q.name || ''; if (!$('#mPhone').value) $('#mPhone').value = Q.phone || ''; buildMsg(); }
+  function buildMsg() {
+    const k = $('#mT').value, nm = $('#mName').value.trim(), R = computeQuote(), hall = HN[Q.hall] || 'القاعة', me = ME ? ME.name : '';
+    const ex = $('#mExtra');
+    const need = { visit: [['mvD', 'يوم المعاينة', 'date'], ['mvT', 'الساعة', 'time']], pay: [['mpA', 'المبلغ المطلوب (ج)', 'number'], ['mpD', 'آخر ميعاد', 'date']] }[k] || [];
+    if (ex.dataset.k !== k) { ex.dataset.k = k; ex.innerHTML = need.map(([id, l, t]) => `<div class="f"><label>${l}</label><input id="${id}" type="${t}"></div>`).join(''); need.forEach(([id]) => $('#' + id).addEventListener('input', () => buildMsg())); if (k === 'pay' && R && R.pk) $('#mpA').value = Math.ceil(R.pkTotal / 2 / 50) * 50; }
+    const v = id => { const e = $('#' + id); return e ? e.value : ''; };
+    const dTxt = s => { if (!s) return '…'; const [y, m, d] = s.split('-').map(Number); return dateTxt(new Date(y, m - 1, d)); };
+    const hi = `أهلاً${nm ? ' ' + nm : ''} 🌷`;
+    const T = {
+      follow: [hi, `معاك ${me} من قسم الحفلات بدار المراسم لضباط الشرطة.`, `حبيت أطمّن على حضرتك بخصوص عرض السعر${R && R.pk ? ` لـ ${EVNAME[Q.ev]} في ${hall} لعدد ${AD(Q.n)} فرد (حوالي ${fmt(R.total)} ج)` : ''}.`, 'لو فيه أي استفسار أو حابب نعدّل في الاختيارات، أنا تحت أمرك.', 'ويسعدنا نستقبلك تعاين القاعة يومياً من ١٠ الصبح لـ ١٠ بالليل. يناسبك يوم إيه؟'],
+      visit: [hi, `بنأكد مع حضرتك ميعاد معاينة ${hall} يوم ${dTxt(v('mvD'))}${v('mvT') ? ' الساعة ' + v('mvT') : ''}.`, 'العنوان: شارع حديقة الزهرية – الزمالك – القاهرة، وفيه جراج داخلي وخدمة فاليه.', `ولو حصل أي تغيير ياريت تبلغنا على الرقم ده. في انتظار حضرتك 🌷`, `${me} – قسم الحفلات`],
+      thanks: [hi, `شرّفتونا النهارده في دار المراسم، ومتشكرين على وقت حضرتك.`, `زي ما اتفقنا${R && R.pk ? `، ${hall} – ${R.pk.name} لعدد ${AD(Q.n)} فرد بإجمالي تقديري ${fmt(R.total)} ج` : ''}.`, 'وللأمانة، المواعيد بتتثبّت بسداد المقدم وتوقيع الاستمارة، ومفيش تاريخ بيتحجز قبل كده، فلو التاريخ مناسب لحضرتك متتأخرش.', 'أنا تحت أمرك في أي سؤال.', `${me} – قسم الحفلات`],
+      pay: [hi, `تذكير ودّي من قسم الحفلات بدار المراسم:`, `ميعاد الدفعة الجاية${v('mpA') ? ` بمبلغ ${fmt(+v('mpA'))} ج` : ''} قبل ${dTxt(v('mpD'))}.`, 'ولو سدّدت قيمة الباكدج كاملة خلال ٣٠ يوم من المقدم، السعر بيتثبّت لحضرتك.', 'لأي استفسار أنا تحت أمرك.', `${me} – قسم الحفلات`],
+      welcome: [hi, 'ألف مبروك، ونوّرت دار المراسم 🎉', `تم تسجيل حجز حضرتك${R && R.pk ? ` في ${hall} لعدد ${AD(Q.n)} فرد` : ''}${Q.date ? ' يوم ' + dateTxt(Q.date) : ''}.`, 'أنا معاك في كل خطوة لحد يوم الفرح، وهبعتلك جدول التحضيرات والمواعيد المهمة.', `${me} – قسم الحفلات`]
+    }[k];
+    $('#mTxt').value = T.join('\n');
+  }
+  $('#mWa').onclick = () => { logStat('wa', 0); const ph = Q.phone; Q.phone = $('#mPhone').value; const l = waLink($('#mTxt').value); Q.phone = ph; window.open(l, '_blank'); };
+  $('#mCopy').onclick = () => copyText($('#mTxt').value).then(() => toast('اتنسخت الرسالة ✓'));
+
+  /* ---------- nav mini, shortcuts, scroll arrows ---------- */
+  try { if (localStorage.getItem('dmst-mini') === '1') $('.wrap').classList.add('mini'); } catch (e) { }
+  $('#navMini').onclick = () => { const on = $('.wrap').classList.toggle('mini'); try { localStorage.setItem('dmst-mini', on ? '1' : '0'); } catch (e) { } };
+  document.addEventListener('keydown', e => {
+    if (!ME || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 'Escape') { if (!$('#doc').hidden) closeDoc(); $('#modal').hidden = true; return; }
+    if (/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName)) return;
+    const k = e.key.toLowerCase();
+    if (k === 'n' || k === 'ى') { e.preventDefault(); resetQuote(); goTab('quote'); }
+    else if (k === 'h' || k === 'ا') { goTab('home'); }
+    else if (k === '/') { e.preventDefault(); goTab('rules'); $('#sQ').focus(); }
+    else if (k === 'p' || k === 'ح') { const R = computeQuote(); if (R && R.pk) { saveHist(R, 'doc'); openDoc([optFrom(R)]); } }
+    else if (k === 'w' || k === 'ص') { const R = computeQuote(); if (R && R.pk) { saveHist(R, 'wa'); window.open(waLink(quoteText(R)), '_blank'); } }
+  });
+  $('#upBtn').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+  $('#downBtn').onclick = () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+
+  function renderAll() { $('#arrows').hidden = false; renderHome(); renderQuote(); renderRules(); renderCall(); }
 })();

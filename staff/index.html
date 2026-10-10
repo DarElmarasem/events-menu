@@ -33,22 +33,31 @@
   </header>
   <div class="wrap">
     <nav id="nav">
-      <button data-t="quote" class="on"><span>🧾</span>عرض سعر للعميل</button>
-      <button data-t="rec"><span>🏛️</span>ترشيح ومقارنة</button>
-      <button data-t="obj"><span>💬</span>الرد على الاعتراضات</button>
-      <button data-t="plan"><span>📅</span>خطة الدفع والتحضيرات</button>
-      <button data-t="rules"><span>📜</span>الشروط والأحكام</button>
-      <button data-t="call"><span>☎️</span>سكريبت المكالمة</button>
-      <div class="hint">كل الأسعار والشروط محسوبة من نفس قوائم الدار اللي على الموقع، وبتتحدّث معاها تلقائياً.</div>
+      <div class="navt"><em>القائمة</em><button type="button" id="navMini" title="تصغير القائمة">⇆</button></div>
+      <button data-t="home" class="on"><span>🏠</span><em>الرئيسية</em></button>
+      <button data-t="quote"><span>🧾</span><em>عرض سعر للعميل</em></button>
+      <button data-t="rec"><span>🏛️</span><em>ترشيح ومقارنة</em></button>
+      <button data-t="budget"><span>💰</span><em>الأنسب للميزانية</em></button>
+      <button data-t="obj"><span>💬</span><em>الرد على الاعتراضات</em></button>
+      <button data-t="plan"><span>📅</span><em>خطة الدفع والتحضيرات</em></button>
+      <button data-t="msgs"><span>✉️</span><em>رسائل العملاء</em></button>
+      <button data-t="hist"><span>🗂️</span><em>سجل عروضي</em></button>
+      <button data-t="rules"><span>📜</span><em>الشروط والأحكام</em></button>
+      <button data-t="call"><span>☎️</span><em>سكريبت المكالمة</em></button>
+      <div class="hint"><b>اختصارات:</b><br><kbd>N</kbd> عرض سعر جديد · <kbd>P</kbd> العرض الرسمي<br><kbd>W</kbd> واتساب · <kbd>/</kbd> بحث الشروط · <kbd>H</kbd> الرئيسية</div>
     </nav>
     <main>
+      <!-- الرئيسية -->
+      <section id="t-home" class="on"><div id="homeOut"></div></section>
+
       <!-- عرض سعر -->
-      <section id="t-quote" class="on">
-        <h2>عرض سعر للعميل</h2>
-        <p class="sub">اختار بيانات الحفلة، والعرض بيتحسب على طول على الشمال. بعدها ابعته للعميل على واتساب أو اطبعه أو احفظه صورة.</p>
+      <section id="t-quote" hidden>
+        <h2>عرض سعر للعميل <small class="ctx" id="qNo"></small></h2>
+        <p class="sub">اختار بيانات الحفلة، والعرض بيتحسب على طول. بعدها ابعته على واتساب أو اطلع العرض الرسمي واطبعه.</p>
+        <div class="stepsbar" id="qSteps"></div>
         <div class="grid2">
           <div>
-            <div class="card">
+            <div class="card" id="cs1">
               <h3>١. بيانات الحفلة</h3>
               <div class="row">
                 <div class="f"><label>المناسبة</label><select id="qEv"><option value="wedding">حفل زفاف</option><option value="engagement">خطوبة</option><option value="katb">عقد قران</option><option value="birthday">عيد ميلاد</option><option value="aqiqa">عقيقة</option><option value="special">مناسبة خاصة / مؤتمر</option></select></div>
@@ -57,15 +66,43 @@
               </div>
               <div class="f" style="margin-top:10px"><label>اليوم</label><div class="seg" id="qDay"><button data-d="wd" class="on">منتصف الأسبوع (الأحد – الأربعاء)</button><button data-d="we">نهاية الأسبوع / عطلة رسمية</button></div></div>
             </div>
-            <div class="card"><h3>٢. القاعة</h3><div class="halls" id="qHalls"></div><div id="qHallNote"></div></div>
-            <div class="card"><h3>٣. الباكدج</h3><div class="pk" id="qPk"></div></div>
-            <div class="card"><h3>٤. الإضافات</h3><div id="qAdds"></div></div>
-            <div class="card"><h3>٥. بيانات العميل (للإرسال)</h3>
+            <div class="card" id="cs2"><h3>٢. القاعة</h3><div class="halls" id="qHalls"></div><div id="qHallNote"></div></div>
+            <div class="card" id="cs3"><h3>٣. الباكدج</h3><div class="pk" id="qPk"></div></div>
+            <div class="card" id="cs4"><h3>٤. الإضافات</h3><div class="bundles" id="qBundles"></div><div id="qAdds"></div></div>
+            <div class="card" id="cs5"><h3>٥. بيانات العميل واحتياجه</h3>
               <div class="row"><div class="f"><label>اسم العميل</label><input id="qName" placeholder="مثلاً: أ. أحمد"></div><div class="f"><label>موبايل العميل</label><input id="qPhone" placeholder="01xxxxxxxxx" inputmode="tel" dir="ltr"></div></div>
+              <div class="row" style="margin-top:10px"><div class="f"><label>أهم حاجة عند العميل</label><select id="qPrio"><option value="">—</option><option>الأكل والمنيو</option><option>الديكور والكوشة</option><option>التصوير</option><option>التوفير والسعر</option><option>الفخامة والمساحة</option></select></div><div class="f"><label>الميزانية التقريبية (ج)</label><input id="qBud" type="number" placeholder="مثلاً 200000"></div><div class="f"><label>عرف الدار منين</label><select id="qSrc"><option value="">—</option><option>فيسبوك</option><option>إنستجرام</option><option>بحث جوجل / الخرائط</option><option>ترشيح من الأهل أو الأصدقاء</option><option>حضر مناسبة بالدار</option><option>المساعد الذكي على الموقع</option><option>أخرى</option></select></div></div>
+              <div class="f" style="margin-top:10px"><label>ملاحظات (للموظف فقط)</label><input id="qNotes" placeholder="مثلاً: العروسة عايزة كوشة اسبيشيال – هيرجع بعد استشارة الأهل"></div>
             </div>
           </div>
-          <div class="sticky"><div class="card" id="qOut"></div></div>
+          <div class="sticky"><div class="card" id="qOut"></div><div class="card" id="qOpts"></div></div>
         </div>
+        <div class="bbar" id="qBar"></div>
+      </section>
+
+      <!-- الميزانية -->
+      <section id="t-budget" hidden>
+        <h2>الأنسب في حدود ميزانية العميل</h2>
+        <p class="sub">اكتب الميزانية والعدد، وهيطلعلك أحسن اختيار يستغل الميزانية، والبديل الأوفر، وإيه اللي ممكن يتضاف في نفس الحدود.</p>
+        <div class="card"><div class="row"><div class="f"><label>الميزانية (ج)</label><input id="bB" type="number" value="200000"></div><div class="f"><label>عدد المعازيم</label><input id="bN" type="number" value="200"></div><div class="f"><label>اليوم</label><div class="seg" id="bDay"><button data-d="wd" class="on">منتصف الأسبوع</button><button data-d="we">نهاية الأسبوع</button><button data-d="any">مش فارق</button></div></div></div></div>
+        <div id="bOut"></div>
+      </section>
+
+      <!-- الرسائل -->
+      <section id="t-msgs" hidden>
+        <h2>رسائل العملاء الجاهزة</h2>
+        <p class="sub">اختار الرسالة، والاسم والقاعة والمبالغ والتواريخ بتتملي من عرض السعر الحالي. عدّل لو حابب وابعت.</p>
+        <div class="card"><div class="row"><div class="f"><label>الرسالة</label><select id="mT"></select></div><div class="f"><label>اسم العميل</label><input id="mName"></div><div class="f"><label>موبايل العميل</label><input id="mPhone" dir="ltr"></div></div>
+        <div class="row" style="margin-top:10px" id="mExtra"></div>
+        <div class="f" style="margin-top:12px"><label>نص الرسالة</label><textarea id="mTxt" rows="9" style="padding:12px;border-radius:12px;border:1px solid #D9CCAE;font-size:15px;line-height:1.8"></textarea></div>
+        <div class="btns"><button class="btn wa" id="mWa">إرسال على واتساب</button><button class="btn" id="mCopy">نسخ</button></div></div>
+      </section>
+
+      <!-- السجل -->
+      <section id="t-hist" hidden>
+        <h2>سجل عروضي</h2>
+        <p class="sub">كل عرض سعر بتحفظه أو تبعته بيتسجل هنا على جهازك. تقدر تفتحه أو تعدّله أو تعمل منه نسخة لعميل جديد.</p>
+        <div class="card"><div class="f" style="margin-bottom:10px"><input id="hQ" placeholder="ابحث باسم العميل أو رقم العرض أو القاعة…"></div><div id="hOut"></div></div>
       </section>
 
       <!-- ترشيح -->
@@ -111,6 +148,10 @@
     </main>
   </div>
 </div>
+
+<div class="arrows" id="arrows" hidden><button type="button" id="upBtn" title="لأعلى">▲</button><button type="button" id="downBtn" title="لأسفل">▼</button></div>
+<div id="doc" hidden></div>
+<div class="modal" id="modal" hidden><div class="box"><button class="x" id="modalX">✕</button><div id="modalBody"></div></div></div>
 
 <script src="../bot/kb.js"></script>
 <script src="app.js"></script>
