@@ -21,7 +21,7 @@
   const T = s => AR(esc(s)).replace(/(\d|[٠-٩]),(?=[٠-٩]{3})/g, '$1٬');
   const money = n => AR(Number(n).toLocaleString('en-US')).replace(/,/g, '٬') + ' ج';
   const PH = ['01111117958', '01010107958', '01222227958'];
-  const CREDIT = 'صُمّم بمعرفة <b>عميد / محمد المغازي</b> – مدير الدار، ليكون دليلكم في التخطيط لمناسبتكم';
+  const CREDIT = 'صُمّم وأُعِدّ بمعرفة <b>عميد / محمد المغازي – مدير الدار</b>، ليكون دليلكم في التخطيط لمناسبتكم';
 
   const sec = (title, body, cls) => `<section class="mh-s${cls ? ' ' + cls : ''}"><h3>${title}</h3>${body}</section>`;
   const items = o => {
@@ -75,7 +75,7 @@
     return h;
   }
   function birthdayHTML() {
-    let h = `<div class="mh-hero"><h2>أعياد الميلاد</h2><p>احتفالات أعياد الميلاد بقاعة اللوتس والقاعة الزجاجية (أوبن إير) والروف توب.</p></div>`;
+    let h = `<div class="mh-hero"><h2>أعياد الميلاد</h2><p>احتفالات أعياد الميلاد بقاعة اللوتس وقاعة أوبن إير والروف توب.</p></div>`;
     h += sec('باكدجات أعياد الميلاد', `<table class="mh-tb mh-pr"><tr><th>القاعة</th><th>السعة</th><th>السعر</th></tr>${K.birthday.map(b => `<tr><td>${T(b.name)}</td><td>${T(b.cap)}</td><td class="n">${money(b.price)}</td></tr>`).join('')}</table><p class="mh-note">كل الباكدجات تشمل: حجز القاعة، الكراسي والترابيزات، ساوند سيستم SPEAKERS.</p>`);
     h += sec('الإضافات والضيافة', addons('birthday'));
     return h;
@@ -197,7 +197,7 @@
 .mh-tels small{color:#5FCB8A;font-weight:700}
 .mh-tels span{color:var(--stone-dim,#B8B1A3)}
 .mh-cr{margin:14px 0 0;color:var(--stone-dim,#B8B1A3);font-size:14px}
-.mh-cr b{color:#E9D3A1}
+.mh-cr b{color:#E9D3A1;font-weight:800;font-size:1.35em}
 @media(max-width:560px){.mh{font-size:16.5px;padding:10px 10px 2px}.mh-s{padding:14px 12px}.mh-tb{font-size:15px}.mh-tb th,.mh-tb td{padding:8px 5px}.mh-s h3{font-size:21px}}
 body.printing .mh{display:none!important}
 `;
