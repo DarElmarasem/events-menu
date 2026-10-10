@@ -2194,6 +2194,7 @@ ${row('مقدم الحجز', h => dep(h))}
     LSTEP = null; LEAD.done = true; saveLead(); leadDone(false);
   }
   function leadDone(skipped) {
+    if (!skipped) logLead('بيانات العميل');
     leadToState();
     if (skipped) { bot(tr(`<p>ولا يهمك${hon() ? ' يا ' + hon() : ''}، اتفضل اسأل في أي حاجة وأنا تحت أمرك.</p>`, `<p>With pleasure${hon() ? ', ' + hon() : ''}. Please ask me anything; we are happy to help.</p>`)); chips(MAIN()); return; }
     const L = leadBlock();
@@ -3087,6 +3088,7 @@ ${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانت
     bot(`<p class="dmb-h">${tr('عرض السعر المبدئي', 'Your preliminary quote')}</p><p>${sum}</p><table class="dmb-t">${rows.join('')}</table>${notes.map(x => `<p class="dmb-note">${x}</p>`).join('')}${qMissing(q)}<p class="dmb-note">${tr('<b>ده عرض سعر تقديري</b> وفق الأسعار المنشورة بالمنيو، لحين التواصل مع فريق الحفلات لتأكيد التوافر والأسعار النهائية وتفاصيل التعاقد.', '<b>This is an estimated quote</b> based on the published menu prices, pending contact with our events team to confirm availability, final prices and contract details.')}</p>${src(QDOC(q))}`,
       [waAct(msg, tr('إرسال عرض السعر لفريق الحفلات عبر واتساب', 'Send this quote to our team on WhatsApp')), { t: tr('تجهيز طلب الحجز', 'Booking request'), cls: 'pri', fn: () => { S.event = q.ev; S.hall = q.hall; S.count = q.n; startBook(); } }]);
     try { LEAD.lastQ = { sum: sum.replace(/<[^>]+>/g, ''), total, msg }; saveLead(); } catch (e) { }
+    logLead('عرض سعر', { total, details: msg });
     S.event = q.ev; if (q.hall) S.hall = q.hall; if (q.n) S.count = q.n; if (q.day) S.day = q.day;
     const keep = { ev: q.ev, hall: q.hall, n: q.n, day: q.day, pk: q.pk, exN: q.exN, sel: q.sel, groups: q.groups };
     chips([
@@ -3139,8 +3141,19 @@ ${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانت
   }
 
   // unanswered questions → Google Sheet (paste the Apps Script web-app URL below to enable)
-  const LOG_URL = '';
+  const LOG_URL = window.DMB_LOG_URL || 'https://script.google.com/macros/s/AKfycbyLhYKrvKr6kzHtjMg-x6bkk-dHDMRFWwKXLxffVFIPd6FyReQCvHzOFcJXTCVnv0qCuA/exec';
   let LASTRAW = '';
+  // ---- every client (and each step he reaches) is recorded in the Google Sheet «العملاء» ----
+  function logLead(stage, extra) {
+    if (!LOG_URL) return;
+    try {
+      if (!LEAD.id) { LEAD.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6); saveLead(); }
+      const dt = LEAD.date ? (() => { const [y, m, d] = LEAD.date.split('-').map(Number); return dateTxt(new Date(y, m - 1, d)); })() : (LEAD.month && LEAD.month !== '-' ? monthTxt(LEAD.month) : '');
+      const body = JSON.stringify(Object.assign({ kind: 'lead', stage, id: LEAD.id, name: LEAD.name || '', job: LEAD.job && LEAD.job !== '-' ? LEAD.job : '', phone: LEAD.phone && LEAD.phone !== '-' ? LEAD.phone : '', count: LEAD.count || S.count || '', date: dt, hall: HALLNAME[LEAD.hall] || HALLNAME[S.hall] || '', event: EVNAME[LEAD.event] || EVNAME[S.event] || '', budget: LEAD.budget && LEAD.budget !== '-' ? LEAD.budget : '', prio: LEAD.done ? leadPrio() : '', lang: LANG, page: location.href.split('#')[0] }, extra || {}));
+      if (navigator.sendBeacon) navigator.sendBeacon(LOG_URL, new Blob([body], { type: 'text/plain' }));
+      else fetch(LOG_URL, { method: 'POST', mode: 'no-cors', body });
+    } catch (e) { }
+  }
   function logQ(kind, q) {
     if (!LOG_URL || !q) return;
     try {
@@ -3678,6 +3691,7 @@ ${row('Photo session', 'Up to 6 people', money(5000), 'Session fee')}</table><p 
       if (B.count > 0) L.push(tr('العدد المتوقع: ', 'Expected guests: ') + AD(B.count) + tr(' فرد', ''));
       L.push('', tr('(تم التجهيز عبر مساعد دار المراسم الذكي)', '(via the Dar El-Marasem AI assistant)'));
       const msg = L.join('\n');
+      logLead('طلب حجز', { details: msg, name: LEAD.name || B.name, count: B.count > 0 ? B.count : (LEAD.count || '') });
       bot(`<p class="dmb-h">${tr('ملخص طلبك', 'Your request')}</p><p style="white-space:pre-line">${esc(L.slice(2, -2).join('\n'))}</p>${tr('<p>أول ما تضغط على الزرار، الطلب هيوصل لفريق الحفلات على واتساب، وهيكلموك يأكدوا التوافر والتفاصيل.</p><p class="dmb-note">الحجز لا يُثبَّت إلا بسداد مقدم الحجز وتوقيع استمارة التعاقد.</p>', '<p>Tap the button to send your request to our events team on WhatsApp; they will contact you to confirm availability and details.</p><p class="dmb-note">A booking is only secured once the deposit is paid and the booking form is signed.</p>')}`, [waAct(msg, tr('إرسال الطلب عبر واتساب', 'Send the request on WhatsApp'))]);
       chips(MAIN());
     };
@@ -3730,6 +3744,7 @@ ${row('Photo session', 'Up to 6 people', money(5000), 'Session fee')}</table><p 
       }
       const allH = tr('كل القاعات', 'All halls');
       const msg = [tr('دار المراسم لضباط الشرطة – طلب موعد معاينة', 'Dar El-Marasem – viewing appointment request'), '', tr('الاسم: ', 'Name: ') + V.name, tr('اليوم: ', 'Day: ') + dateTxt(V.date), tr('الموعد: ', 'Time: ') + V.time, tr('القاعة: ', 'Hall: ') + (V.hall === 'all' ? allH : HALLNAME[V.hall] || allH), '', tr('(تم التجهيز عبر مساعد دار المراسم الذكي)', '(via the Dar El-Marasem AI assistant)')].join('\n');
+      logLead('طلب معاينة', { details: msg.join ? msg.join('\n') : String(msg), name: LEAD.name || V.name, visit: dateTxt(V.date) + ' – ' + V.time });
       bot(`<p class="dmb-h">${tr('موعد المعاينة', 'Viewing appointment')}</p><p>${esc(V.name)} – ${dateTxt(V.date)} – ${V.time} – ${V.hall === 'all' ? allH : HALLNAME[V.hall]}</p><p>${tr('اضغط على الزرار والميعاد هيوصل لفريق الحفلات على واتساب عشان يأكدوه.', 'Tap the button to send the appointment to our events team on WhatsApp for confirmation.')}</p><p><b>${tr('العنوان:', 'Address:')}</b> ${tr(ADDRESS, EN_ADDRESS)}</p>`, [waAct(msg, tr('تأكيد الموعد عبر واتساب', 'Confirm on WhatsApp')), { t: tr('الموقع على الخريطة', 'Location on the map'), href: MAP }]);
       chips(MAIN());
     };
