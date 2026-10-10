@@ -377,7 +377,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
       });
       d.appendChild(w);
     }
-    log.appendChild(d); scroll(); return d;
+    log.appendChild(d); scroll(); try { queueSay(d); } catch (e) { } return d;
   }
   function chips(list) {
     ACT = list || [];
@@ -453,7 +453,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   function showRet() { const a = launch.querySelector('.dmb-lt .ar'); if (a) { if (!a.dataset.o) a.dataset.o = a.textContent; a.textContent = tr('↩ رجوع للمساعد الذكي', '↩ Back to the assistant'); } launch.classList.add('ret'); mini.classList.add('ret'); document.documentElement.classList.add('dmb-retmode'); const ma = mini.querySelector('.dmb-lt .ar'); if (ma) ma.textContent = a ? a.textContent : ''; }
   function hideRet() { const a = launch.querySelector('.dmb-lt .ar'); if (a && a.dataset.o) a.textContent = a.dataset.o; launch.classList.remove('ret'); mini.classList.remove('ret'); document.documentElement.classList.remove('dmb-retmode'); const ma = mini.querySelector('.dmb-lt .ar'); if (ma && a) ma.textContent = a.textContent; }
   function siteHome() { try { if (typeof window.goHome === 'function') window.goHome(); else { history.pushState(null, '', location.pathname + location.search); window.dispatchEvent(new HashChangeEvent('hashchange')); } } catch (e) { } window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }
-  function close() { panel.hidden = true; document.documentElement.classList.remove('dmb-open'); lockPage(false); idleArm(); if (!TOUCH) launch.focus({ preventScroll: true }); }
+  function close() { try { hush(); } catch (e) { } panel.hidden = true; document.documentElement.classList.remove('dmb-open'); lockPage(false); idleArm(); if (!TOUCH) launch.focus({ preventScroll: true }); }
   /* ---- inactivity: after 1 minute without interaction the screen returns to the main page and the conversation is cleared ---- */
   const IDLE_MS = 300000, WARN_MS = 270000;
   let idleT = 0, warnT = 0, warnI = 0, warnEl = null;
@@ -534,8 +534,45 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   }
   applyLang();
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) close(); });
+  /* ---- voice replies: when the client talks by voice, the assistant answers by voice too (free, built into the phone/browser) ---- */
+  let VOICE = false, SAYQ = [], SAYT = 0;
+  const TTS = window.speechSynthesis && window.SpeechSynthesisUtterance ? window.speechSynthesis : null;
+  function pickVoice() {
+    if (!TTS) return null;
+    const vs = TTS.getVoices() || [], want = EN() ? ['en-GB', 'en-US', 'en'] : ['ar-EG', 'ar-SA', 'ar-AE', 'ar'];
+    for (const w of want) { const v = vs.find(x => (x.lang || '').replace('_', '-').toLowerCase().startsWith(w.toLowerCase())); if (v) return v; }
+    return null;
+  }
+  function sayText(el) {
+    const c = el.cloneNode(true);
+    let hadTable = false;
+    c.querySelectorAll('table,.dmb-acts,.dmb-step,.dmb-tbl,img,details').forEach(x => { if (x.tagName === 'TABLE') hadTable = true; x.remove(); });
+    c.querySelectorAll('b,strong,span,small,a,em').forEach(x => x.append(' '));
+    c.querySelectorAll('p,li,div,br').forEach(x => x.append(' . '));
+    let t = c.textContent || '';
+    t = t.replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF✦✓🌷👌]/gu, ' ').replace(/([\d٠-٩]) ?ج(?![\u0621-\u064A])/g, '$1 جنيه').replace(/([\d٠-٩])[٬,]([\d٠-٩])/g, '$1$2').replace(/(^|\s)أ\. /g, '$1أستاذ ').replace(/EGP/g, '').replace(/[«»"()]/g, ' ').replace(/(\s*\.\s*){2,}/g, '. ').replace(/\s+/g, ' ').trim();
+    if (hadTable) t += EN() ? '. The full details are on your screen.' : '. والتفاصيل كاملة قدامك على الشاشة.';
+    return t;
+  }
+  function speak(text) {
+    if (!TTS || !text) return;
+    const v = pickVoice();
+    if (!v && !EN()) return; // no Arabic voice on this device: stay silent instead of reading Arabic with a foreign accent
+    let parts = text.match(/[^.!؟?،\n]+[.!؟?،]?/g) || [text], chunks = [], cur = '';
+    parts.forEach(p => { if ((cur + p).length > 180) { if (cur) chunks.push(cur); cur = p; } else cur += p; }); if (cur) chunks.push(cur);
+    chunks.slice(0, 8).forEach(ch => { const u = new SpeechSynthesisUtterance(ch.trim()); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = EN() ? 'en-US' : 'ar-EG'; u.rate = EN() ? 1 : 0.95; TTS.speak(u); });
+  }
+  function hush() { SAYQ = []; clearTimeout(SAYT); try { TTS && TTS.cancel(); } catch (e) { } }
+  function queueSay(el) {
+    if (!VOICE || !TTS || panel.hidden) return;
+    SAYQ.push(el); clearTimeout(SAYT);
+    SAYT = setTimeout(() => { const els = SAYQ; SAYQ = []; speak(els.map(sayText).filter(Boolean).join('. ')); }, 700);
+  }
+  if (TTS) { try { TTS.getVoices(); TTS.onvoiceschanged = () => TTS.getVoices(); } catch (e) { } }
+  input.addEventListener('keydown', () => { if (VOICE) { VOICE = false; hush(); } });
   function send() {
     const v = input.value.trim(); if (!v || !K) return;
+    hush();
     input.value = ''; detectLang(v); addUser(v); chips([]); think(() => { if (gateName(() => respond(v), v)) return; respond(v); });
   }
   form.addEventListener('submit', e => { e.preventDefault(); send(); });
@@ -548,12 +585,14 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
       let rec = null;
       const stop = () => { mic.classList.remove('rec'); input.placeholder = tr('اكتب سؤالك… مثلاً: سعر قاعة إيزيس لـ ٢٠٠ فرد', 'Type your question… e.g. Isis Hall price for 200 guests'); };
       mic.addEventListener('click', () => {
+        hush();
         if (rec) { try { rec.stop(); } catch (e) { } return; }
+        try { if (TTS) { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; TTS.speak(u); } } catch (e) { } // unlocks speech on iPhone
         try {
           rec = new SR(); rec.lang = EN() ? 'en-US' : 'ar-EG'; rec.interimResults = true; rec.maxAlternatives = 1;
           rec.onresult = e => { input.value = [...e.results].map(r => r[0].transcript).join(' '); };
           rec.onerror = () => { stop(); rec = null; };
-          rec.onend = () => { stop(); rec = null; if (input.value.trim()) send(); };
+          rec.onend = () => { stop(); rec = null; if (input.value.trim()) { VOICE = true; send(); } };
           mic.classList.add('rec'); input.value = ''; input.placeholder = tr('اتكلم دلوقتي… أنا سامعك', 'Listening…');
           rec.start(); idleArm();
         } catch (e) { stop(); rec = null; }
