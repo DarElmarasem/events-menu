@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="منيوهات قاعات ومناسبات دار المراسم لضباط الشرطة – الجزيرة، الزمالك">
+<meta property="og:title" content="منيوهات دار المراسم لضباط الشرطة">
+<meta property="og:image" content="hero.jpg">
+<link rel="icon" href="logo.png">
+<title>منيوهات دار المراسم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: the house at night as the opening band, then one row per hall (its cover + a clear "view menu" action), a WhatsApp booking line, and a page-by-page reader tinted in the hall's colour. Single dark look, after the facade lit at night. */
+:root{
+  --night:#0D1524; --night-2:#141F33; --night-3:#1B2840; --stone:#EFE7D8; --stone-dim:#B8B1A3; --brass:#CBA762; --brass-deep:#A8853F; --line:rgba(239,231,216,.13);
+  --wa:#1DA851; --wa-deep:#168A42;
+  --display:"Amiri","Noto Naskh Arabic","Times New Roman",serif;
+  --text:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--night);color:var(--stone);font-family:var(--text);font-size:16px;line-height:1.7;direction:rtl}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+
+/* opening band */
+.hero{position:relative}
+.hero .ph{position:relative;width:100%;max-width:1000px;margin:0 auto;aspect-ratio:1600/902;background:#0b1220 url(hero.jpg) center/100% 100% no-repeat}
+@media(min-width:1001px){.hero .ph:before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,var(--night) 0%,rgba(13,21,36,0) 9%,rgba(13,21,36,0) 91%,var(--night) 100%)}}
+.hero .ph:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,var(--night) 0%,rgba(13,21,36,0) 38%)}
+.hero .in{position:relative;z-index:1;max-width:1120px;margin:-14px auto 0;padding-inline:20px;padding-block:0 18px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.hero img{width:clamp(250px,66vw,330px);height:auto;margin-bottom:12px;filter:drop-shadow(0 6px 16px rgba(0,0,0,.6))}
+.hero h1{font-family:var(--display);font-weight:700;font-size:clamp(42px,10vw,64px);line-height:1.2;margin:0;color:#F6EBD3;text-wrap:balance;position:relative;padding-bottom:14px}
+.hero h1:after{content:'';position:absolute;bottom:0;left:50%;width:64px;height:2px;margin-left:-32px;background:var(--brass)}
+.hero .tag{font-family:var(--display);font-weight:700;color:var(--brass);font-size:clamp(20px,2.6vw,28px);margin:12px 0 0;line-height:1.4}
+
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px;padding-block:8px 40px}
+.lead{margin:18px 0 22px;color:var(--stone-dim);font-size:16px;max-width:60ch}
+
+/* hall rows */
+.halls{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr;gap:12px}
+.hall{display:grid;grid-template-columns:76px minmax(0,1fr);gap:16px;align-items:center;padding:12px 14px 12px 12px;border-radius:8px;background:var(--night-2);border:1px solid var(--line);border-right:4px solid var(--c);text-decoration:none;transition:background .15s,border-color .15s}
+.hall:hover{background:var(--night-2)}
+.hall img{width:76px;height:auto;aspect-ratio:1100/1560;object-fit:cover;border-radius:3px;display:block}
+.hall .tx{display:flex;flex-direction:column;gap:2px;min-width:0}
+.hall b{font-family:var(--display);font-weight:700;font-size:23px;line-height:1.3;color:#F6EBD3}
+.hall span{color:var(--stone-dim);font-size:14px;line-height:1.55}
+.hall .use{color:var(--stone);font-size:14.5px;line-height:1.6}
+.hall .spec{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1px 10px;margin:2px 0 0;font-size:14px;line-height:1.6}
+.hall .spec dt{color:var(--brass);font-weight:600;white-space:nowrap}.hall .spec dd{margin:0;color:var(--stone-dim)}
+.hall .go{margin-top:8px;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:var(--brass);color:#1A1406;font-weight:700;font-size:14px;padding:7px 14px;border-radius:5px}
+.hall .go:hover{background:#D9B873}
+.hall .go small{font-weight:500;opacity:.75;font-variant-numeric:tabular-nums}
+@media(min-width:760px){.halls{grid-template-columns:repeat(2,minmax(0,1fr))}.halls li:last-child{grid-column:1/-1}.halls li:last-child .hall{max-width:calc(50% - 6px);margin-inline:auto}}
+@media(min-width:1040px){
+  .halls{grid-template-columns:repeat(7,minmax(0,1fr));gap:18px;align-items:stretch}
+  .halls li:last-child{grid-column:auto}.halls li:last-child .hall{max-width:none}
+  .hall{grid-template-columns:1fr;padding:0;background:none;border:0;gap:12px;align-content:start}
+  .hall:hover{background:none}
+  .hall img{width:100%;border-radius:4px;box-shadow:0 16px 34px rgba(0,0,0,.5);outline:1px solid var(--line);transition:transform .2s}
+  .hall b{font-size:20px}.hall span{font-size:13px}
+  .halls li{display:flex}.hall{display:flex;flex-direction:column;width:100%}.hall .tx{flex:1;width:100%}
+  .hall .go{margin-top:auto;padding-top:7px;width:100%;justify-content:center;white-space:nowrap}.hall .go small{display:none}.hall .btns{margin-top:auto;padding-top:7px;flex-direction:column;align-items:stretch;gap:6px}.hall .btns .go{padding-top:7px}.hall .dec{justify-content:center}
+  .hall .use{font-size:13.5px}.hall .spec{font-size:13px;margin-bottom:12px;grid-template-columns:1fr;gap:0}.hall .spec dd{margin-bottom:4px}
+}
+
+.rules{margin-top:22px;display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:18px;align-items:center;padding:14px 16px;border-radius:8px;background:var(--night-2);border:1px solid var(--brass);text-decoration:none}
+.rules:hover{background:var(--night-2)}
+.rules img{width:76px;height:auto;aspect-ratio:1100/1560;object-fit:cover;border-radius:3px;display:block}
+.rules .rtx{display:flex;flex-direction:column;gap:4px;min-width:0}
+.rules b{font-family:var(--display);font-weight:700;font-size:22px;line-height:1.35;color:#F6EBD3}
+.rules .rtx span{color:var(--stone-dim);font-size:14px;line-height:1.6}
+.rules .go{display:inline-flex;align-items:center;background:transparent;color:var(--brass);border:1px solid var(--brass);font-weight:700;font-size:14.5px;padding:9px 18px;border-radius:5px;white-space:nowrap}
+.rules .go:hover{background:var(--brass);color:#1A1406}
+@media(max-width:620px){.rules{grid-template-columns:76px minmax(0,1fr)}.rules .go{grid-column:1/-1;justify-content:center}}
+/* request form */
+.req{margin-top:30px;padding:22px;border-radius:8px;background:var(--night-2);border:1px solid var(--line)}
+.req h2{font-family:var(--display);font-weight:700;font-size:clamp(30px,6vw,38px);margin:0;line-height:1.3;color:#F6EBD3;text-align:center}
+.req .rqs{margin:6px auto 20px;color:var(--stone-dim);font-size:15px;text-align:center;max-width:52ch;text-wrap:balance}
+#reqForm{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 14px}
+#reqForm .f{display:flex;flex-direction:column;gap:5px;min-width:0}
+#reqForm .f span{font-size:13.5px;color:var(--brass);font-weight:600}
+#reqForm input,#reqForm select{font:inherit;font-size:15px;color:var(--stone);background:var(--night);border:1px solid rgba(239,231,216,.25);border-radius:6px;padding:10px 12px;min-height:44px;width:100%}
+#reqForm input:focus,#reqForm select:focus{outline:none;border-color:var(--brass)}
+#reqForm .wide{grid-column:1/-1}
+#reqForm .err{grid-column:1/-1;margin:0;color:#F2A49B;font-size:14px}
+@media(max-width:760px){#reqForm{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){#reqForm{grid-template-columns:1fr}}
+.info{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:6px}
+.info li{display:flex;gap:10px;font-size:14.5px}.info b{color:var(--brass);font-weight:600;white-space:nowrap}.info span{color:var(--stone)}
+.acts{display:flex;flex-direction:column;gap:10px}
+.map{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--brass);color:var(--brass);font-weight:700;font-size:16px;padding:12px 22px;border-radius:6px;text-decoration:none;white-space:nowrap}
+.map:hover{background:var(--brass);color:#1A1406}
+@media(max-width:620px){.acts{width:100%}.map{width:100%}}
+#visForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+#visForm .f{display:flex;flex-direction:column;gap:5px;min-width:0}
+#visForm .f>span{font-size:13.5px;color:var(--brass);font-weight:600}
+#visForm input,#visForm select{font:inherit;font-size:15px;color:var(--stone);background:var(--night);border:1px solid rgba(239,231,216,.25);border-radius:6px;padding:10px 12px;min-height:44px;width:100%}
+#visForm input:focus,#visForm select:focus{outline:none;border-color:var(--brass)}
+#visForm .wide,#visForm .err{grid-column:1/-1}#visForm .err{margin:0;color:#F2A49B;font-size:14px}
+@media(max-width:480px){#visForm{grid-template-columns:1fr}}
+input[type=date]{color-scheme:dark;cursor:pointer}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(72%) sepia(35%) saturate(500%) hue-rotate(5deg);cursor:pointer;opacity:1}
+.dn{color:var(--stone-dim);font-size:13px;min-height:1em}
+.vis{border-color:rgba(203,167,98,.45)}
+a.tel{text-decoration:none;color:var(--stone)}a.tel:hover{color:var(--brass)}
+.call{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--brass);color:#1A1406;font-weight:700;font-size:17px;padding:14px 22px;border-radius:6px;text-decoration:none;white-space:nowrap}
+.call:hover{background:#D9B873}
+.calls{display:flex;flex-direction:column;gap:8px}.calls .call{font:inherit;font-weight:700;font-size:17px;border:0;cursor:pointer;width:100%}.call[aria-expanded=true]{background:#D9B873}.clist{display:grid;gap:8px;padding:10px;border:1px solid var(--brass);border-radius:6px;background:var(--night)}.clist .ch{text-align:center;color:var(--stone-dim);font-size:13.5px}.clist a{display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 14px;border-radius:5px;background:var(--night-2);border:1px solid var(--line);color:#F6EBD3;text-decoration:none;font-weight:700;font-size:17px;letter-spacing:.5px;font-variant-numeric:tabular-nums}.clist a svg{color:var(--brass)}.clist a:hover{border-color:var(--brass)}
+@media(max-width:620px){.calls{width:100%}}
+.social{margin-top:30px;text-align:center}
+.social h2{font-family:var(--display);font-weight:700;font-size:26px;margin:0 0 12px;color:#F6EBD3}
+.soc{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.soc a{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:6px;border:1px solid var(--line);background:var(--night-2);color:var(--stone);text-decoration:none;font-weight:600;font-size:15.5px;min-width:150px;justify-content:center}
+.soc a.ig svg{color:#E1306C}.soc a.fb svg{color:#4A8CF0}
+.soc a:hover{border-color:var(--brass);color:#F6EBD3}
+.cmp{margin-top:30px;padding:22px;border-radius:8px;background:var(--night-2);border:1px solid var(--line)}
+.cmp h2{font-family:var(--display);font-weight:700;font-size:clamp(28px,6vw,36px);margin:0;line-height:1.3;color:#F6EBD3;text-align:center}
+.cmp .rqs{margin:6px auto 18px;color:var(--stone-dim);font-size:15px;text-align:center;max-width:52ch;text-wrap:balance}
+.cmp table{width:100%;border-collapse:collapse;font-size:14.5px}
+.cmp thead th{color:var(--brass);font-weight:600;font-size:13.5px;text-align:right;padding:0 10px 10px;border-bottom:1px solid var(--brass)}
+.cmp tbody tr{border-bottom:1px solid var(--line)}.cmp tbody tr:last-child{border-bottom:0}
+.cmp tbody th,.cmp td{padding:13px 10px;text-align:right;vertical-align:middle}
+.cmp tbody th{font-family:var(--display);font-size:19px;font-weight:700;color:#F6EBD3;white-space:nowrap}
+.cmp td.c{color:var(--stone);white-space:nowrap}.cmp td small,.cmp td.c small{display:block;color:var(--stone-dim);font-size:12px}
+.cmp td.c small{display:inline;margin-right:4px}
+.cmp td.u{color:var(--stone-dim);font-size:13.5px}
+.cmp td.pr b{display:block;color:var(--brass);font-size:17px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cmp .go2{display:inline-block;padding:7px 14px;border:1px solid var(--brass);border-radius:5px;color:var(--brass);text-decoration:none;font-weight:700;font-size:14px;white-space:nowrap}
+.cmp .go2:hover{background:var(--brass);color:#1A1406}
+.cmp .cn{margin:14px 0 0;text-align:center;color:var(--stone-dim);font-size:13px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media(max-width:700px){.cmp{padding:18px 14px}.cmp thead{display:none}.cmp table,.cmp tbody{display:block}
+.cmp tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n p" "c p" "u v";gap:2px 12px;padding:13px 0}
+.cmp tbody th{grid-area:n;padding:0;font-size:19px}.cmp td{padding:0}.cmp td.c{grid-area:c;font-size:14px}.cmp td.c::before{content:"السعة: ";color:var(--brass)}
+.cmp td.u{grid-area:u;font-size:13px}.cmp td.pr{grid-area:p;text-align:left;align-self:center}.cmp td.pr small{max-width:15ch;margin-right:auto;text-align:left;font-size:11.5px}.cmp td.pr b::before{content:"يبدأ من ";font-size:11.5px;color:var(--stone-dim);font-weight:400}
+.cmp td.v{grid-area:v;align-self:end;text-align:left}.cmp .go2{padding:5px 12px;font-size:13px}}
+.btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}.btns .go{margin-top:0}
+.dec{display:inline-flex;align-items:center;gap:6px;color:var(--brass);border:1px solid var(--brass);font-weight:700;font-size:14px;padding:6px 14px;border-radius:5px;text-decoration:none;white-space:nowrap}
+.dec::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--brass)}
+.dec:hover{background:var(--brass);color:#1A1406}
+a.home-btn{text-align:center;text-decoration:none;box-sizing:border-box}.dec-r{background:var(--brass)!important;color:#1A1406!important}.dec-r[hidden]{display:none}
+/* decor view */
+#decorV .bar button{font:inherit;font-size:14.5px;font-weight:600;color:var(--stone);background:rgba(0,0,0,.3);border:1px solid rgba(239,231,216,.35);border-radius:5px;padding:7px 14px;cursor:pointer;flex:none}
+.dv{max-width:1100px;margin:0 auto;padding:0 16px 40px}
+.dh{margin:0 -16px;padding:30px 20px 22px;text-align:center;background:linear-gradient(180deg,var(--hall) 0%,color-mix(in srgb,var(--hall) 35%,var(--night)) 100%);border-bottom:1px solid var(--brass)}
+.den{display:block;letter-spacing:.42em;font-size:12px;color:var(--brass);font-weight:600}
+.dh h1{font-family:var(--display);font-size:clamp(38px,9vw,56px);margin:4px 0 4px;color:#F6EBD3;line-height:1.2}
+.dcap{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+.dcap div{border:1px solid rgba(203,167,98,.55);border-radius:30px;padding:6px 14px;display:flex;gap:8px;background:rgba(0,0,0,.22)}
+.dcap dt{color:var(--brass);font-weight:600;font-size:13px}.dcap dd{margin:0;color:#F6EBD3;font-size:13.5px;font-weight:600}
+.gnav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 56px);z-index:6;display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:10px 16px;background:rgba(13,21,36,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);scrollbar-width:none}
+.gnav::-webkit-scrollbar{display:none}
+.gnav a{flex:none;font-size:14px;font-weight:700;color:var(--stone);text-decoration:none;border:1px solid var(--line);border-radius:30px;padding:7px 14px;background:var(--night-2);white-space:nowrap}
+.gnav a:hover{border-color:var(--brass);color:var(--brass)}
+.gs{padding-top:26px;scroll-margin-top:120px}
+.gs header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.gs h2{font-family:var(--display);font-size:27px;margin:0;color:#F6EBD3;line-height:1.2}
+.gp{font-size:13px;font-weight:700;color:#1A1406;background:var(--brass);border-radius:30px;padding:3px 12px;white-space:nowrap}
+.gp.inc{background:transparent;color:var(--brass);border:1px solid var(--brass)}
+.gc{margin-inline-start:auto;color:var(--stone-dim);font-size:13px}
+.gn{margin:-6px 0 12px;color:var(--stone-dim);font-size:13.5px}
+.gg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media(min-width:700px){.gg{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}}
+.gg.one{grid-template-columns:minmax(0,520px)}
+.gload{grid-column:1/-1;height:160px;border-radius:8px;background:linear-gradient(90deg,var(--night-2),#1b2740,var(--night-2));background-size:200% 100%;animation:sh 1.2s infinite linear}
+@keyframes sh{to{background-position:-200% 0}}
+.gi{position:relative;display:block;padding:0;border:0;border-radius:8px;overflow:hidden;background:#fff;cursor:zoom-in;aspect-ratio:4/3}
+.gi img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .25s}
+.gi:hover img{transform:scale(1.04)}
+.gi span{position:absolute;top:6px;right:6px;min-width:26px;height:22px;padding:0 6px;border-radius:11px;background:rgba(13,21,36,.82);color:#F6EBD3;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.gg.one .gi{aspect-ratio:auto}.gg.one .gi img{height:auto;object-fit:contain}
+.clip .xtra{display:none}
+.gmore{grid-column:1/-1;font:inherit;font-size:15px;font-weight:700;color:var(--brass);background:transparent;border:1px solid var(--brass);border-radius:6px;padding:11px;cursor:pointer;display:none}
+.clip .gmore{display:block}.gmore:hover{background:var(--brass);color:#1A1406}
+.lb{position:fixed;inset:0;z-index:100;background:rgba(5,9,16,.97);display:flex;flex-direction:column;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+.lb[hidden]{display:none}
+.lbt{display:flex;align-items:center;gap:10px;padding:12px 14px;color:#F6EBD3}
+.lbx{font:inherit;font-size:18px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(239,231,216,.35);background:transparent;color:#F6EBD3;cursor:pointer;flex:none}
+.lbh{font-family:var(--display);font-size:19px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbc{color:var(--brass);font-weight:700;font-size:14px;white-space:nowrap}
+.lbs{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;padding:0 8px}
+.lbi{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;background:#fff}
+.lbn{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:0;background:rgba(13,21,36,.75);color:#F6EBD3;font-size:28px;line-height:1;cursor:pointer}
+.lbprev{right:10px}.lbnext{left:10px}
+.lbn[hidden]{display:none}
+.lbw{margin:12px 16px 16px;justify-content:center}
+.edbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 0;padding:10px 12px;border:1px dashed var(--brass);border-radius:8px}
+.edbar button{font:inherit;font-size:14px;font-weight:700;border-radius:6px;padding:8px 14px;cursor:pointer;border:1px solid var(--brass);background:transparent;color:var(--brass)}
+#edSave{background:var(--brass);color:#1A1406}
+#edMsg{color:var(--stone-dim);font-size:13px;flex:1}
+.gw{position:relative;min-width:0}
+.gw .gi{width:100%}
+.ged{display:flex;gap:4px;margin-top:4px}
+.ged button{flex:1;font:inherit;font-size:13px;padding:6px 0;border-radius:5px;border:1px solid var(--line);background:var(--night-2);color:var(--stone);cursor:pointer}
+.ged .gdel{color:#F2A49B;border-color:rgba(242,164,155,.4)}
+.editing .gi{cursor:default}
+.gadd{display:inline-flex;align-items:center;font-size:14px;font-weight:700;color:#1A1406;background:var(--brass);border-radius:30px;padding:6px 14px;cursor:pointer;white-space:nowrap}
+.greset{grid-column:1/-1;font:inherit;font-size:13.5px;color:var(--stone-dim);background:transparent;border:1px solid var(--line);border-radius:6px;padding:8px;cursor:pointer}
+.gempty{grid-column:1/-1;margin:0;padding:26px 12px;text-align:center;color:var(--stone-dim);border:1px dashed var(--line);border-radius:8px;font-size:14px}
+.setbtn{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);left:12px;z-index:20;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--brass);background:rgba(13,21,36,.7);border:1px solid rgba(203,167,98,.6);cursor:pointer;backdrop-filter:blur(4px)}
+.setbtn:hover{background:var(--brass);color:#1A1406}
+#home{position:relative}
+.setm{position:fixed;inset:0;z-index:120;background:rgba(5,9,16,.82);display:flex;align-items:center;justify-content:center;padding:16px}
+.setm[hidden]{display:none}
+.setc{position:relative;width:100%;max-width:400px;background:var(--night-2);border:1px solid var(--brass);border-radius:10px;padding:22px 20px}
+.setc h2{font-family:var(--display);font-size:28px;margin:0 0 14px;color:#F6EBD3;text-align:center}
+.setx{position:absolute;top:12px;left:12px;width:36px;height:36px;font-size:15px}
+#setLock{display:flex;flex-direction:column;gap:8px}#setLock[hidden],#setPanel[hidden]{display:none}
+#setLock label{color:var(--brass);font-weight:600;font-size:14px}
+#setLock input{font:inherit;font-size:20px;letter-spacing:.3em;text-align:center;color:var(--stone);background:var(--night);border:1px solid rgba(239,231,216,.25);border-radius:6px;padding:10px;direction:ltr}
+#setLock input:focus{outline:none;border-color:var(--brass)}
+#setLock .err{margin:0;color:#F2A49B;font-size:14px;text-align:center}
+#setLock button,.setl button{font:inherit;font-weight:700;font-size:16px;border-radius:6px;padding:12px;cursor:pointer;background:var(--brass);color:#1A1406;border:0}
+.setd{margin:0 0 14px;color:var(--stone-dim);font-size:14px;text-align:center;line-height:1.8}
+.setl{display:flex;flex-direction:column;gap:10px}
+.setout{display:block;width:100%;margin-top:14px;font:inherit;font-size:14px;color:var(--stone-dim);background:transparent;border:1px solid var(--line);border-radius:6px;padding:9px;cursor:pointer}
+.gi{background:#0b111d!important}
+.gcode{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);font-family:var(--text);font-size:15px;font-weight:700;letter-spacing:.06em;color:#1A1406;background:var(--brass);padding:3px 12px;border-radius:30px;box-shadow:0 2px 8px rgba(0,0,0,.45);white-space:nowrap}
+.lbk{margin:10px 16px 0;text-align:center;color:var(--stone);font-size:15px}
+.lbk b{font-family:var(--text);font-size:22px;font-weight:700;letter-spacing:.06em;color:var(--brass);margin-inline-start:6px}
+.lbk[hidden]{display:none}
+.rtools{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;padding:12px 16px 0;max-width:820px;margin:0 auto}
+.rtools button{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:700;color:var(--brass);background:var(--night-2);border:1px solid var(--brass);border-radius:30px;padding:9px 18px;cursor:pointer}
+.rtools button:hover{background:var(--brass);color:#1A1406}.rtools button:disabled{opacity:.6;cursor:wait}
+#rMsg{flex-basis:100%;text-align:center;color:var(--stone-dim);font-size:13px;min-height:0}#rMsg:empty{display:none}
+@media print{
+  @page{size:A4;margin:0}
+  body.printing *{visibility:hidden!important}
+  body.printing{background:#fff!important}
+  body.printing #reader,body.printing #reader .pages,body.printing #reader .pages img{visibility:visible!important}
+  body.printing #reader{position:absolute;inset:0;padding:0;margin:0}
+  body.printing #reader .bar,body.printing .rtools,body.printing .rend,body.printing .fab{display:none!important}
+  body.printing #reader .pages{display:block!important;padding:0!important;margin:0!important;max-width:none!important;gap:0!important}
+  body.printing #reader .pages img{display:block;width:100%!important;height:296mm!important;object-fit:contain;max-width:none!important;margin:0!important;border:0!important;box-shadow:none!important;border-radius:0!important;page-break-after:always;break-after:page}
+}
+.wab{display:inline-flex;align-items:center;gap:8px;font:inherit;font-weight:700;color:#fff!important;background:var(--wa)!important;border:0!important;border-radius:30px;cursor:pointer}
+.wab svg{width:20px;height:20px}
+.rtools .wab{font-size:15px;padding:9px 18px}
+.shareall{margin-top:18px;text-align:center}
+.shareall .wab{font-size:16px;padding:12px 22px}
+.shareall p{margin:8px auto 0;color:var(--stone-dim);font-size:13px;max-width:46ch}
+.dprice{margin-top:34px;border:1px solid var(--line);border-radius:8px;background:var(--night-2);padding:0 16px}
+.dprice summary{cursor:pointer;list-style:none;padding:16px 0;font-family:var(--display);font-size:22px;color:#F6EBD3;display:flex;justify-content:space-between;align-items:center}
+.dprice summary::-webkit-details-marker{display:none}
+.dprice summary::after{content:"+";color:var(--brass);font-size:26px}.dprice[open] summary::after{content:"−"}
+.dtabs{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.dtabs::-webkit-scrollbar{display:none}
+.dt{font:inherit;flex:none;font-size:14px;font-weight:700;color:var(--stone);background:var(--night);border:1px solid var(--line);border-radius:30px;padding:8px 15px;cursor:pointer}
+.dt.on{background:var(--brass);color:#1A1406;border-color:var(--brass)}
+.dl{list-style:none;margin:4px 0 0;padding:0}
+.dl li{display:flex;align-items:baseline;gap:10px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.dn2{display:flex;flex-direction:column;min-width:0;flex:0 1 auto}.dn2 b{color:#F6EBD3;font-weight:600;font-size:15px}.dn2 small{color:var(--stone-dim);font-size:12.5px;margin-top:2px}
+.dot{flex:1;border-bottom:1px dotted rgba(203,167,98,.45);min-width:16px;transform:translateY(-4px)}
+.dp{color:var(--brass);font-weight:700;font-size:15px;white-space:nowrap}
+.dnote{margin:12px 0 16px;text-align:center;color:var(--stone-dim);font-size:13px}
+.dend{margin-top:22px;display:flex;flex-direction:column;gap:12px}
+.dgo{display:block;text-align:center;background:var(--brass);color:#1A1406;font-weight:700;font-size:16px;padding:13px;border-radius:6px;text-decoration:none}
+.dend .home-btn{max-width:none;margin:0}
+/* booking */
+.book{margin-top:30px;padding:22px;border-radius:8px;background:var(--night-2);border:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center}
+.book{grid-template-columns:1fr!important;text-align:center}.book .acts{width:100%;max-width:460px;margin:0 auto}.book .info li{justify-content:center;flex-wrap:wrap;gap:2px 8px}.book h2{font-size:clamp(28px,6vw,34px)!important}@media(max-width:620px){.book .info li{flex-direction:column;align-items:center}}.book .tels{justify-content:center}
+.book h2{font-family:var(--display);font-weight:700;font-size:26px;margin:0;line-height:1.3;color:#F6EBD3}
+.book p{margin:4px 0 0;color:var(--stone-dim);font-size:14.5px}
+.tels{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin-top:10px}.tels .sep{color:var(--brass);font-size:17px;font-weight:600}
+.tel{font-size:16.5px;color:var(--stone);font-variant-numeric:tabular-nums;letter-spacing:.4px;direction:ltr;unicode-bidi:isolate;user-select:all}
+.wa{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--wa);color:#fff;font-weight:700;font-size:17px;padding:14px 22px;border-radius:6px;text-decoration:none;white-space:nowrap}
+.wa:hover{background:var(--wa-deep)}
+.wa svg{width:22px;height:22px;flex:none}
+@media(max-width:620px){.book{grid-template-columns:1fr}.wa{width:100%}}
+.addr{margin-top:22px;color:var(--stone-dim);font-size:14px;text-align:center}
+
+/* floating WhatsApp */
+.fab{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:20;width:58px;height:58px;border-radius:50%;background:var(--wa);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 22px rgba(0,0,0,.45)}
+.fab:hover{background:var(--wa-deep)}.fab svg{width:30px;height:30px}
+
+/* reader */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--hall,#141F33);border-bottom:2px solid var(--brass)}
+.bar button{font:inherit;font-size:14.5px;font-weight:600;color:var(--stone);background:rgba(0,0,0,.3);border:1px solid rgba(239,231,216,.35);border-radius:5px;padding:7px 14px;cursor:pointer;flex:none}
+.home-btn{display:block;width:100%;max-width:420px;margin:0 auto 14px;font:inherit;font-size:16px;font-weight:700;color:var(--brass);background:transparent;border:1px solid var(--brass);border-radius:6px;padding:12px 18px;cursor:pointer}.home-btn:hover{background:var(--brass);color:#1A1406}
+.bar h2{font-family:var(--display);font-weight:700;font-size:22px;margin:0;line-height:1.3;color:#F6EBD3;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .count{color:var(--stone);opacity:.85;font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pages{display:flex;flex-direction:column;align-items:center;gap:14px;padding:16px 12px 8px}
+.pages img{width:100%;max-width:840px;height:auto;display:block;border-radius:2px;box-shadow:0 10px 28px rgba(0,0,0,.45);background:var(--night-2)}
+.rend{max-width:840px;margin:10px auto 0;padding:0 12px 96px;display:grid;gap:12px;text-align:center}
+.rend .tels{justify-content:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+@media(max-width:620px){}
+@media(max-width:620px){.hero .tag{font-size:5.2vw!important;white-space:nowrap}}
+@media(max-width:620px){.tels{flex-wrap:nowrap;gap:6px}.tels .tel{font-size:3.3vw;letter-spacing:0}.tels .sep{font-size:3.5vw}.book>div{min-width:0}}
+.hall,.rules{-webkit-tap-highlight-color:transparent}.go{cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:rgba(203,167,98,.25)}
+.credit{text-align:center;margin:26px auto 8px;padding:0 16px;color:var(--stone-dim);font-size:14px}.credit b{color:var(--brass);font-weight:800;font-size:1.35em}
+</style>
+</head>
+<body>
+
+
+<div id="home">
+<button type="button" class="setbtn" id="setBtn" aria-label="الإعدادات" title="الإعدادات"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6a.5.5 0 0 0 .1-.6l-2-3.5a.5.5 0 0 0-.6-.2l-2.5 1a7.3 7.3 0 0 0-1.7-1l-.4-2.6a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 0-.5.4l-.4 2.7a7.3 7.3 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.2l-2 3.5a.5.5 0 0 0 .1.6L4.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6a.5.5 0 0 0-.1.6l2 3.5a.5.5 0 0 0 .6.2l2.5-1a7.3 7.3 0 0 0 1.7 1l.4 2.6a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.4l.4-2.7a7.3 7.3 0 0 0 1.7-1l2.5 1a.5.5 0 0 0 .6-.2l2-3.5a.5.5 0 0 0-.1-.6zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg></button>
+  <header class="hero">
+    <div class="ph" role="img" aria-label="مبنى دار المراسم لضباط الشرطة ليلاً"></div>
+    <div class="in">
+      <img src="logo.png" alt="دار المراسم لضباط الشرطة" width="360" height="231">
+      <h1>منيوهات الحفلات</h1>
+      <p class="tag"><span>دار المراسم…</span> <span>حيث تبدأ اللحظة وتبقى الذكرى</span></p>
+    </div>
+  </header>
+  <main class="wrap">
+    <ul class="halls" id="halls"></ul>
+    <div class="rules">
+      <img src="p/rules-01.jpg" alt="غلاف لائحة تنظيم حجز وإقامة الحفلات" width="1100" height="1560" loading="lazy">
+      <span class="rtx"><b>لائحة تنظيم حجز وإقامة الحفلات والمناسبات</b><span>شروط الحجز والسداد والتأجيل والإلغاء، والتأمين، والعدد النهائي، والجهات الخارجية.</span></span>
+      <a class="go" href="#rules">قراءة اللائحة</a>
+    </div>
+    <div class="shareall"><button type="button" id="waAll" class="wab"><span class="wai"></span><span>إرسال المنيوهات عبر واتساب</span></button><p>اختر جهة الاتصال على واتساب وستصله رسالة بها روابط جميع المنيوهات واللائحة.</p></div>
+    <section class="cmp" aria-labelledby="cm">
+      <h2 id="cm">مقارنة القاعات</h2>
+      <p class="rqs">السعة والاستخدام والسعر الذي يبدأ منه كل باكدج، لمساعدتكم في اختيار القاعة المناسبة.</p>
+      <div class="tw"><table>
+        <thead><tr><th scope="col">القاعة</th><th scope="col">السعة</th><th scope="col">الاستخدام</th><th scope="col">يبدأ من</th><th scope="col"><span class="sr">المنيو</span></th></tr></thead>
+        <tbody><tr><th scope="row">قاعة أخناتون</th><td class="c">من ٢٥٠ حتى ٦٠٠<small>فرد</small></td><td class="u">زفاف – خطوبة – مناسبات خاصة</td><td class="pr"><b>٢٤٢٬٥٠٠ ج</b><small>باكدج زفاف لـ ٢٥٠ فرد</small></td><td class="v"><a class="go2" href="#akhenaten">المنيو</a></td></tr><tr><th scope="row">قاعة إيزيس</th><td class="c">من ١٥٠ حتى ٣٠٠<small>فرد</small></td><td class="u">زفاف – خطوبة – مناسبات خاصة</td><td class="pr"><b>١٤٥٬٥٠٠ ج</b><small>باكدج زفاف لـ ١٥٠ فرد</small></td><td class="v"><a class="go2" href="#isis">المنيو</a></td></tr><tr><th scope="row">قاعة اللوتس</th><td class="c">من ١٠٠ حتى ٢٠٠<small>فرد</small></td><td class="u">زفاف – خطوبة – عقد قران – عقيقة</td><td class="pr"><b>٤٢٬٥٠٠ ج</b><small>باكدج زفاف لـ ١٠٠ فرد</small></td><td class="v"><a class="go2" href="#lotus">المنيو</a></td></tr><tr><th scope="row">قاعة المودة والرحمة</th><td class="c">من ١٠٠ حتى ١٥٠<small>فرد</small></td><td class="u">عقد قران</td><td class="pr"><b>١٥٬٠٠٠ ج</b><small>باكدج عقد قران لـ ١٠٠ فرد</small></td><td class="v"><a class="go2" href="#mawadda">المنيو</a></td></tr><tr><th scope="row">أعياد الميلاد</th><td class="c">من ٤٠ حتى ٧٥<small>فرد</small></td><td class="u">اللوتس – الروف توب – قاعة أوبن إير</td><td class="pr"><b>٥٬٠٠٠ ج</b><small>الروف توب لـ ٤٠ فرد</small></td><td class="v"><a class="go2" href="#birthday">المنيو</a></td></tr><tr><th scope="row">المناسبات الخاصة</th><td class="c">من ٥٠ حتى ٦٠٠<small>فرد</small></td><td class="u">مؤتمرات – اجتماعات – ندوات – كوفي بريك</td><td class="pr"><b>٥٬٠٠٠ ج</b><small>حجز القاعة، والمنيو بالفرد</small></td><td class="v"><a class="go2" href="#special">المنيو</a></td></tr><tr><th scope="row">فوتو سيشن</th><td class="c">حتى ٦<small>أفراد</small></td><td class="u">جلسات تصوير الزفاف والخطوبة بالحدائق</td><td class="pr"><b>٥٬٠٠٠ ج</b><small>رسوم الجلسة</small></td><td class="v"><a class="go2" href="#photo">المنيو</a></td></tr></tbody>
+      </table></div>
+      <p class="cn">الأسعار وفق المنيوهات المعتمدة، وتختلف حسب العدد والمنيو المختار وموعد الحفل.</p>
+    </section>
+    <section class="req" aria-labelledby="rq">
+      <h2 id="rq">طلب حجز أو استفسار</h2>
+      <p class="rqs">يُرجى استكمال بيانات المناسبة وإرسالها عبر واتساب، وسيتواصل معكم فريق الحفلات <span style="white-space:nowrap">في أقرب وقت.</span></p>
+      <form id="reqForm" novalidate>
+        <label class="f"><span>الاسم</span><input id="rqName" type="text" autocomplete="name" required></label>
+        <label class="f"><span>نوع المناسبة</span><select id="rqType"><option>زفاف</option><option>خطوبة</option><option>عقد قران</option><option>عيد ميلاد</option><option>عقيقة</option><option>مناسبة خاصة / مؤتمر</option><option>فوتو سيشن</option></select></label>
+        <label class="f"><span>القاعة</span><select id="rqHall"><option>لم أحدد بعد</option><option>قاعة أخناتون</option><option>قاعة إيزيس</option><option>قاعة اللوتس</option><option>قاعة المودة والرحمة</option><option>الروف توب</option><option>قاعة أوبن إير</option><option>قاعة اللؤلؤة</option><option>قاعة المراسم</option></select></label>
+        <label class="f"><span>التاريخ المطلوب</span><input id="rqDate" type="date"><small class="dn" id="rqDay"></small></label>
+        <label class="f"><span>العدد المتوقع</span><input id="rqCount" type="number" min="1" inputmode="numeric"></label>
+        <label class="f"><span>ملاحظات (اختياري)</span><input id="rqNote" type="text"></label>
+        <p class="err" id="rqErr" hidden>اكتب الاسم أولاً</p>
+        <a class="wa wide" id="rqSend" href="#" target="_blank" rel="noopener"><span class="wai"></span>إرسال الطلب عبر واتساب</a>
+      </form>
+    </section>
+    <section class="req vis" aria-labelledby="vs">
+      <h2 id="vs">حجز موعد معاينة</h2>
+      <p class="rqs">المعاينة يومياً من ١٠ صباحاً حتى ١٠ مساءً. اختر اليوم والساعة المناسبين، وسيؤكد معكم فريق الحفلات الموعد عبر واتساب.</p>
+      <form id="visForm" class="rqf" novalidate>
+        <label class="f"><span>الاسم</span><input id="vsName" type="text" autocomplete="name" required></label>
+        <label class="f"><span>اليوم</span><input id="vsDate" type="date" required><small class="dn" id="vsDay"></small></label>
+        <label class="f"><span>الساعة</span><select id="vsTime"></select></label>
+        <label class="f"><span>القاعة المطلوب معاينتها</span><select id="vsHall"><option>كل القاعات</option><option>قاعة أخناتون</option><option>قاعة إيزيس</option><option>قاعة اللوتس</option><option>قاعة المودة والرحمة</option><option>الروف توب</option><option>قاعة أوبن إير</option><option>قاعة اللؤلؤة</option><option>قاعة المراسم</option></select></label>
+        <p class="err" id="vsErr" hidden>اكتب الاسم واختر اليوم</p>
+        <a class="wa wide" id="vsSend" href="#" target="_blank" rel="noopener"><span class="wai"></span>تأكيد موعد المعاينة عبر واتساب</a>
+      </form>
+    </section>
+    <section class="book" aria-labelledby="bk">
+      <div>
+        <h2 id="bk">للحجز والاستفسار</h2>
+        <p>نحن في خدمتكم لأي استفسار أو لتحديد موعد لمعاينة القاعات.</p>
+        <ul class="info">
+          <li><b>مواعيد المعاينة</b><span>يومياً من ١٠ صباحاً حتى ١٠ مساءً</span></li>
+          <li><b>العنوان</b><span>شارع حديقة الزهرية، أمام برج القاهرة، الزمالك</span></li>
+        </ul>
+        <div class="tels"><a class="tel" href="tel:01111117958">01111117958</a><span class="sep">/</span><a class="tel" href="tel:01010107958">01010107958</a><span class="sep">/</span><a class="tel" href="tel:01222227958">01222227958</a></div>
+      </div>
+      <div class="acts">
+      <div class="calls"><button type="button" class="call" id="callBtn" aria-expanded="false" aria-controls="callList"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></svg>اتصل بنا</button><div class="clist" id="callList" hidden><span class="ch">اختر الرقم</span><a href="tel:01010107958"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></svg><span dir="ltr">01010107958</span></a><a href="tel:01222227958"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></svg><span dir="ltr">01222227958</span></a></div></div>
+      <a class="wa" id="waMain" href="#" target="_blank" rel="noopener"><span class="wai"></span>تواصل معنا عبر واتساب</a>
+        <a class="map" href="https://maps.app.goo.gl/WXWC2jJhyESubBve9" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>الموقع على الخريطة</a>
+      </div>
+    </section>
+    <section class="social" aria-label="تابعونا">
+      <h2>تابعونا</h2>
+      <div class="soc"><a href="https://www.instagram.com/darelmarasem" target="_blank" rel="noopener" class="ig"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4zM17.3 5.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zM12 2c-2.7 0-3 0-4.1.06C4.3 2.2 2.2 4.3 2.06 7.9 2 9 2 9.3 2 12s0 3 .06 4.1c.16 3.6 2.24 5.7 5.84 5.84C9 22 9.3 22 12 22s3 0 4.1-.06c3.6-.16 5.7-2.24 5.84-5.84C22 15 22 14.7 22 12s0-3-.06-4.1C21.78 4.3 19.7 2.22 16.1 2.06 15 2 14.7 2 12 2zm0 1.8c2.67 0 2.98 0 4.04.06 2.7.12 3.97 1.4 4.1 4.1.04 1.06.06 1.37.06 4.04s0 2.98-.06 4.04c-.13 2.7-1.4 3.97-4.1 4.1-1.06.04-1.37.06-4.04.06s-2.98 0-4.04-.06c-2.71-.13-3.97-1.41-4.1-4.1C3.82 14.98 3.8 14.67 3.8 12s0-2.98.06-4.04c.13-2.7 1.4-3.97 4.1-4.1C9.02 3.82 9.33 3.8 12 3.8z"/></svg><span dir="ltr">Instagram</span></a><a href="https://www.facebook.com/share/1FXFmzZdxc/" target="_blank" rel="noopener" class="fb"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12z"/></svg><span dir="ltr">Facebook</span></a></div>
+    </section>
+    <p class="credit">صُمّم وطُوِّر بمعرفة <b>عميد / محمد المغازي – مدير الدار</b>، ليكون دليلكم في التخطيط لمناسبتكم</p>
+  </main>
+<div class="setm" id="setM" hidden role="dialog" aria-modal="true" aria-labelledby="setT">
+  <div class="setc">
+    <button type="button" class="lbx setx" id="setX" aria-label="إغلاق">✕</button>
+    <h2 id="setT">الإعدادات</h2>
+    <form id="setLock" autocomplete="off">
+      <label for="setPin">الرقم السري</label>
+      <input id="setPin" type="password" inputmode="numeric" maxlength="12" autocomplete="off">
+      <p class="err" id="setErr" hidden>الرقم السري غير صحيح</p>
+      <button type="submit">دخول</button>
+    </form>
+    <div id="setPanel" hidden>
+      <p class="setd">تعديلات الديكورات: حذف الصور، وإضافة صور جديدة، وتغيير الترتيب.</p>
+      <div class="setl">
+        <button type="button" data-h="akhenaten">ديكورات قاعة أخناتون</button>
+        <button type="button" data-h="isis">ديكورات قاعة إيزيس</button>
+        <button type="button" data-h="lotus">ديكورات قاعة اللوتس</button>
+      </div>
+      <button type="button" class="setout" id="setOut">قفل الإعدادات</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<section id="decorV" hidden>
+  <div class="bar"><button type="button" class="hb" id="dBack">→ الرئيسية</button><h2 id="dTitle"></h2></div>
+  <div class="dv" id="dBody"></div>
+</section>
+<section id="reader" hidden>
+  <div class="bar"><button type="button" id="back">→ الرئيسية</button><h2 id="rtitle"></h2><span class="count" id="rcount"></span></div>
+  <div class="rtools"><button type="button" id="rDl"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 3a1 1 0 0 1 1 1v9.6l3.3-3.3 1.4 1.4L12 17.4l-5.7-5.7 1.4-1.4 3.3 3.3V4a1 1 0 0 1 1-1zM5 19h14v2H5z"/></svg><span>تحميل PDF</span></button><button type="button" id="rPr"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M7 3h10v4H7zM5 8h14a2 2 0 0 1 2 2v6h-4v4H7v-4H3v-6a2 2 0 0 1 2-2zm4 7v3h6v-3zm9-4.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg><span>طباعة</span></button><button type="button" id="rWa" class="wab"><span class="wai"></span><span>إرسال واتساب</span></button><span id="rMsg" role="status"></span></div>
+  <div class="pages" id="pages"></div>
+  <div class="rend">
+    <a class="home-btn dec-r" id="decR" href="#" hidden>صور ديكورات القاعة</a>
+    <button type="button" class="home-btn" id="back2">العودة للصفحة الرئيسية</button>
+    <a class="wa" id="waHall" href="#" target="_blank" rel="noopener"><span class="wai"></span><span id="waHallT">استفسر عن الحجز عبر واتساب</span></a>
+    <div class="tels"><a class="tel" href="tel:01111117958">01111117958</a><span class="sep">/</span><a class="tel" href="tel:01010107958">01010107958</a><span class="sep">/</span><a class="tel" href="tel:01222227958">01222227958</a></div>
+  </div>
+</section>
+
+<a class="fab" id="fab" href="#" target="_blank" rel="noopener" aria-label="تواصل معنا عبر واتساب"><span class="wai"></span></a>
+
+<script src="d/edits.js"></script>
+<script>
+const WA = '201111117958';
+const WAI = '<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#fff" d="M16 3a13 13 0 0 0-11.2 19.6L3 29l6.6-1.7A13 13 0 1 0 16 3zm0 23.6c-2 0-4-.6-5.7-1.6l-.4-.2-3.9 1 1-3.8-.3-.4A10.6 10.6 0 1 1 16 26.6zm5.8-7.9c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1a8.7 8.7 0 0 1-4.3-3.8c-.3-.6.3-.5.9-1.7.1-.2 0-.4 0-.5l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6a1.2 1.2 0 0 0-.9.4 3.7 3.7 0 0 0-1.1 2.7 6.4 6.4 0 0 0 1.3 3.4 14.6 14.6 0 0 0 5.6 5c2.1.9 2.9 1 4 .8a3.4 3.4 0 0 0 2.2-1.6 2.8 2.8 0 0 0 .2-1.6c-.1-.1-.3-.2-.6-.4z"/></svg>';
+const waLink = msg => `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
+const MENUS = [
+  { id: 'akhenaten', name: 'قاعة أخناتون', use: 'زفاف – خطوبة – مناسبات خاصة', cap: 'من ٢٥٠ حتى ٦٠٠ فرد', n: 17, c: '#7a2033' },
+  { id: 'isis', name: 'قاعة إيزيس', use: 'زفاف – خطوبة – مناسبات خاصة', cap: 'من ١٥٠ حتى ٣٠٠ فرد', n: 16, c: '#14595f' },
+  { id: 'lotus', name: 'قاعة اللوتس', use: 'زفاف – خطوبة – عقد قران – عقيقة', cap: 'من ١٠٠ حتى ٢٠٠ فرد', n: 14, c: '#6b5a4c' },
+  { id: 'mawadda', name: 'قاعة المودة والرحمة', use: 'عقد قران', cap: 'من ١٠٠ حتى ١٥٠ فرد', n: 7, c: '#22427a' },
+  { id: 'birthday', name: 'أعياد الميلاد', use: 'اللوتس – الروف توب – قاعة أوبن إير', cap: 'من ٤٠ حتى ٧٥ فرد حسب القاعة', n: 9, c: '#6a3d96' },
+  { id: 'special', name: 'المناسبات الخاصة', use: 'مؤتمرات – اجتماعات – ندوات – كوفي بريك', cap: 'من ٥٠ حتى ٦٠٠ فرد حسب القاعة', n: 13, c: '#5b5b60' },
+  { id: 'photo', name: 'فوتو سيشن', use: 'جلسات تصوير الزفاف والخطوبة بحدائق الدار', cap: 'حتى ٦ أفراد', n: 3, c: '#a08548' }
+];
+const RULES = { id: 'rules', name: 'لائحة تنظيم حجز وإقامة الحفلات', n: 20 };
+const BAR = { akhenaten: '#5a1625', isis: '#0d3a3e', lotus: '#4a3f37', mawadda: '#14284a', birthday: '#4a2a6b', special: '#26262a', photo: '#4d4027', rules: '#6e3b1e' };
+const AR = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+const pg = (m, i) => `p/${m.id}-${String(i).padStart(2, '0')}.jpg`;
+const GENERAL = 'دار المراسم لضباط الشرطة – أرغب في الاستفسار عن حجز حفل';
+document.querySelectorAll('.wai').forEach(e => e.outerHTML = WAI);
+document.getElementById('waMain').href = waLink(GENERAL);
+const DECOR = { akhenaten: '#decor-akhenaten', isis: '#decor-isis', lotus: '#decor-lotus' };
+const DEC = {"akhenaten": {"name": "قاعة أخناتون", "en": "AKHENATEN HALL", "cap": "من ٢٥٠ حتى ٦٠٠ فرد", "desc": "كبرى قاعات الدار، تتميز بفخامة الطابع الملكي في ديكوراتها، ويُتوَّج فيها العروسان في مراسم مستوحاة من تتويج الملك أخناتون.", "kosha": "كوشة من تشكيلة كوشات القاعة، مع إمكانية الترقية إلى الاختيار الاسبيشيال", "inc": ["حجز القاعة", "كراسي + ترابيزات", "استيدج بليكسي أسود", "دانس فلور", "كات ووك", "سيلينج", "ليزر FULL LIGHT SYSTEM", "دخان SMOKE", "شاشات عرض LED (٣ ثابتة)", "دي جي", "تصوير فيديو (٢ كاميرا WIRELESS + كرين)", "نسخة فيديو USB", "ديكور (كوشة – سنتربيس)", "سويت DAY USE للعروسة (١٢م – ٧م)"], "groups": [{"g": "الديكورات", "items": [{"n": "ترقية الكوشة إلى اختيار اسبيشيال", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "ديكور سويت العروسة", "note": "", "p": "٢٬٠٠٠ ج"}, {"n": "ديكور سويت اسبيشيال", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "ديكور سلم", "note": "", "p": "من ٣٬٠٠٠ ج إلى ١٠٬٠٠٠ ج"}, {"n": "ديكور كريدور", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "ديكور إنترانس", "note": "باب مدخل القاعة الخارجي", "p": "يبدأ من ٣٬٠٠٠ ج"}, {"n": "ديكور كات ووك", "note": "", "p": "٤٬٥٠٠ ج"}, {"n": "ديكور جيست بوك", "note": "", "p": "١٬٥٠٠ ج"}, {"n": "كتاب جيست بوك", "note": "", "p": "٥٠٠ ج"}, {"n": "فوتو بوز", "note": "", "p": "من ٦٬٠٠٠ ج إلى ٧٬٠٠٠ ج"}, {"n": "فيديو بوز", "note": "", "p": "من ٦٬٠٠٠ ج إلى ٧٬٠٠٠ ج"}, {"n": "WELCOME BOARD", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "جيرب عروسة صناعي", "note": "", "p": "٧٥٠ ج"}, {"n": "منديل كتب الكتاب", "note": "", "p": "٢٥٠ ج"}, {"n": "صينية شربات + ٢ كأس", "note": "", "p": "٥٠٠ ج"}]}, {"g": "الشاشات", "items": [{"n": "شاشة عرض للإنترانس", "note": "١٨ م", "p": "٧٬٥٠٠ ج"}, {"n": "شاشة عرض للإنترانس VISUAL", "note": "بالاستربات", "p": "١٢٬٥٠٠ ج"}, {"n": "شاشة LED", "note": "خلف الكوشة", "p": "٢٥٬٠٠٠ ج"}, {"n": "شاشة هولوجرام", "note": "", "p": "٢٬٠٠٠ ج"}]}, {"g": "العروض والمؤثرات", "items": [{"n": "شو فاير كلاسيك بالسيارة", "note": "", "p": "١٧٬٠٠٠ ج"}, {"n": "شو فاير اسبيشيال بالسيارة", "note": "", "p": "٢٧٬٠٠٠ ج"}, {"n": "درون لشو الفاير", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "شو ليزر بيم + كونو", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "فاير ورك", "note": "عدد ١", "p": "١٬٥٠٠ ج"}, {"n": "مسدس بايرو", "note": "عدد ٢", "p": "٣٬٠٠٠ ج"}, {"n": "ماكينة هيفي فوج", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "ماكينة بابلز", "note": "", "p": "١٬٠٠٠ ج"}, {"n": "ماكينة بابلز اسبيشيال", "note": "", "p": "٢٬٠٠٠ ج"}, {"n": "صور للعروسين على مبنى القاعات", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "كتابة أسماء بالليزر على مبنى القاعات", "note": "", "p": "٤٬٠٠٠ ج"}]}, {"g": "التورت", "items": [{"n": "تورتة ٣ دور", "note": "دور تورتة + ٢ FAKE", "p": "١٬٥٠٠ ج"}, {"n": "تورتة ٤٠×٦٠", "note": "", "p": "١٬٧٥٠ ج"}, {"n": "تورتة ٥ دور", "note": "", "p": "٣٬٥٠٠ ج"}, {"n": "نافورة شيكولاتة", "note": "٣ ك", "p": "٣٬٥٠٠ ج"}, {"n": "تورتة مضغوطة", "note": "", "p": "تبدأ من ٤٬٥٠٠ ج"}, {"n": "تورتة ITALIAN WEDDING", "note": "", "p": "٧٬٠٠٠ ج"}]}, {"g": "الزفة والفقرات", "items": [{"n": "زفة دمياطي + تنورة وتحطيب ومزمار", "note": "٨ أفراد", "p": "٤٬٥٠٠ ج"}, {"n": "زفة دمياطي + تنورة وتحطيب ومزمار", "note": "١٢ فرد", "p": "٧٬٥٠٠ ج"}, {"n": "شو تورتة", "note": "طبل ومزمار أو سيوف", "p": "١٬٠٠٠ ج"}]}, {"g": "السويت والغرف", "items": [{"n": "غرفة إضافية DAY USE", "note": "من ١٢ م إلى ٧ م", "p": "٣٬٥٠٠ ج"}, {"n": "سويت إضافي DAY USE", "note": "من ١٢ م إلى ٧ م", "p": "٤٬٥٠٠ ج"}, {"n": "استلام مبكر للسويت أو الغرفة", "note": "الساعة ١٠ ص", "p": "١٬٥٠٠ ج"}, {"n": "تأخير تسليم السويت أو الغرفة", "note": "حتى نهاية الحفل", "p": "١٬٥٠٠ ج"}]}], "wk": ""}, "isis": {"name": "قاعة إيزيس", "en": "ISIS HALL", "cap": "من ١٥٠ حتى ٣٠٠ فرد", "desc": "من القاعات المتميزة بالدار، تجمع بين الطابع الفرعوني والطابع العصري، وتُتوَّج فيها العروس في مراسم الملكة إيزيس.", "kosha": "كوشة من تشكيلة كوشات القاعة", "inc": ["حجز القاعة", "كراسي + ترابيزات", "استيدج بليكسي أسود", "دانس فلور", "سيلينج", "ليزر FULL LIGHT SYSTEM", "دخان SMOKE", "شاشات عرض LED (٣ ثابتة)", "دي جي", "تصوير فيديو (٢ كاميرا WIRELESS + كرين)", "نسخة فيديو USB", "ديكور (كوشة – سنتربيس)", "سويت DAY USE للعروسة (١٢م – ٧م)"], "groups": [{"g": "الديكورات", "items": [{"n": "ترقية الكوشة إلى اختيار اسبيشيال", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "ديكور سويت العروسة", "note": "", "p": "٢٬٠٠٠ ج"}, {"n": "ديكور سويت اسبيشيال", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "ديكور كريدور", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "ديكور إنترانس", "note": "باب مدخل القاعة الخارجي", "p": "يبدأ من ٣٬٠٠٠ ج"}, {"n": "ديكور جيست بوك", "note": "", "p": "١٬٥٠٠ ج"}, {"n": "كتاب جيست بوك", "note": "", "p": "٥٠٠ ج"}, {"n": "فوتو بوز", "note": "", "p": "من ٦٬٠٠٠ ج إلى ٧٬٠٠٠ ج"}, {"n": "فيديو بوز", "note": "", "p": "من ٦٬٠٠٠ ج إلى ٧٬٠٠٠ ج"}, {"n": "WELCOME BOARD", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "جيرب عروسة صناعي", "note": "", "p": "٧٥٠ ج"}, {"n": "منديل كتب الكتاب", "note": "", "p": "٢٥٠ ج"}, {"n": "صينية شربات + ٢ كأس", "note": "", "p": "٥٠٠ ج"}]}, {"g": "الشاشات", "items": [{"n": "شاشة LED", "note": "خلف الكوشة", "p": "٢٥٬٠٠٠ ج"}, {"n": "شاشة هولوجرام", "note": "", "p": "٢٬٠٠٠ ج"}]}, {"g": "العروض والمؤثرات", "items": [{"n": "شو فاير كلاسيك بالسيارة", "note": "", "p": "١٧٬٠٠٠ ج"}, {"n": "شو فاير اسبيشيال بالسيارة", "note": "", "p": "٢٧٬٠٠٠ ج"}, {"n": "درون لشو الفاير", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "شو ليزر بيم + كونو", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "فاير ورك", "note": "عدد ١", "p": "١٬٥٠٠ ج"}, {"n": "مسدس بايرو", "note": "عدد ٢", "p": "٣٬٠٠٠ ج"}, {"n": "ماكينة هيفي فوج", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "ماكينة بابلز", "note": "", "p": "١٬٠٠٠ ج"}, {"n": "ماكينة بابلز اسبيشيال", "note": "", "p": "٢٬٠٠٠ ج"}, {"n": "صور للعروسين على مبنى القاعات", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "كتابة أسماء بالليزر على مبنى القاعات", "note": "", "p": "٤٬٠٠٠ ج"}]}, {"g": "التورت", "items": [{"n": "تورتة ٣ دور", "note": "دور تورتة + ٢ FAKE", "p": "١٬٥٠٠ ج"}, {"n": "تورتة ٤٠×٦٠", "note": "", "p": "١٬٧٥٠ ج"}, {"n": "تورتة ٥ دور", "note": "", "p": "٣٬٥٠٠ ج"}, {"n": "نافورة شيكولاتة", "note": "٣ ك", "p": "٣٬٥٠٠ ج"}, {"n": "تورتة مضغوطة", "note": "", "p": "تبدأ من ٤٬٥٠٠ ج"}, {"n": "تورتة ITALIAN WEDDING", "note": "", "p": "٧٬٠٠٠ ج"}]}, {"g": "الزفة والفقرات", "items": [{"n": "زفة دمياطي + تنورة وتحطيب ومزمار", "note": "٨ أفراد", "p": "٤٬٥٠٠ ج"}, {"n": "زفة دمياطي + تنورة وتحطيب ومزمار", "note": "١٢ فرد", "p": "٧٬٥٠٠ ج"}, {"n": "شو تورتة", "note": "طبل ومزمار أو سيوف", "p": "١٬٠٠٠ ج"}]}, {"g": "السويت والغرف", "items": [{"n": "غرفة إضافية DAY USE", "note": "من ١٢ م إلى ٧ م", "p": "٣٬٥٠٠ ج"}, {"n": "سويت إضافي DAY USE", "note": "من ١٢ م إلى ٧ م", "p": "٤٬٥٠٠ ج"}, {"n": "استلام مبكر للسويت أو الغرفة", "note": "الساعة ١٠ ص", "p": "١٬٥٠٠ ج"}, {"n": "تأخير تسليم السويت أو الغرفة", "note": "حتى نهاية الحفل", "p": "١٬٥٠٠ ج"}]}], "wk": "٥٬٠٠٠ ج"}, "lotus": {"name": "قاعة اللوتس", "en": "LOTUS HALL", "cap": "من ١٠٠ حتى ٢٠٠ فرد", "desc": "أصغر قاعات الدار مساحةً وأكثرها خصوصية، يظهر فيها العروسان كزهرتين وسط حديقة مزهرة كزهرة اللوتس.", "kosha": "كوشة من تشكيلة كوشات القاعة", "inc": ["حجز القاعة", "كراسي + ترابيزات", "استيدج", "دانس فلور أسود", "سيلينج", "ليزر FULL LIGHT SYSTEM", "دخان SMOKE", "شاشات عرض LED (٢ ثابتة)", "دي جي", "تصوير فيديو HD", "نسخة فيديو USB", "ديكور (كوشة – سنتربيس)", "سويت DAY USE للعروسة (١٢م – ٧م)"], "groups": [{"g": "الديكورات", "items": [{"n": "ديكور سويت العروسة", "note": "", "p": "٢٬٠٠٠ ج"}, {"n": "ديكور سويت اسبيشيال", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "ديكور كريدور", "note": "", "p": "٣٬٠٠٠ ج"}, {"n": "ديكور جيست بوك", "note": "", "p": "١٬٥٠٠ ج"}, {"n": "كتاب جيست بوك", "note": "", "p": "٥٠٠ ج"}, {"n": "فوتو بوز", "note": "", "p": "من ٦٬٠٠٠ ج إلى ٧٬٠٠٠ ج"}, {"n": "فيديو بوز", "note": "", "p": "من ٦٬٠٠٠ ج إلى ٧٬٠٠٠ ج"}, {"n": "جيرب عروسة صناعي", "note": "", "p": "٧٥٠ ج"}, {"n": "منديل كتب الكتاب", "note": "", "p": "٢٥٠ ج"}, {"n": "صينية شربات + ٢ كأس", "note": "", "p": "٥٠٠ ج"}]}, {"g": "العروض والمؤثرات", "items": [{"n": "شو فاير كلاسيك + سيارة", "note": "", "p": "١٧٬٠٠٠ ج"}, {"n": "شو فاير اسبيشيال + سيارة", "note": "", "p": "٢٧٬٠٠٠ ج"}, {"n": "درون لشو الفاير", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "شو ليزر بيم + كونو", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "فاير ورك", "note": "عدد ١", "p": "١٬٥٠٠ ج"}, {"n": "مسدس بايرو", "note": "عدد ٢", "p": "٣٬٠٠٠ ج"}, {"n": "ماكينة هيفي فوج", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "ماكينة بابلز", "note": "", "p": "١٬٠٠٠ ج"}, {"n": "ماكينة بابلز اسبيشيال", "note": "", "p": "٢٬٠٠٠ ج"}, {"n": "شاشة هولوجرام", "note": "", "p": "٢٬٠٠٠ ج"}, {"n": "صور للعروسين على مبنى القاعات", "note": "", "p": "٤٬٠٠٠ ج"}, {"n": "كتابة أسماء بالليزر على مبنى القاعات", "note": "", "p": "٤٬٠٠٠ ج"}]}, {"g": "التورت", "items": [{"n": "تورتة ٣ دور", "note": "دور تورتة + ٢ FAKE", "p": "١٬٥٠٠ ج"}, {"n": "تورتة ٤٠×٦٠", "note": "", "p": "١٬٧٥٠ ج"}, {"n": "تورتة ٥ دور", "note": "", "p": "٣٬٥٠٠ ج"}, {"n": "نافورة شيكولاتة", "note": "٣ ك", "p": "٣٬٥٠٠ ج"}, {"n": "تورتة مضغوطة", "note": "", "p": "تبدأ من ٤٬٥٠٠ ج"}, {"n": "تورتة ITALIAN WEDDING", "note": "", "p": "٧٬٠٠٠ ج"}]}, {"g": "الزفة والفقرات", "items": [{"n": "زفة دمياطي + تنورة وتحطيب ومزمار", "note": "٨ أفراد", "p": "٤٬٥٠٠ ج"}, {"n": "زفة دمياطي + تنورة وتحطيب ومزمار", "note": "١٢ فرد", "p": "٧٬٥٠٠ ج"}, {"n": "شو تورتة", "note": "طبل ومزمار أو سيوف", "p": "١٬٠٠٠ ج"}]}, {"g": "السويت والغرف", "items": [{"n": "غرفة إضافية DAY USE", "note": "من ١٢ م إلى ٧ م", "p": "٣٬٥٠٠ ج"}, {"n": "سويت إضافي DAY USE", "note": "من ١٢ م إلى ٧ م", "p": "٤٬٥٠٠ ج"}, {"n": "استلام مبكر للسويت أو الغرفة", "note": "الساعة ١٠ ص", "p": "١٬٥٠٠ ج"}, {"n": "تأخير تسليم السويت أو الغرفة", "note": "حتى نهاية الحفل", "p": "١٬٥٠٠ ج"}]}], "wk": "٢٬٥٠٠ ج"}};
+document.getElementById('halls').innerHTML = MENUS.map(m => `<li><div class="hall" style="--c:${m.c}"><img src="${pg(m, 1)}" alt="غلاف منيو ${m.name}" width="1100" height="1560" loading="lazy"><span class="tx"><b>${m.name}</b><span class="use">${m.use}</span><dl class="spec"><dt>السعة</dt><dd>${m.cap}</dd></dl><span class="btns"><a class="go" href="#${m.id}">عرض المنيو</a>${DECOR[m.id] ? `<a class="dec" href="${DECOR[m.id]}">الديكورات</a>` : ''}</span></span></div></li>`).join('');
+const home = document.getElementById('home'), reader = document.getElementById('reader'), fab = document.getElementById('fab');
+let CURID = location.hash.slice(1);
+const GAL = {
+  akhenaten: [['الكوشة', 'ak-kosha', 'ضمن الباكدج'], ['الكوشة اسبيشيال', 'ak-kosha-sp', 'بإضافة ٤٬٠٠٠ ج'], ['السنتربيس', 'ak-cp', 'ضمن الباكدج'], ['ديكور الكريدور', 'ak-corridor', '٤٬٠٠٠ ج'], ['ديكور السلم', 'ak-stairs', 'من ٣٬٠٠٠ إلى ١٠٬٠٠٠ ج'], ['ديكور الكات ووك', 'ak-catwalk', '٤٬٥٠٠ ج'], ['ديكور الإنترانس', 'entrance', 'يبدأ من ٣٬٠٠٠ ج'], ['ديكور الجيست بوك', 'guestbook', '١٬٥٠٠ ج'], ['الويلكم بورد', 'welcome', '٤٬٠٠٠ ج'], ['شاشات الإنترانس', 'ak-led', 'من ٧٬٥٠٠ ج'], ['السبارك', 'sparkle', ''], ['أشكال التورت', 'tort', 'من ١٬٥٠٠ ج'], ['ديكور سويت العروسة', 'suite', 'من ٢٬٠٠٠ ج']],
+  isis: [['الكوشة', 'is-kosha', 'ضمن الباكدج'], ['الكوشة اسبيشيال', 'is-kosha-sp', 'بإضافة ٤٬٠٠٠ ج'], ['السنتربيس', 'is-cp', 'ضمن الباكدج'], ['ديكور الكريدور', 'is-corridor', '٤٬٠٠٠ ج'], ['ديكور الإنترانس', 'is-entrance', 'يبدأ من ٣٬٠٠٠ ج'], ['ديكور الجيست بوك', 'guestbook', '١٬٥٠٠ ج'], ['الويلكم بورد', 'welcome', '٤٬٠٠٠ ج'], ['شاشة الإنترانس', 'is-led', ''], ['السبارك', 'sparkle', ''], ['أشكال التورت', 'tort', 'من ١٬٥٠٠ ج'], ['ديكور سويت العروسة', 'suite', 'من ٢٬٠٠٠ ج']],
+  lotus: [['الكوشة', 'lo-kosha', 'ضمن الباكدج'], ['السنتربيس', 'lo-cp', 'ضمن الباكدج'], ['ديكور الكريدور', 'lo-corridor', '٣٬٠٠٠ ج'], ['ديكور الإنترانس', 'lo-entrance', ''], ['ديكور الجيست بوك', 'guestbook', '١٬٥٠٠ ج'], ['الويلكم بورد', 'welcome', ''], ['شو فاير على الدانس فلور', 'lo-fire', ''], ['أشكال التورت', 'tort', 'من ١٬٥٠٠ ج'], ['ديكور سويت العروسة', 'suite', 'من ٢٬٠٠٠ ج']]
+};
+window.DPACK = window.DPACK || {};
+const DWAIT = {};
+function DPK(k, arr) { DPACK[k] = arr; (DWAIT[k] || []).forEach(f => f()); delete DWAIT[k]; }
+const NOPACK = new Set(['is-entrance', 'lo-entrance']);
+const SPI = { 'ak-kosha': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 15, 17], 'is-kosha': [0, 1, 2, 3, 4, 5, 7, 9, 11, 12, 13, 14] };
+const PACKOF = k => k.endsWith('-sp') ? k.slice(0, -3) : k;
+function needPack(k, cb) {
+  k = PACKOF(k);
+  if (NOPACK.has(k)) DPACK[k] = DPACK[k] || [];
+  if (DPACK[k]) return cb();
+  (DWAIT[k] = DWAIT[k] || []).push(cb);
+  if (DWAIT[k].length > 1) return;
+  const s = document.createElement('script'); s.src = 'd/' + k + '.js'; s.onerror = () => document.querySelectorAll(`.gs[data-k="${k}"] .gg`).forEach(g => g.innerHTML = '<p class="gn">تعذر تحميل الصور، يُرجى إعادة فتح الصفحة.</p>'); document.head.appendChild(s);
+}
+let LB = null;
+/* ---- gallery state: order / delete / upload (saved to d/edits.js) ---- */
+window.DEDITS = window.DEDITS || {}; window.DUPL = window.DUPL || {}; window.DCODE = window.DCODE || {};
+const normCode = v => (v || '').trim().replace(/[\s.\-]+/g, '').toUpperCase().slice(0, 12);
+const SECL = {};
+let EDIT = false, DIRTY = false, ART = null;
+function secItems(hall, k) {
+  const key = hall + '|' + k, base = DPACK[PACKOF(k)] || [];
+  const sp = SPI[PACKOF(k)], isSp = k.endsWith('-sp');
+  const order = DEDITS[key] || base.map((_, i) => i).filter(i => !sp || (isSp ? sp.includes(i) : !sp.includes(i))).map(i => 'b' + i);
+  const mk = (a, t) => a ? { s: a[0], w: a[1], h: a[2], c: (DCODE[key + '|' + t] ?? a[3]) || '', t } : null;
+  return order.map(t => t[0] === 'b' ? mk(base[+t.slice(1)], t) : mk(DUPL[t.slice(1)], t)).filter(Boolean);
+}
+function drawSec(hall, sec) {
+  const k = sec.dataset.k, key = hall + '|' + k, arr = secItems(hall, k); SECL[key] = arr;
+  const g = sec.querySelector('.gg'), more = !EDIT && arr.length > 8;
+  sec.querySelector('.gc').textContent = arr.length ? AR(arr.length) + (arr.length > 1 ? ' تصميم' : ' صورة') : '';
+  g.classList.toggle('one', arr.length === 1 && !EDIT);
+  sec.classList.toggle('clip', more);
+  g.innerHTML = (arr.length ? '' : `<p class="gempty">${EDIT ? 'لا توجد صور – أضف صور هذا القسم' : 'سيتم إضافة الصور قريباً'}</p>`)
+    + arr.map((x, i) => `<div class="gw${more && i >= 8 ? ' xtra' : ''}"><button type="button" class="gi" data-i="${i}" aria-label="${sec.dataset.t} – ${AR(i + 1)}"><img src="${x.s}" width="${x.w}" height="${x.h}" alt="" loading="lazy">${x.c ? `<b class="gcode" dir="ltr">${x.c}</b>` : `<span>${AR(i + 1)}</span>`}</button>`
+      + (EDIT ? `<div class="ged"><button type="button" data-a="up" data-i="${i}" aria-label="تقديم">▶</button><button type="button" data-a="dn" data-i="${i}" aria-label="تأخير">◀</button><button type="button" data-a="code" data-i="${i}" aria-label="تعديل الكود">كود</button><button type="button" data-a="del" data-i="${i}" class="gdel" aria-label="حذف">🗑</button></div>` : '') + `</div>`).join('')
+    + (more ? `<button type="button" class="gmore">عرض كل التصميمات (${AR(arr.length)})</button>` : '')
+    + (EDIT ? `${DEDITS[key] ? '<button type="button" class="greset">استعادة الترتيب الأصلي</button>' : ''}` : '');
+  if (more) g.querySelector('.gmore').addEventListener('click', () => sec.classList.remove('clip'));
+  const hd = sec.querySelector('header'); hd.querySelector('.gadd')?.remove();
+  if (EDIT) hd.querySelector('.gc').insertAdjacentHTML('beforebegin', '<label class="gadd">＋ إضافة صورة<input type="file" accept="image/*" multiple hidden></label>');
+  g.querySelectorAll('.gi').forEach(b => b.addEventListener('click', () => { if (!EDIT) openLB(hall, k, sec.dataset.t, +b.dataset.i); }));
+  if (!EDIT) return;
+  const cur = () => arr.map(x => x.t);
+  const commit = o => { DEDITS[key] = o; DIRTY = true; edState(); drawSec(hall, sec); };
+  g.querySelectorAll('.ged button').forEach(b => b.addEventListener('click', () => {
+    const o = cur(), i = +b.dataset.i;
+    if (b.dataset.a === 'code') { const it = arr[i], v = prompt('اكتب كود التصميم (مثال: D77 أو R42)، واتركه فارغاً لإخفاء الكود', it.c); if (v === null) return; DCODE[key + '|' + it.t] = normCode(v); DIRTY = true; edState(); drawSec(hall, sec); return; }
+    if (b.dataset.a === 'del') { if (!confirm('حذف الصورة رقم ' + AR(i + 1) + '؟')) return; o.splice(i, 1); }
+    else { const j = b.dataset.a === 'up' ? i - 1 : i + 1; if (j < 0 || j >= o.length) return; [o[i], o[j]] = [o[j], o[i]]; }
+    commit(o);
+  }));
+  const rs = g.querySelector('.greset'); if (rs) rs.addEventListener('click', () => { delete DEDITS[key]; DIRTY = true; edState(); drawSec(hall, sec); });
+  hd.querySelector('.gadd input').addEventListener('change', async e => {
+    const o = cur();
+    for (const f of e.target.files) {
+      try {
+        const bm = await createImageBitmap(f), sc = Math.min(1, 900 / bm.width), c = document.createElement('canvas');
+        c.width = Math.round(bm.width * sc); c.height = Math.round(bm.height * sc); c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height);
+        const uid = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        const cd = prompt('اكتب كود التصميم للصورة: ' + f.name + '\n(مثال: D77 أو R42 – يمكن تركه فارغاً)', '');
+        DUPL[uid] = [c.toDataURL('image/jpeg', 0.75), c.width, c.height, normCode(cd)]; o.push('u' + uid);
+      } catch (err) { alert('تعذر قراءة الصورة: ' + f.name); }
+    }
+    commit(o);
+  });
+}
+function editsFile() {
+  const used = new Set(Object.values(DEDITS).flat().filter(t => t[0] === 'u').map(t => t.slice(1)));
+  const up = {}; used.forEach(u => { if (DUPL[u]) up[u] = DUPL[u]; });
+  return 'window.DEDITS=' + JSON.stringify(DEDITS) + ';\nwindow.DUPL=' + JSON.stringify(up) + ';\nwindow.DCODE=' + JSON.stringify(DCODE) + ';\n';
+}
+function edState(msg) {
+  const m = document.getElementById('edMsg'), sv = document.getElementById('edSave'); if (!m) return;
+  sv.hidden = !EDIT || !DIRTY; m.textContent = msg || (EDIT ? (DIRTY ? 'توجد تعديلات غير محفوظة' : 'وضع التعديل') : '');
+}
+async function setupEdit(hall) {
+  const bar = document.getElementById('edbar');
+  const canLocal = /[?&]edit\b/.test(location.search);
+  let can = canLocal || isAdmin();
+  try {
+    if (window.claude && claude.use) {
+      const u = await claude.use('user'); ART = await claude.use('artifact');
+      if (ART && u && (u.canEdit() || u.isOwner())) can = true;
+    }
+  } catch (e) {}
+  if (!can || !document.getElementById('edbar')) return;
+  bar.hidden = false; edState();
+  if (AUTOEDIT) { AUTOEDIT = false; setTimeout(() => document.getElementById('edToggle').click(), 0); }
+  document.getElementById('edToggle').onclick = () => {
+    EDIT = !EDIT; document.getElementById('edToggle').textContent = EDIT ? '✓ إنهاء التعديل' : '✎ إدارة الصور';
+    document.getElementById('dBody').classList.toggle('editing', EDIT);
+    document.querySelectorAll('#dBody .gs').forEach(sec => { if (sec.dataset.done) needPack(sec.dataset.k, () => drawSec(hall, sec)); else { sec.dataset.done = 1; needPack(sec.dataset.k, () => drawSec(hall, sec)); } });
+    edState();
+  };
+  document.getElementById('edSave').onclick = async () => {
+    const txt = editsFile(), sv = document.getElementById('edSave'); sv.disabled = true; edState('جارٍ الحفظ…');
+    if (ART) {
+      try { await ART.publish({ 'd/edits.js': { content: txt, contentType: 'text/javascript' } }); DIRTY = false; sv.disabled = false; edState('تم الحفظ ✓ – التعديلات ظاهرة لكل من يفتح الرابط'); return; }
+      catch (e) { if (e && e.code === 'conflict') { edState('تم تحديث الصفحة من جهاز آخر، أعد التعديل'); return; } }
+    }
+    try { const dl = window.claude && claude.use ? await claude.use('downloads') : null; if (dl) { await dl.save({ filename: 'edits.js', data: new Blob([txt], { type: 'text/javascript' }) }); sv.disabled = false; edState('تم تنزيل ملف edits.js – أرسله لنا لتحديث الصفحة'); return; } } catch (e) { sv.disabled = false; edState('لم يتم الحفظ'); return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], { type: 'text/javascript' })); a.download = 'edits.js'; document.body.appendChild(a); a.click(); a.remove();
+    sv.disabled = false; edState('تم تنزيل ملف edits.js – ضعه داخل مجلد d في الموقع');
+  };
+}
+
+/* ---- settings (PIN) ---- */
+const PINH = 1908858709;
+function pinHash(x) { let v = 2166136261; for (const ch of x) { v ^= ch.charCodeAt(0); v = Math.imul(v, 16777619) >>> 0; } return v; }
+const isAdmin = () => { try { return sessionStorage.getItem('dm-admin') === '1'; } catch (e) { return !!window.__dmAdmin; } };
+const setAdmin = on => { window.__dmAdmin = on; try { on ? sessionStorage.setItem('dm-admin', '1') : sessionStorage.removeItem('dm-admin'); } catch (e) { } };
+let AUTOEDIT = false;
+(function () {
+  const m = document.getElementById('setM'), lock = document.getElementById('setLock'), panel = document.getElementById('setPanel'), pin = document.getElementById('setPin'), err = document.getElementById('setErr');
+  const view = () => { const a = isAdmin(); lock.hidden = a; panel.hidden = !a; err.hidden = true; pin.value = ''; };
+  const open = () => { view(); m.hidden = false; document.documentElement.style.overflow = 'hidden'; if (!isAdmin()) setTimeout(() => pin.focus(), 50); };
+  const close = () => { m.hidden = true; document.documentElement.style.overflow = ''; };
+  document.getElementById('setBtn').addEventListener('click', open);
+  document.getElementById('setX').addEventListener('click', close);
+  m.addEventListener('click', e => { if (e.target === m) close(); });
+  lock.addEventListener('submit', e => { e.preventDefault(); if (pinHash('dar-marasem:' + pin.value.trim()) === PINH) { setAdmin(true); view(); } else { err.hidden = false; pin.select(); } });
+  document.getElementById('setOut').addEventListener('click', () => { setAdmin(false); close(); if (EDIT) location.reload(); });
+  panel.querySelectorAll('.setl button').forEach(b => b.addEventListener('click', () => { close(); AUTOEDIT = true; go('decor-' + b.dataset.h); }));
+})();
+
+/* ---- download / print ---- */
+const PDFN = { akhenaten: 'منيو قاعة أخناتون', isis: 'منيو قاعة إيزيس', lotus: 'منيو قاعة اللوتس', mawadda: 'منيو قاعة المودة والرحمة', birthday: 'منيو أعياد الميلاد', special: 'منيو المناسبات الخاصة', photo: 'منيو الفوتو سيشن', rules: 'لائحة تنظيم حجز وإقامة الحفلات' };
+const curDoc = () => CURID === 'rules' ? RULES : MENUS.find(x => x.id === CURID);
+async function imgBytes(src) { if (src.startsWith('data:')) { const bs = atob(src.slice(src.indexOf(',') + 1)), u = new Uint8Array(bs.length); for (let i = 0; i < bs.length; i++) u[i] = bs.charCodeAt(i); return u; } const r = await fetch(src); return new Uint8Array(await r.arrayBuffer()); }
+function jpgSize(b) { let i = 2; while (i < b.length) { if (b[i] !== 0xFF) { i++; continue; } const m = b[i + 1], L = (b[i + 2] << 8) | b[i + 3]; if (m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC) return [(b[i + 7] << 8) | b[i + 8], (b[i + 5] << 8) | b[i + 6]]; i += 2 + L; } return [1100, 1560]; }
+async function buildPdf(m) {
+  const enc = new TextEncoder(), parts = [], offs = []; let len = 0;
+  const push = x => { const u = typeof x === 'string' ? enc.encode(x) : x; parts.push(u); len += u.length; };
+  const obj = (n, body) => { offs[n] = len; push(n + ' 0 obj\n'); body(); push('\nendobj\n'); };
+  push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+  const N = m.n, kids = [];
+  for (let k = 0; k < N; k++) kids.push((3 + k * 3) + ' 0 R');
+  obj(1, () => push('<< /Type /Catalog /Pages 2 0 R >>'));
+  obj(2, () => push(`<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${N} >>`));
+  for (let k = 0; k < N; k++) {
+    const b = await imgBytes(pg(m, k + 1)), [w, h] = jpgSize(b), W = 595.28, H = +(W * h / w).toFixed(2), p = 3 + k * 3;
+    const cs = `q ${W} 0 0 ${H} 0 0 cm /Im0 Do Q`;
+    obj(p, () => push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /XObject << /Im0 ${p + 1} 0 R >> >> /Contents ${p + 2} 0 R >>`));
+    obj(p + 1, () => { push(`<< /Type /XObject /Subtype /Image /Width ${w} /Height ${h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${b.length} >>\nstream\n`); push(b); push('\nendstream'); });
+    obj(p + 2, () => push(`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`));
+  }
+  const n = 3 + N * 3, xref = len;
+  push(`xref\n0 ${n}\n0000000000 65535 f \n` + offs.slice(1, n).map(o => String(o).padStart(10, '0') + ' 00000 n \n').join('') + `trailer\n<< /Size ${n} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
+  return new Blob(parts, { type: 'application/pdf' });
+}
+async function pdfBlob(m) {
+  try { const r = await fetch('f/' + m.id + '.pdf'); if (r.ok) { const b = await r.blob(); if (b.size > 1000) return new Blob([b], { type: 'application/pdf' }); } } catch (e) { }
+  return buildPdf(m);
+}
+const rMsg = t => { document.getElementById('rMsg').textContent = t || ''; };
+document.getElementById('rDl').addEventListener('click', async () => {
+  const m = curDoc(); if (!m) return; const btn = document.getElementById('rDl'); btn.disabled = true; rMsg('جارٍ تجهيز الملف…');
+  try {
+    const blob = await pdfBlob(m), name = PDFN[m.id] + ' – دار المراسم.pdf';
+    let dl = null; try { dl = window.claude && claude.use ? await claude.use('downloads') : null; } catch (e) { }
+    if (dl) { await dl.save({ filename: name, data: blob }); rMsg(''); }
+    else { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000); rMsg(''); }
+  } catch (e) { rMsg(e && e.code === 'user_declined' ? '' : 'تعذر التحميل، حاول مرة أخرى'); }
+  btn.disabled = false;
+});
+document.getElementById('rPr').addEventListener('click', async () => {
+  const imgs = [...document.querySelectorAll('#pages img')]; rMsg('جارٍ تجهيز الطباعة…');
+  imgs.forEach(i => i.loading = 'eager');
+  await Promise.all(imgs.map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; })));
+  rMsg(''); document.body.classList.add('printing');
+  setTimeout(() => { try { window.print(); } catch (e) { rMsg('الطباعة غير متاحة هنا – استخدم تحميل PDF ثم اطبعه'); } setTimeout(() => document.body.classList.remove('printing'), 500); }, 50);
+});
+
+/* ---- share on WhatsApp ---- */
+const ART_URL = 'https://claude.ai/artifact/RjeQ3KbcWDRnkMKVdLDuUT';
+const siteUrl = () => /^https?:$/.test(location.protocol) && !/claudeusercontent|claude\.ai|anthropic/.test(location.host) ? location.origin + location.pathname : ART_URL;
+const shareText = (title, link) => `دار المراسم لضباط الشرطة يرحب بكم ✨\n\nيسعدنا مشاركتكم ${title}:\n${link}\n\nنحن في خدمتكم لأي استفسار أو لتحديد موعد لمعاينة القاعات:\n01010107958 – 01222227958 – 01111117958\n\nنتشرف بزيارتكم 🌹`;
+const openWa = txt => { const a = document.createElement('a'); a.href = 'https://wa.me/?text=' + encodeURIComponent(txt); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); };
+async function shareFiles(files, txt) {
+  try { if (navigator.canShare && navigator.canShare({ files })) { await navigator.share({ files, text: txt }); return true; } } catch (e) { if (e && e.name === 'AbortError') return true; }
+  return false;
+}
+document.getElementById('rWa').addEventListener('click', async () => {
+  const m = curDoc(); if (!m) return; const title = PDFN[m.id].replace('منيو ', 'منيو ');
+  const link = siteUrl() + '#' + m.id, txt = shareText(title, link);
+  rMsg('جارٍ التجهيز…');
+  let ok = false;
+  try { const blob = await pdfBlob(m); ok = await shareFiles([new File([blob], PDFN[m.id] + ' – دار المراسم.pdf', { type: 'application/pdf' })], txt); } catch (e) { }
+  rMsg(''); if (!ok) openWa(txt);
+});
+document.getElementById('waAll').addEventListener('click', () => {
+  const base = siteUrl();
+  const lines = MENUS.map(m => `• ${PDFN[m.id]}: ${base}#${m.id}`).concat([`• ${PDFN.rules}: ${base}#rules`]).join('\n');
+  openWa(`دار المراسم لضباط الشرطة يرحب بكم ✨\n\nيسعدنا مشاركتكم منيوهات قاعاتنا ومناسباتنا بالباكدجات والأسعار:\n${base}\n\n${lines}\n\nنحن في خدمتكم لأي استفسار أو لتحديد موعد لمعاينة القاعات:\n01010107958 – 01222227958 – 01111117958\n\nنتشرف بزيارتكم 🌹`);
+});
+window.addEventListener('beforeunload', e => { if (DIRTY) { e.preventDefault(); e.returnValue = ''; } });
+
+function renderDecor(id) {
+  const d = DEC[id], col = BAR[id], gal = GAL[id];
+  const dv = document.getElementById('decorV'); dv.style.setProperty('--hall', col);
+  document.getElementById('dTitle').textContent = 'ديكورات ' + d.name;
+  document.title = 'ديكورات ' + d.name + ' – دار المراسم';
+  fab.href = waLink(`دار المراسم لضباط الشرطة – أرغب في الاستفسار عن ديكورات ${d.name}`);
+  const nav = gal.map((g, i) => `<a href="#g${i}" data-g="${i}">${g[0]}</a>`).join('');
+  const secs = gal.map((g, i) => `<section class="gs" id="g${i}" data-k="${g[1]}" data-t="${g[0]}">
+      <header><h2>${g[0]}</h2>${g[2] ? `<span class="gp${g[2] === 'ضمن الباكدج' ? ' inc' : ''}">${g[2]}</span>` : ''}<span class="gc"></span></header>
+      ${g[3] ? `<p class="gn">${g[3]}</p>` : ''}
+      <div class="gg"><div class="gload"></div></div>
+    </section>`).join('');
+  const tabs = d.groups.map((g, i) => `<button type="button" role="tab" class="dt${i ? '' : ' on'}" aria-selected="${!i}" data-i="${i}">${g.g}</button>`).join('');
+  const panes = d.groups.map((g, i) => `<ul class="dl" data-i="${i}"${i ? ' hidden' : ''}>${g.items.map(it => `<li><span class="dn2"><b>${it.n}</b>${it.note ? `<small>${it.note}</small>` : ''}</span><span class="dot"></span><span class="dp">${it.p}</span></li>`).join('')}</ul>`).join('');
+  document.getElementById('dBody').innerHTML = `
+  <header class="dh"><span class="den">${d.en}</span><h1>${d.name}</h1>
+    <dl class="dcap"><div><dt>السعة</dt><dd>${d.cap}</dd></div><div><dt>اختر ديكورك</dt><dd>وأرسل لنا رقمه</dd></div></dl></header>
+  <div class="edbar" id="edbar" hidden><button type="button" id="edToggle">✎ إدارة الصور</button><span id="edMsg"></span><button type="button" id="edSave" hidden>حفظ التعديلات</button></div>
+  <nav class="gnav" aria-label="أقسام الديكورات">${nav}</nav>
+  ${secs}
+  <details class="dprice"><summary>أسعار جميع الإضافات خارج الباكدج</summary>
+    <div class="dtabs" role="tablist">${tabs}</div>${panes}
+    <p class="dnote">الأسعار وفق القائمة المعتمدة بالدار، وتُضاف إلى قيمة الباكدج عند الاختيار.</p>
+  </details>
+  <div class="dend">
+    <a class="dgo" href="#${id}">عرض منيو ${d.name}</a>
+    <button type="button" class="home-btn" id="dBack2">العودة للصفحة الرئيسية</button>
+  </div>`;
+  document.getElementById('dBack2').addEventListener('click', goHome);
+  setupEdit(id);
+  document.querySelectorAll('#dBody .dt').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#dBody .dt').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-selected', String(x === b)); });
+    document.querySelectorAll('#dBody .dl').forEach(u => u.hidden = u.dataset.i !== b.dataset.i);
+  }));
+  document.querySelectorAll('#dBody .gnav a').forEach(a => a.addEventListener('click', e => { e.preventDefault(); document.getElementById('g' + a.dataset.g).scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
+  const fill = sec => {
+    if (sec.dataset.done) return; sec.dataset.done = 1;
+    needPack(sec.dataset.k, () => drawSec(id, sec));
+  };
+  const secsEl = [...document.querySelectorAll('#dBody .gs')];
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { fill(e.target); io.unobserve(e.target); } }), { rootMargin: '600px 0px' });
+    secsEl.forEach(s => io.observe(s));
+  } else secsEl.forEach(fill);
+}
+function openLB(hall, k, t, i) {
+  const arr = SECL[hall + '|' + k], name = DEC[hall].name;
+  if (!LB) {
+    LB = document.createElement('div'); LB.className = 'lb'; LB.setAttribute('role', 'dialog'); LB.setAttribute('aria-modal', 'true');
+    LB.innerHTML = `<div class="lbt"><button type="button" class="lbx" aria-label="إغلاق">✕</button><b class="lbh"></b><span class="lbc"></span></div>
+      <div class="lbs"><button type="button" class="lbn lbprev" aria-label="السابق">›</button><img class="lbi" alt=""><button type="button" class="lbn lbnext" aria-label="التالي">‹</button></div>
+      <p class="lbk" hidden></p><a class="wa lbw" target="_blank" rel="noopener"><span class="wai"></span>اختيار هذا التصميم عبر واتساب</a>`;
+    document.body.appendChild(LB);
+    LB.querySelectorAll('.wai').forEach(x => x.outerHTML = WAI);
+    LB.querySelector('.lbx').addEventListener('click', closeLB);
+    LB.querySelector('.lbprev').addEventListener('click', () => stepLB(-1));
+    LB.querySelector('.lbnext').addEventListener('click', () => stepLB(1));
+    let sx = null; const s = LB.querySelector('.lbs');
+    s.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+    s.addEventListener('touchend', e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 40) stepLB(dx > 0 ? 1 : -1); sx = null; });
+    document.addEventListener('keydown', e => { if (!LB || LB.hidden) return; if (e.key === 'Escape') closeLB(); if (e.key === 'ArrowLeft') stepLB(1); if (e.key === 'ArrowRight') stepLB(-1); });
+  }
+  LB.st = { hall, k, t, i, name, n: arr.length }; LB.hidden = false; document.documentElement.style.overflow = 'hidden'; showLB();
+}
+function showLB() {
+  const s = LB.st, x = SECL[s.hall + '|' + s.k][s.i];
+  LB.querySelector('.lbi').src = x.s; LB.querySelector('.lbh').textContent = s.t + ' – ' + s.name; const lk = LB.querySelector('.lbk'); lk.textContent = x.c ? 'كود التصميم: ' : ''; if (x.c) { const b = document.createElement('b'); b.dir = 'ltr'; b.textContent = x.c; lk.appendChild(b); } lk.hidden = !x.c;
+  LB.querySelector('.lbc').textContent = AR(s.i + 1) + ' / ' + AR(s.n);
+  LB.querySelector('.lbw').href = waLink(`دار المراسم لضباط الشرطة\nأرغب في اختيار: ${s.t} – ${x.c ? 'كود ' + x.c : 'تصميم رقم ' + AR(s.i + 1)}\n${s.name}`);
+  LB.querySelectorAll('.lbn').forEach(b => b.hidden = s.n < 2);
+}
+function stepLB(d) { const s = LB.st; s.i = (s.i + d + s.n) % s.n; showLB(); }
+function closeLB() { LB.hidden = true; document.documentElement.style.overflow = ''; }
+
+function show() {
+  if (LB && !LB.hidden) closeLB();
+  const dv = document.getElementById('decorV'); dv.hidden = true;
+  if (CURID.startsWith('decor-') && DEC[CURID.slice(6)]) { renderDecor(CURID.slice(6)); home.hidden = true; reader.hidden = true; dv.hidden = false; window.scrollTo({ top: 0, behavior: 'instant' }); return; }
+  const h = CURID, m = h === 'rules' ? RULES : MENUS.find(x => x.id === h);
+  if (!m) { if (window.DMMenu) window.DMMenu.clear(); reader.hidden = true; home.hidden = false; fab.href = waLink(GENERAL); document.title = 'منيوهات دار المراسم'; return; }
+  const msg = m.id === 'rules' ? GENERAL : `دار المراسم لضباط الشرطة – أرغب في الاستفسار عن حجز ${m.name}`;
+  document.getElementById('rtitle').textContent = m.id === 'rules' ? m.name : 'منيو ' + m.name;
+  document.getElementById('rcount').textContent = AR(m.n) + ' صفحة';
+  document.getElementById('waHallT').textContent = m.id === 'rules' ? 'تواصل معنا عبر واتساب' : `استفسر عن حجز ${m.name} عبر واتساب`;
+  { const dr = document.getElementById('decR'), du = DECOR[m.id]; dr.hidden = !du; if (du) dr.href = du; }
+  document.getElementById('waHall').href = waLink(msg); fab.href = waLink(msg);
+  reader.style.setProperty('--hall', BAR[m.id]);
+  document.getElementById('pages').innerHTML = Array.from({ length: m.n }, (_, k) => `<img src="${pg(m, k + 1)}" alt="${m.name} – صفحة ${AR(k + 1)}" width="1100" height="1560" ${k > 1 ? 'loading="lazy"' : ''}>`).join('');
+  if (window.DMMenu) { window.DMMenu.render(document.getElementById('pages'), m.id); document.getElementById('rcount').textContent = ''; }
+  home.hidden = true; reader.hidden = false; window.scrollTo(0, 0);
+}
+function go(id) { CURID = id; try { history.pushState(null, '', '#' + id); } catch (e) { } show(); }
+function goHome() { CURID = ''; try { history.pushState(null, '', location.pathname + location.search); } catch (e) { } show(); window.scrollTo({ top: 0, behavior: 'instant' }); requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'instant' })); }
+document.getElementById('back').addEventListener('click', goHome);
+document.getElementById('back2').addEventListener('click', goHome);
+document.getElementById('dBack').addEventListener('click', goHome);
+document.addEventListener('click', e => { const a = e.target.closest('a.go, a.go2, a.dec, a.dec-r, a.dgo'); if (!a) return; e.preventDefault(); go(a.getAttribute('href').slice(1)); });
+
+const rq = id => document.getElementById(id), AD = v => v ? String(v).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]) : '';
+function rqMsg() {
+  const d = rq('rqDate').value, L = ['دار المراسم لضباط الشرطة – طلب حجز / استفسار', '', 'الاسم: ' + rq('rqName').value.trim(), 'المناسبة: ' + rq('rqType').value, 'القاعة: ' + rq('rqHall').value];
+  if (d) L.push('التاريخ المطلوب: ' + dayName(d));
+  if (rq('rqCount').value) L.push('العدد المتوقع: ' + rq('rqCount').value + ' فرد');
+  if (rq('rqNote').value.trim()) L.push('ملاحظات: ' + rq('rqNote').value.trim());
+  return L.join('\n'); }
+function rqSync() { rq('rqSend').href = waLink(rqMsg()); rq('rqDay').textContent = dayName(rq('rqDate').value); if (rq('rqName').value.trim()) rq('rqErr').hidden = true; }
+['rqName', 'rqType', 'rqHall', 'rqDate', 'rqCount', 'rqNote'].forEach(i => { rq(i).addEventListener('input', rqSync); rq(i).addEventListener('change', rqSync); });
+rq('rqSend').addEventListener('click', e => { if (!rq('rqName').value.trim()) { e.preventDefault(); rq('rqErr').hidden = false; rq('rqName').focus(); } });
+rq('reqForm').addEventListener('submit', e => e.preventDefault());
+rqSync();
+
+const cb = rq('callBtn'), cl = rq('callList');
+cb.addEventListener('click', () => { const o = cl.hidden; cl.hidden = !o; cb.setAttribute('aria-expanded', String(o)); });
+
+const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'], MON = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+function dayName(v) { if (!v) return ''; const [y, m, d] = v.split('-').map(Number), t = new Date(y, m - 1, d); return `${DAYS[t.getDay()]} ${AD(d)} ${MON[m - 1]} ${AD(y)}`; }
+function ymd(t) { return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); }
+const TODAY = ymd(new Date());
+['rqDate', 'vsDate'].forEach(i => { rq(i).min = TODAY; rq(i).addEventListener('click', () => { try { rq(i).showPicker(); } catch (e) { } }); });
+const HRS = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21].map(h => { const h12 = h > 12 ? h - 12 : h, p = h < 12 ? 'صباحاً' : (h < 17 ? 'ظهراً' : 'مساءً'); return `الساعة ${AD(h12)} ${h === 12 ? 'ظهراً' : p}`; });
+rq('vsTime').innerHTML = HRS.map(x => `<option>${x}</option>`).join('');
+function vsMsg() {
+  return ['دار المراسم لضباط الشرطة – طلب موعد معاينة', '', 'الاسم: ' + rq('vsName').value.trim(), 'اليوم: ' + (dayName(rq('vsDate').value) || '—'), 'الموعد: ' + rq('vsTime').value, 'القاعة: ' + rq('vsHall').value].join('\n'); }
+function vsSync() { rq('vsSend').href = waLink(vsMsg()); rq('vsDay').textContent = dayName(rq('vsDate').value); if (rq('vsName').value.trim() && rq('vsDate').value) rq('vsErr').hidden = true; }
+['vsName', 'vsDate', 'vsTime', 'vsHall'].forEach(i => { rq(i).addEventListener('input', vsSync); rq(i).addEventListener('change', vsSync); });
+rq('vsSend').addEventListener('click', e => { if (!rq('vsName').value.trim() || !rq('vsDate').value) { e.preventDefault(); rq('vsErr').hidden = false; (rq('vsName').value.trim() ? rq('vsDate') : rq('vsName')).focus(); } });
+rq('visForm').addEventListener('submit', e => e.preventDefault());
+vsSync();
+window.addEventListener('hashchange', () => { CURID = location.hash.slice(1); show(); });
+window.addEventListener('popstate', () => { CURID = location.hash.slice(1); show(); });
+show();
+</script>
+
+<script src="menu/menu.js"></script>
+<script>if (location.hash.length > 1) show();</script>
+<script src="bot/bot.js" defer></script>
+</body>
+</html>
