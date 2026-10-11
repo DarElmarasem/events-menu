@@ -247,6 +247,14 @@ body.printing .dmb-launch,body.printing .dmb-panel{display:none!important}
 .dmb-chips button{padding:10px 18px;border-radius:999px;border:0;background:linear-gradient(180deg,#F1DCA8,#C8A464);color:#0A1120;font:700 14px/1.3 var(--sans);cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(200,164,100,.35),inset 0 1px 0 rgba(255,255,255,.5)}
 .dmb-chips button:hover{background:linear-gradient(180deg,#F6E6BE,#D2B071);color:#0A1120;box-shadow:0 6px 18px rgba(200,164,100,.5),inset 0 1px 0 rgba(255,255,255,.5)}
 .dmb-chips button:active{transform:scale(.97)}
+.dmb-idle{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(5,9,18,.72);backdrop-filter:blur(3px);padding:20px}
+.dmb-idle>div{background:#FCFAF4;color:#0A1120;border-radius:20px;padding:22px 22px 18px;max-width:340px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);border:2px solid #C8A464}
+.dmb-idle b{display:block;font:800 20px/1.4 var(--sans)}
+.dmb-idle p{margin:8px 0 16px;font:500 15px/1.7 var(--sans);color:#3A4152}
+.dmb-idle .dmb-cnt{font-weight:800;color:#5E1B2C}
+.dmb-idle button{display:block;width:100%;margin-top:8px;padding:12px;border-radius:14px;font:700 15px var(--sans);cursor:pointer}
+.dmb-idle .dmb-idle-k{border:0;background:linear-gradient(180deg,#F1DCA8,#C8A464);color:#0A1120}
+.dmb-idle .dmb-idle-r{border:1px solid #0A1120;background:transparent;color:#0A1120}
 .dmb-in{display:flex;gap:9px;padding:12px 14px 13px;background:linear-gradient(180deg,#0E182B,#0A1120);position:relative}
 .dmb-in:before{content:"";position:absolute;left:14px;right:14px;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,164,100,.7),transparent)}
 .dmb-in input{flex:1;min-width:0;height:48px;border-radius:14px;border:1px solid rgba(200,164,100,.35);background:var(--paper);color:var(--ink);padding:0 16px;font:16px var(--sans);direction:rtl}
@@ -524,6 +532,34 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
     setZ(); }
   navSync();
   panel.querySelector('.dmb-rs').addEventListener('click', () => { log.innerHTML = ''; reset(); HIST = []; navSync(); welcome(); });
+  /* ---- لو العميل خلص أو ساب الشاشة ومشي: يرجع المساعد لصفحته الرئيسية تلقائياً (للعميل اللي بعده) ---- */
+  (() => {
+    const IDLE = window.DMB_IDLE || 180000, IDLE_DONE = window.DMB_IDLE_DONE || 60000, WARN = window.DMB_WARN || 20000;
+    let tm = null, wt = null, box = null;
+    const used = () => !!log.querySelector('.dmb-u');
+    const hideWarn = () => { if (wt) { clearInterval(wt); wt = null; } if (box) { box.remove(); box = null; } };
+    const restart = () => {
+      hideWarn();
+      try { localStorage.removeItem('dmb-lead-v1'); localStorage.removeItem(LKEY); localStorage.removeItem('dmb-lang'); localStorage.removeItem('dmb-z'); } catch (e) { }
+      try { sessionStorage.clear(); } catch (e) { }
+      const u = new URL(location.href); u.hash = ''; if (/[?&]ai=1/.test(location.search) || !panel.hidden) u.searchParams.set('ai', '1');
+      location.replace(u.toString());
+    };
+    const warn = () => {
+      if (!used() || panel.hidden && !/[?&]ai=1/.test(location.search)) return arm();
+      let left = Math.round(WARN / 1000);
+      box = document.createElement('div'); box.className = 'dmb-idle';
+      box.innerHTML = `<div><b>${EN() ? 'Still there?' : 'لسه معايا؟ 🌷'}</b><p>${EN() ? 'The assistant will start over for the next guest in' : 'المساعد هيرجع للبداية للعميل اللي بعده خلال'} <span class="dmb-cnt">${AD(left)}</span> ${EN() ? 'sec' : 'ثانية'}</p><button type="button" class="dmb-idle-k">${EN() ? "Yes, I'm here" : 'أيوه، لسه معاك'}</button><button type="button" class="dmb-idle-r">${EN() ? 'Start over now' : 'ابدأ من الأول'}</button></div>`;
+      panel.appendChild(box);
+      box.querySelector('.dmb-idle-k').onclick = e => { e.stopPropagation(); hideWarn(); arm(); };
+      box.querySelector('.dmb-idle-r').onclick = e => { e.stopPropagation(); restart(); };
+      wt = setInterval(() => { left--; const i = box && box.querySelector('.dmb-cnt'); if (i) i.textContent = AD(Math.max(left, 0)); if (left <= 0) restart(); }, 1000);
+    };
+    const arm = () => { clearTimeout(tm); if (box) return; let dn = false; try { dn = !!(LEAD && LEAD.done); } catch (e) { } tm = setTimeout(warn, dn ? IDLE_DONE : IDLE); };
+    ['pointerdown', 'keydown', 'input', 'wheel', 'touchstart'].forEach(ev => document.addEventListener(ev, e => { if (box && box.contains(e.target)) return; if (!box) arm(); }, { passive: true, capture: true }));
+    log.addEventListener('scroll', () => { if (!box) arm(); }, { passive: true });
+    setTimeout(arm, 0);
+  })();
   const lgBtn = panel.querySelector('.dmb-lg');
   function applyLang() {
     panel.classList.toggle('dmb-en', EN());
@@ -952,7 +988,8 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
     if (!EN() && W('خطه الدفع', 'خطه السداد', 'هدفع امتي', 'هدفع ازاي', 'الدفع ازاي', 'السداد ازاي', 'ادفع علي دفعات', 'علي دفعات', 'اقساط', 'تقسيط', 'بالتقسيط', 'مواعيد الدفع', 'مواعيد السداد', 'جدول السداد', 'هدفع كام دلوقتي', 'المطلوب دلوقتي', 'ادفع كام الاول') && (K.halls[S.hall] && S.count)) { payPlanAns(); return true; }
     if (!EN() && W('حاسبه', 'الحاسبه', 'احسبها بنفسي', 'احسب بنفسي', 'اجرب الاسعار', 'اغير العدد واشوف')) { calcCard(halls[0]); return true; }
     if (!EN() && W('جدول التحضيرات', 'تحضيرات الفرح', 'فاضل كام يوم', 'العد التنازلي', 'خطوات التحضير', 'امتي اعمل ايه', 'الجدول الزمني', 'المواعيد المهمه')) { timelineAns(); return true; }
-    if (!EN() && W('قارن الباكدجات', 'مقارنه الباكدجات', 'قارنلي الباكدجات', 'قارن المنيوهات', 'مقارنه المنيوهات', 'الفرق بين المنيوهات', 'انهي منيو احسن') && K.halls[S.hall] && S.count) { threePkgAns(); return true; }
+    if (!EN() && W('قارن الباكدجات', 'مقارنه الباكدجات', 'قارنلي الباكدجات', 'قارن المنيوهات', 'مقارنه المنيوهات', 'الفرق بين المنيوهات', 'انهي منيو احسن', 'قارن الست منيو', 'الفرق بين الست منيو', 'قارن السيت منيو', 'الفرق بين السيت منيو', 'قارن الاوبن بوفيه', 'الفرق بين الاوبن بوفيه', 'الفرق بين البوفيهات', 'قارن البوفيهات', 'الفرق بين المنيو') && (K.halls[S.hall] || halls[0])) { if (!K.halls[S.hall]) S.hall = halls[0]; if (count) S.count = count; menusCompareAns(W('اوبن', 'بوفيه', 'البوفيهات') ? 'ob' : W('ست منيو', 'سيت منيو', 'الست', 'السيت') ? 'sm' : null); return true; }
+    if (!EN() && (W('منتصف الاسبوع ولا', 'وسط الاسبوع ولا', 'نهايه الاسبوع ولا', 'اخر الاسبوع ولا', 'الفرق بين منتصف الاسبوع', 'الفرق بين وسط الاسبوع', 'الفرق بين نهايه الاسبوع', 'الفرق بين اخر الاسبوع', 'فرق الويك اند', 'الويك اند ولا', 'اوفر يوم', 'انهي يوم اوفر', 'يوم ارخص', 'ايام ارخص', 'نوفر كام', 'هوفر كام'))) { if (halls[0]) S.hall = halls[0]; if (count) S.count = count; dayCompareAns(); return true; }
     if (!EN() && W('احفظ عرض السعر', 'صوره لعرض السعر', 'عرض السعر صوره', 'ابعتلي عرض السعر')) { saveQuoteImg(); return true; }
     if (!EN() && W('اكلم موظف', 'عايز موظف', 'عاوز موظف', 'محتاج موظف', 'كلمني موظف', 'حد يكلمني', 'حد يتصل بيا', 'حد يرد عليا', 'عايز اكلم حد', 'عاوز اكلم حد', 'اكلم حد', 'خدمه العملاء', 'بني ادم', 'انسان حقيقي', 'مش عاوز بوت', 'مش عايز بوت', 'كلموني', 'اتصلوا بيا', 'عايز اتكلم مع حد', 'عاوز اتكلم مع حد', 'موظف الحجز', 'موظف حجز', 'المسؤول')) { humanAns(); return true; }
     if (!EN()) {
@@ -1390,7 +1427,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
       bot(`<p class="dmb-h">تكلفة تقديرية – ${h.name}</p><p>${AD(n)} فرد${dayTxt ? ' – ' + dayTxt : ''}${dateNote}</p><table class="dmb-t"><tr><th>المنيو</th><th>الإجمالي التقديري</th></tr>${rows.join('')}</table>${notesFor(h, n, baseN, day)}${ctaLine(hid)}${src(hid)}`, [{ t: 'عرض سعر تفصيلي بالإضافات', fn: () => startQuote({ ev: ['wedding', 'engagement'].includes(S.event) ? S.event : 'wedding', hall: hid, n, day }), cls: 'pri' }, { t: 'تجهيز طلب الحجز', fn: () => startBook() }]);
     }
     // ordered by what clients need next: the menus → set menu or buffet → the other day → viewing → add-ons → change the count
-    chips([{ t: 'احسبها بنفسك', fn: () => calcCard(hid) }, ...h.menus.filter(menuOK).slice(0, 2).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.replace(/\d+$/, ''), n: +(m.id.match(/\d+$/) || [0])[0] }) })), { t: 'قارن ٣ باكدجات', fn: threePkgAns }, ...(h.menus.some(m => /^ob/.test(m.id)) ? [{ t: 'ست منيو ولا أوبن بوفيه؟', q: 'الفرق بين الست منيو والاوبن بوفيه' }] : []), ...(h.pk.type === 'wk' || h.pk.fee ? [{ t: day === 'we' ? 'احسب لمنتصف الأسبوع' : 'احسب لنهاية الأسبوع', fn: () => { S.day = day === 'we' ? 'wd' : 'we'; S.date = null; estimate(); } }] : []), { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'مقترحات لحفلتك', fn: () => suggestAns(hid) }, { t: 'تغيير العدد', fn: () => askCount() }]);
+    chips([{ t: 'احسبها بنفسك', fn: () => calcCard(hid) }, ...h.menus.filter(menuOK).slice(0, 2).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.replace(/\d+$/, ''), n: +(m.id.match(/\d+$/) || [0])[0] }) })), { t: 'قارن المنيوهات', fn: () => menusCompareAns() }, { t: 'منتصف الأسبوع ولا نهايته؟', fn: dayCompareAns }, ...(h.menus.some(m => /^ob/.test(m.id)) ? [{ t: 'ست منيو ولا أوبن بوفيه؟', q: 'الفرق بين الست منيو والاوبن بوفيه' }] : []), ...(h.pk.type === 'wk' || h.pk.fee ? [{ t: day === 'we' ? 'احسب لمنتصف الأسبوع' : 'احسب لنهاية الأسبوع', fn: () => { S.day = day === 'we' ? 'wd' : 'we'; S.date = null; estimate(); } }] : []), { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'مقترحات لحفلتك', fn: () => suggestAns(hid) }, { t: 'تغيير العدد', fn: () => askCount() }]);
   }
   function notesFor(h, n, baseN, day) {
     const L = [];
@@ -1515,7 +1552,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     html += `<p class="dmb-close">✦ <b>الخطوة الجاية:</b> تحب أكمّل معاك عرض سعر تفصيلي بالإضافات بند بند، ولا تحب تيجي تعاين ${HALLNAME[pick]} على الطبيعة؟ ولو عندك أي سؤال أو حاجة مش مقتنع بيها، قولّي وأنا أوضّح لك.</p>`;
     CONSDONE = true; setLast('consult');
     bot(html, [{ t: 'صور ' + HALLNAME[pick], q: 'صور ' + HALLNAME[pick] }]);
-    chips([{ t: 'يلا نكمّل الحساب', fn: () => startQuote(quotePre(pick)) }, { t: 'احسبها بنفسك', fn: () => calcCard(pick) }, { t: 'قارن ٣ باكدجات', fn: threePkgAns }, { t: 'خطة الدفع بالأرقام', fn: payPlanAns }, { t: 'حجز موعد معاينة', fn: () => startVisit() }, ...(alt ? [{ t: 'مقارنة كاملة بين القاعتين', fn: () => compareHalls(pick, alt) }] : []), { t: 'محتوى ' + A(m.name), fn: () => menuDetail(S.menu) }, { t: 'غيّر اختياراتي', fn: () => { PREF = {}; savePref(); S.day = null; startConsult('<p>تمام، نبدأ من الأول 👌</p>'); } }, { t: 'جهّز طلبي لفريق الحفلات', fn: () => startClosing() }]);
+    chips([{ t: 'يلا نكمّل الحساب', fn: () => startQuote(quotePre(pick)) }, { t: 'احسبها بنفسك', fn: () => calcCard(pick) }, { t: 'قارن المنيوهات', fn: () => menusCompareAns() }, { t: 'منتصف الأسبوع ولا نهايته؟', fn: dayCompareAns }, { t: 'خطة الدفع بالأرقام', fn: payPlanAns }, { t: 'حجز موعد معاينة', fn: () => startVisit() }, ...(alt ? [{ t: 'مقارنة كاملة بين القاعتين', fn: () => compareHalls(pick, alt) }] : []), { t: 'محتوى ' + A(m.name), fn: () => menuDetail(S.menu) }, { t: 'غيّر اختياراتي', fn: () => { PREF = {}; savePref(); S.day = null; startConsult('<p>تمام، نبدأ من الأول 👌</p>'); } }, { t: 'جهّز طلبي لفريق الحفلات', fn: () => startClosing() }]);
   }
   function startRec() { return EN() ? startRec0() : startConsult(); }
   function startRec0() {
@@ -1751,7 +1788,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     el.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => { d = b.dataset.d; upd(); }));
     sel.addEventListener('change', () => { mid = sel.value; upd(); });
     upd();
-    chips([{ t: 'قارن ٣ باكدجات', fn: threePkgAns }, { t: 'خطة الدفع بالأرقام', fn: payPlanAns }, { t: 'حجز موعد معاينة', fn: () => startVisit() }]);
+    chips([{ t: 'قارن المنيوهات', fn: () => menusCompareAns() }, { t: 'منتصف الأسبوع ولا نهايته؟', fn: dayCompareAns }, { t: 'خطة الدفع بالأرقام', fn: payPlanAns }, { t: 'حجز موعد معاينة', fn: () => startVisit() }]);
   }
   /* ---- (3) the payment plan in numbers (rules art. 33 & 34) ---- */
   const addDays = (d, k) => { const x = new Date(d); x.setDate(x.getDate() + k); return x; };
@@ -1774,7 +1811,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     chips([{ t: 'جدول تحضيرات الفرح', fn: timelineAns }, { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'احفظ عرض السعر صورة', fn: saveQuoteImg }, { t: 'جهّز طلبي لفريق الحفلات', fn: () => startClosing() }]);
   }
   const today0 = () => new Date(new Date().toDateString());
-  const LASTLBL = { est: 'حساب التكلفة', consult: 'ترشيحي لحفلتك', pay: 'خطة الدفع', tl: 'جدول التحضيرات', pkg3: 'مقارنة الباكدجات', quote: 'عرض السعر' };
+  const LASTLBL = { est: 'حساب التكلفة', consult: 'ترشيحي لحفلتك', pay: 'خطة الدفع', tl: 'جدول التحضيرات', pkg3: 'مقارنة المنيوهات', quote: 'عرض السعر' };
   function setLast(k) { try { LEAD.last = { k, hall: S.hall || null, count: S.count || null, day: S.day || null, ev: S.event || null, menu: S.menu || null }; saveLead(); } catch (e) { } }
   function resumeLast() {
     const L = LEAD.last; if (!L) return;
@@ -1794,16 +1831,54 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
     chips([{ t: 'خطة الدفع بالأرقام', fn: payPlanAns }, { t: 'اسأل عن توافر التاريخ', fn: () => humanAns('أكيد، فريق الحفلات هو اللي بيأكد توافر التاريخ') }, { t: 'حجز موعد معاينة', fn: () => startVisit() }]);
   }
   /* ---- (4) three packages side by side in the client's hall, for his count ---- */
-  function threePkgAns() {
+  /* ---- مقارنة المنيوهات: الست منيو مع بعض، أو الأوبن بوفيه مع بعض (نفس القاعة) ---- */
+  const menuKind = m => /^ob/.test(m.id) ? 'ob' : /^sm/.test(m.id) ? 'sm' : 'ht';
+  const KINDN = { sm: 'الست منيو', ob: 'الأوبن بوفيه', ht: 'الهاي تي' };
+  const itemsOf = m => (m.c || []).flatMap(sec => sec.o.filter(o => o[0] === 'i').map(o => o[1].trim()));
+  function threePkgAns() { return menusCompareAns(); }
+  function menusCompareAns(kind) {
     const H = K.halls[S.hall], n = S.count;
-    if (!H || !n) { bot('<p>قولّي القاعة وعدد المعازيم، وأنا أقارن لك الباكدجات جنب بعض.</p>'); return startConsult(' '); }
+    if (!H) { bot('<p>قولّي القاعة الأول، وأنا أقارن لك منيوهاتها ببعض:</p>'); return chips(['lotus', 'isis', 'akhenaten'].map(h => ({ t: HALLNAME[h], fn: () => { S.hall = h; menusCompareAns(kind); } }))); }
+    if (!n) { bot(`<p>عشان أقارن لك منيوهات ${H.name} بالأرقام، محتاج <b>عدد المعازيم</b>.</p>`); return askCount(() => menusCompareAns(kind)); }
+    const kinds = [...new Set(H.menus.map(menuKind))].filter(k => H.menus.filter(m => menuKind(m) === k).length > 1);
+    if (!kind) { const cur = S.menu && S.menu.k; kind = kinds.includes(cur) ? cur : kinds.length === 1 ? kinds[0] : null; }
+    if (!kind || !kinds.includes(kind)) {
+      bot(`<p>${H.name} فيها ${kinds.map(k => `<b>${KINDN[k]}</b> (${AD(H.menus.filter(m => menuKind(m) === k).length)} اختيارات)`).join(' و')}. تحب أقارن لك أنهي؟</p>`);
+      return chips([...kinds.map(k => ({ t: 'قارن ' + KINDN[k], fn: () => menusCompareAns(k) })), { t: 'منتصف الأسبوع ولا نهايته؟', fn: dayCompareAns }]);
+    }
     setLast('pkg3');
-    const d = S.day || 'wd', sm = H.menus.filter(m => /^sm/.test(m.id)), ob = H.menus.filter(m => /^ob/.test(m.id));
-    const pick = [sm[0], sm.slice().sort((a, b) => itemCount(b) - itemCount(a) || estTotal(H, a, n, d) - estTotal(H, b, n, d))[0], ob[0] || H.menus.find(m => m.id === 'ht')].filter((x, i, a) => x && a.indexOf(x) === i);
-    const main = m => secItems(m, /الرئيسي|الساخن/).slice(0, 4).map(A).join('، ');
-    const col = f => pick.map(m => `<td>${f(m)}</td>`).join('');
-    bot(`<p class="dmb-h">مقارنة الباكدجات – ${H.name} لعدد ${AD(n)} فرد</p><table class="dmb-t"><tr><th></th>${pick.map(m => `<th>${A(m.name)}</th>`).join('')}</tr><tr><td><b>النوع</b></td>${col(m => /^ob/.test(m.id) ? 'بوفيه مفتوح' : m.id === 'ht' ? 'هاي تي' : 'على الترابيزة')}</tr><tr><td><b>عدد الأصناف</b></td>${col(m => AD(itemCount(m)) + ' صنف')}</tr><tr><td><b>الرئيسي</b></td>${col(m => `<small>${main(m)}</small>`)}</tr><tr><td><b>الإجمالي</b><br><small>${d === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}</small></td>${col(m => `<b>${money(estTotal(H, m, n, d))}</b>`)}</tr><tr><td><b>للفرد</b></td>${col(m => money(Math.round(estTotal(H, m, n, d) / n)))}</tr></table><p class="dmb-note">${pick.length > 1 ? `الفرق بين أوفر اختيار وأغلاه حوالي ${money(r500(Math.max(...pick.map(m => estTotal(H, m, n, d))) - Math.min(...pick.map(m => estTotal(H, m, n, d)))))} لعددك.` : ''} اختار اللي يناسبك وأنا أكمّل معاك الحساب بالإضافات.</p>`);
-    chips([...pick.map(m => ({ t: 'اخترت ' + A(m.name), fn: () => { S.menu = { k: m.id.replace(/\d+$/, ''), n: +(m.id.match(/\d+$/) || [0])[0] }; estimate(); } })), { t: 'يلا نكمّل الحساب', fn: () => startQuote(quotePre(S.hall)) }]);
+    const d = S.day || 'wd', L = H.menus.filter(m => menuKind(m) === kind), T = m => estTotal(H, m, n, d);
+    const rows = L.map((m, i) => {
+      const p = i ? L[i - 1] : null, its = itemsOf(m), pits = p ? itemsOf(p) : [];
+      const ky = x => norm(x).replace(/[0-9٠-٩]+/g, '').replace(/ (مشوي|مشويه|مشوية|مقلي|مقليه)( |$)/g, ' ').replace(/\s+/g, ' ').trim(), pk = pits.map(ky), ik = its.map(ky);
+      const add = p ? its.filter((x, j) => !pk.includes(ik[j])) : [], gone = p ? pits.filter((x, j) => !ik.includes(pk[j])) : [];
+      const diff = p ? T(m) - T(p) : 0;
+      return `<tr><td><b>${A(m.name)}</b><br><small>${AD(itemCount(m))} صنف</small></td><td class="n"><b>${money(T(m))}</b><br><small>${money(Math.round(T(m) / n))} للفرد</small></td></tr>${p ? `<tr><td colspan="2" style="padding-top:0"><small>${diff > 0 ? `<b>+${money(diff)}</b> عن ${A(p.name)} (حوالي ${money(Math.round(diff / n))} للفرد)` : diff < 0 ? `أوفر من ${A(p.name)} بـ <b>${money(-diff)}</b>` : `نفس سعر ${A(p.name)}`}${add.length ? ` · <b>بيزيد:</b> ${add.slice(0, 6).map(A).join('، ')}${add.length > 6 ? '…' : ''}` : ''}${gone.length ? ` · <b>بدل:</b> ${gone.slice(0, 4).map(A).join('، ')}` : ''}</small></td></tr>` : ''}`;
+    }).join('');
+    const lo = L.reduce((a, m) => T(m) < T(a) ? m : a), hi = L.reduce((a, m) => T(m) > T(a) ? m : a);
+    bot(`<p class="dmb-h">مقارنة ${KINDN[kind]} – ${H.name}</p><p>لعدد <b>${AD(n)} فرد</b> – ${d === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}، وكل منيو مقارن باللي قبله:</p><table class="dmb-t">${rows}</table><p class="dmb-note">الفرق بين ${A(lo.name)} و${A(hi.name)} حوالي <b>${money(r500(T(hi) - T(lo)))}</b> لعددك (${money(Math.round((T(hi) - T(lo)) / n))} للفرد). اختار اللي يناسبك وأنا أكمّل معاك الحساب.</p>`);
+    const other = kinds.filter(k => k !== kind);
+    chips([...L.slice(0, 3).map(m => ({ t: 'اخترت ' + A(m.name), fn: () => { S.menu = { k: m.id.replace(/\d+$/, ''), n: +(m.id.match(/\d+$/) || [0])[0] }; estimate(); } })), ...other.map(k => ({ t: 'قارن ' + KINDN[k], fn: () => menusCompareAns(k) })), { t: 'منتصف الأسبوع ولا نهايته؟', fn: dayCompareAns }, { t: 'يلا نكمّل الحساب', fn: () => startQuote(quotePre(S.hall)) }]);
+  }
+  /* ---- منتصف الأسبوع ولا نهايته؟ نفس القاعة، أو القاعتين لو العدد ينفع في الاتنين ---- */
+  function dayCompareAns() {
+    const n = S.count;
+    if (!n) { bot('<p>عشان أوريك التوفير بالأرقام، محتاج <b>عدد المعازيم</b>.</p>'); return askCount(dayCompareAns); }
+    let hs = ['lotus', 'isis', 'akhenaten'].filter(h => K.halls[h] && n >= K.halls[h].min && n <= K.halls[h].max);
+    if (S.hall && K.halls[S.hall] && !hs.includes(S.hall)) hs.unshift(S.hall);
+    if (!hs.length) hs = [S.hall && K.halls[S.hall] ? S.hall : 'isis'];
+    if (S.hall && hs.includes(S.hall)) hs = [S.hall, ...hs.filter(h => h !== S.hall)];
+    hs = hs.slice(0, 2);
+    const pickM = H => { const want = S.menu ? hallMenu(Object.keys(K.halls).find(k => K.halls[k] === H), S.menu) : null; return want || H.menus.find(m => /^sm/.test(m.id)) || H.menus[0]; };
+    const R = hs.map(h => { const H = K.halls[h], m = pickM(H), wd = estTotal(H, m, n, 'wd'), we = estTotal(H, m, n, 'we'); return { h, H, m, wd, we, save: we - wd }; });
+    const rows = R.map(r => `<tr><td><b>${r.H.name}</b><br><small>${A(r.m.name)}</small></td><td class="n">${money(r.wd)}</td><td class="n">${money(r.we)}</td><td class="n"><b>${money(r.save)}</b></td></tr>`).join('');
+    const why = R.map(r => r.H.pk.type === 'wk' ? `${r.H.name}: باكدج نهاية الأسبوع محسوب على ${AD(r.H.pk.we.n)} فرد بدل ${AD(r.H.pk.wd.n)}` : `${r.H.name}: بيتضاف ${money(r.H.pk.fee)} لأيام الخميس والجمعة والسبت`).join('<br>');
+    const best = R.reduce((a, r) => r.wd < a.wd ? r : a);
+    let tip = `<p class="dmb-cta">✦ لو اخترت <b>منتصف الأسبوع</b> (الأحد – الأربعاء) في ${R[0].H.name} هتوفّر <b>${money(R[0].save)}</b>`;
+    if (R.length > 1) { const mx = R.reduce((a, r) => r.we > a.we ? r : a); tip += `، وأقصى توفير لعددك (${AD(n)} فرد) إنك تختار <b>${best.H.name} – منتصف الأسبوع</b> بدل <b>${mx.H.name} – نهاية الأسبوع</b>: فرق <b>${money(mx.we - best.wd)}</b>`; }
+    tip += '.</p>';
+    bot(`<p class="dmb-h">منتصف الأسبوع ولا نهايته؟</p><p>لعدد <b>${AD(n)} فرد</b>${R.length > 1 ? '، والعدد ده ينفع في القاعتين' : ''}:</p><table class="dmb-t"><tr><th>القاعة</th><th>منتصف الأسبوع</th><th>نهاية الأسبوع</th><th>التوفير</th></tr>${rows}</table>${tip}<p class="dmb-note">${why}</p>`);
+    chips([{ t: 'احسبها منتصف الأسبوع', fn: () => { S.hall = R[0].h; S.day = 'wd'; estimate(); } }, ...(R.length > 1 ? [{ t: 'التفاصيل في ' + best.H.name, fn: () => { S.hall = best.h; S.day = 'wd'; estimate(); } }] : []), { t: 'قارن المنيوهات', fn: () => { S.hall = R[0].h; menusCompareAns(); } }, { t: 'حجز موعد معاينة', fn: () => startVisit() }]);
   }
   /* ---- (6) save the quote as an image to share with the family ---- */
   function saveQuoteImg() {
