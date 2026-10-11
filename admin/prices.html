@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تعديل أسعار المساعد الذكي</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{--bg:#0A1428;--card:#101C33;--line:#2A3A5A;--ink:#F3E6C6;--dim:#B9AE96;--gold:#D9BE85;--gold2:#C8A464;--ok:#7FD1A1;--bad:#F2918B;--chg:#3A3014}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.7 "Cairo","Tajawal","Segoe UI",Tahoma,sans-serif}
+header{position:sticky;top:0;z-index:5;background:#08101F;border-bottom:1px solid var(--line);padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+header h1{font-size:18px;margin:0;color:var(--gold);flex:1 1 220px}
+button,.btn{font:inherit;border:0;border-radius:10px;padding:9px 16px;cursor:pointer;background:linear-gradient(180deg,#F1DCA8,#C8A464);color:#0A1120;font-weight:700}
+button.ghost{background:none;color:var(--gold);border:1px solid var(--gold2)}
+button:disabled{opacity:.45;cursor:not-allowed}
+main{max-width:1100px;margin:0 auto;padding:16px}
+.note{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:0 0 16px;color:var(--dim)}
+.note b{color:var(--ink)}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:0 0 16px;overflow:hidden}
+section>h2{margin:0;padding:12px 16px;font-size:16px;color:var(--gold);border-bottom:1px solid var(--line);cursor:pointer}
+section>h2 small{color:var(--dim);font-weight:400}
+.body{padding:12px 16px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:right;vertical-align:middle}
+th{color:var(--dim);font-weight:600;font-size:13px}
+input[type=number],input[type=text]{width:100%;min-width:90px;background:#0B1528;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit;direction:ltr;text-align:right}
+input.txt{direction:rtl}
+input.changed{background:var(--chg);border-color:var(--gold2)}
+input.bad{border-color:var(--bad)}
+.kv{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 10px}
+.kv label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--dim);min-width:150px}
+#log{white-space:pre-line;font-size:13.5px}
+.ok{color:var(--ok)} .err{color:var(--bad)}
+#search{max-width:320px;direction:rtl}
+.hide{display:none}
+@media (max-width:600px){header h1{flex-basis:100%}button{padding:8px 12px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>تعديل أسعار مساعد دار المراسم الذكي</h1>
+  <label class="btn ghost" style="background:none;color:var(--gold);border:1px solid var(--gold2)">فتح ملف kb.js<input id="file" type="file" accept=".js" hidden></label>
+  <button id="save" disabled>حفظ ملف kb.js الجديد</button>
+</header>
+<main>
+  <div class="note" id="intro">
+    <b>طريقة الاستخدام:</b> افتح ملف <b>kb.js</b> الحالي (من فولدر bot)، وعدّل الأسعار في الخانات، وبعدين اضغط «حفظ ملف kb.js الجديد» وارفعه مكان القديم جوه فولدر bot.<br>
+    الخانة اللي اتغيرت بتنوّر، وتحت فيه سجل بكل تغيير (القديم ← الجديد). الصفحة دي مابتبعتش أي حاجة لأي مكان؛ كل الشغل على جهازك.<br>
+    <b>مهم:</b> التعديل هنا بيغيّر أسعار المساعد الذكي وتطبيق الموظف بس. صفحات المنيو على الموقع وملفات الـ PDF محتاجين تتحدّث لوحدهم بنفس الأرقام.
+  </div>
+  <div id="app"></div>
+  <section id="logsec" class="hide"><h2>سجل التعديلات</h2><div class="body"><div id="log"></div></div></section>
+</main>
+<script>
+(function () {
+  'use strict';
+  let K = null, ORIG = null, NAME = 'kb.js';
+  const changes = new Map();
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const get = (o, path) => path.reduce((a, k) => a == null ? a : a[k], o);
+  const set = (o, path, v) => { const last = path[path.length - 1]; get(o, path.slice(0, -1))[last] = v; };
+  const label = path => path.join(' › ');
+
+  function load(text) {
+    const m = text.match(/^\s*window\.DMKB\s*=\s*([\s\S]*?);?\s*$/);
+    if (!m) throw new Error('الملف ده مش ملف kb.js بتاع المساعد');
+    K = JSON.parse(m[1]); ORIG = JSON.parse(m[1]); changes.clear();
+    render(); $('#save').disabled = false; $('#logsec').classList.remove('hide'); log();
+  }
+
+  // a number field bound to a path in the data
+  function num(path, opt) {
+    opt = opt || {};
+    const v = get(K, path);
+    return `<input type="number" min="0" step="${opt.step || 1}" data-p='${esc(JSON.stringify(path))}' data-k="n" value="${esc(v)}" title="${esc(opt.title || '')}">`;
+  }
+  function txt(path) { return `<input type="text" class="txt" data-p='${esc(JSON.stringify(path))}' data-k="t" value="${esc(get(K, path))}">`; }
+  const sec = (title, sub, inner, open) => `<section><h2>${title} <small>${sub || ''}</small></h2><div class="body${open ? '' : ''}">${inner}</div></section>`;
+
+  function render() {
+    const H = K.halls, out = [];
+    // wedding halls
+    Object.keys(H).forEach(id => {
+      const h = H[id], wk = h.pk.type === 'wk', hi = ['halls', id];
+      const pk = wk
+        ? `<div class="kv"><label>باكدج منتصف الأسبوع (عدد الأفراد)${num([...hi, 'pk', 'wd', 'n'])}</label><label>باكدج نهاية الأسبوع (عدد الأفراد)${num([...hi, 'pk', 'we', 'n'])}</label><label>أقل سعة${num([...hi, 'min'])}</label><label>أقصى سعة${num([...hi, 'max'])}</label></div>`
+        : `<div class="kv"><label>الباكدج (عدد الأفراد)${num([...hi, 'pk', 'n'])}</label><label>رسوم نهاية الأسبوع (ج)${num([...hi, 'pk', 'fee'])}</label><label>أقل سعة${num([...hi, 'min'])}</label><label>أقصى سعة${num([...hi, 'max'])}</label></div>`;
+      const head = wk ? '<th>المنيو</th><th>سعر منتصف الأسبوع</th><th>سعر نهاية الأسبوع</th><th>الوجبة الإضافية: أول ٥٠</th><th>من ٥١ لـ ١٠٠</th><th>أكتر من ١٠٠</th>'
+        : `<th>المنيو</th><th>سعر الباكدج</th>${h.menus.some(m => m.tiers) ? '<th>الوجبة الإضافية: أول ٥٠</th><th>من ٥١ لـ ١٠٠</th><th>أكتر من ١٠٠</th>' : '<th>الوجبة الإضافية</th>'}`;
+      const rows = h.menus.map((m, i) => {
+        const mp = [...hi, 'menus', i];
+        const price = wk ? `<td>${num([...mp, 'wd'])}</td><td>${num([...mp, 'we'])}</td>` : `<td>${num([...mp, 'price'])}</td>`;
+        const ex = m.tiers ? `<td>${num([...mp, 'tiers', 0])}</td><td>${num([...mp, 'tiers', 1])}</td><td>${num([...mp, 'tiers', 2])}</td>` : (h.menus.some(x => x.tiers) ? `<td colspan="3">${num([...mp, 'extra'])}</td>` : `<td>${num([...mp, 'extra'])}</td>`);
+        return `<tr><td>${esc(m.name)}</td>${price}${ex}</tr>`;
+      }).join('');
+      out.push(sec(esc(h.name), wk ? 'باكدجين: منتصف الأسبوع ونهايته' : 'باكدج + رسوم نهاية الأسبوع', pk + `<table><tr>${head}</tr>${rows}</table>`));
+    });
+    // marriage contract
+    if (K.katb) out.push(sec('عقد القران', '', `<table><tr><th>القاعة</th><th>الباكدج (عدد)</th><th>السعر</th><th>الفرد الإضافي</th></tr>${Object.keys(K.katb).map(id => `<tr><td>${esc(K.katb[id].name)}</td><td>${num(['katb', id, 'n'])}</td><td>${num(['katb', id, 'price'])}</td><td>${num(['katb', id, 'extra'])}</td></tr>`).join('')}</table>`));
+    if (K.aqiqa) out.push(sec('العقيقة', '', `<table><tr><th>الباكدج</th><th>العدد</th><th>السعر</th><th>الفرد الإضافي</th></tr>${K.aqiqa.map((a, i) => `<tr><td>${esc(a.name)}</td><td>${num(['aqiqa', i, 'n'])}</td><td>${num(['aqiqa', i, 'price'])}</td><td>${num(['aqiqa', i, 'extra'])}</td></tr>`).join('')}</table>`));
+    if (K.birthday) out.push(sec('أعياد الميلاد', '', `<table><tr><th>المكان</th><th>أقل عدد</th><th>أقصى عدد</th><th>السعر</th></tr>${K.birthday.map((b, i) => `<tr><td>${esc(b.name)}</td><td>${num(['birthday', i, 'min'])}</td><td>${num(['birthday', i, 'max'])}</td><td>${num(['birthday', i, 'price'])}</td></tr>`).join('')}</table>`));
+    if (K.special) {
+      const mh = (K.special.menus || []).filter(m => m.pp != null);
+      out.push(sec('المناسبات الخاصة والمؤتمرات', '', `<table><tr><th>القاعة</th><th>العدد</th><th>سعر الحجز</th></tr>${K.special.halls.map((h, i) => `<tr><td>${esc(h.name)}</td><td>${num(['special', 'halls', i, 'n'])}</td><td>${num(['special', 'halls', i, 'price'])}</td></tr>`).join('')}</table>${mh.length ? `<table style="margin-top:12px"><tr><th>المنيو</th><th>سعر الفرد</th></tr>${K.special.menus.map((m, i) => m.pp == null ? '' : `<tr><td>${esc(m.name)}</td><td>${num(['special', 'menus', i, 'pp'])}</td></tr>`).join('')}</table>` : ''}`));
+    }
+    if (K.deposit) out.push(sec('مقدم الحجز والتأمين', '', `<table><tr><th>القاعة</th><th>مقدم الحجز</th><th>التأمين</th></tr>${K.deposit.map((r, i) => `<tr><td>${esc(r[0])}</td><td>${num(['deposit', i, 1])}</td><td>${num(['deposit', i, 2])}</td></tr>`).join('')}</table>`));
+    // add-ons (price kept as text exactly as printed, e.g. «1,500 ج» or «10 ج للفرد»)
+    const SC = { akhenaten: 'أخناتون', isis: 'إيزيس', lotus: 'اللوتس', lotusk: 'كتب كتاب اللوتس', mawadda: 'المودة والرحمة', birthday: 'أعياد الميلاد', special: 'مناسبات خاصة', photo: 'فوتو سيشن', aqiqa: 'العقيقة' };
+    out.push(sec('الإضافات والخدمات', `${K.addons.length} بند – السعر بيتكتب زي ما هو مطبوع (مثلاً: 1,500 ج أو 10 ج للفرد)`, `<input id="search" type="text" placeholder="ابحث باسم الخدمة أو القاعة…"><table id="addons" style="margin-top:10px"><tr><th>القاعة</th><th>القسم</th><th>الخدمة</th><th>السعر</th></tr>${K.addons.map((a, i) => `<tr data-q="${esc((SC[a.s] || a.s) + ' ' + a.g + ' ' + a.n)}"><td>${esc(SC[a.s] || a.s)}</td><td>${esc(a.g)}</td><td>${esc(a.n)}</td><td>${txt(['addons', i, 'p'])}</td></tr>`).join('')}</table>`));
+    $('#app').innerHTML = out.join('');
+    $('#app').querySelectorAll('input[data-p]').forEach(el => el.addEventListener('input', onEdit));
+    const s = $('#search'); if (s) s.addEventListener('input', () => { const q = s.value.trim(); $('#addons').querySelectorAll('tr[data-q]').forEach(tr => tr.classList.toggle('hide', q && !tr.dataset.q.includes(q))); });
+  }
+
+  function onEdit(e) {
+    const el = e.target, path = JSON.parse(el.dataset.p), old = get(ORIG, path);
+    let v = el.value;
+    if (el.dataset.k === 'n') { const n = Number(v); if (v === '' || !isFinite(n) || n < 0) { el.classList.add('bad'); return; } el.classList.remove('bad'); v = n; }
+    set(K, path, v);
+    const key = JSON.stringify(path);
+    if (v === old) { changes.delete(key); el.classList.remove('changed'); } else { changes.set(key, { path, old, v }); el.classList.add('changed'); }
+    log();
+  }
+
+  // the names a person reads in the change log
+  function readable(path) {
+    const P = path.slice();
+    if (P[0] === 'halls') { const h = K.halls[P[1]]; let s = h.name; if (P[2] === 'menus') { s += ' – ' + h.menus[P[3]].name; const f = { wd: 'منتصف الأسبوع', we: 'نهاية الأسبوع', price: 'سعر الباكدج', extra: 'الوجبة الإضافية' }[P[4]]; if (f) s += ' – ' + f; if (P[4] === 'tiers') s += ' – الوجبة الإضافية ' + ['أول ٥٠', 'من ٥١ لـ ١٠٠', 'أكتر من ١٠٠'][P[5]]; } else s += ' – ' + label(P.slice(2)); return s; }
+    if (P[0] === 'addons') { const a = K.addons[P[1]]; return 'إضافة – ' + a.n; }
+    if (P[0] === 'deposit') return K.deposit[P[1]][0] + ' – ' + (P[2] === 1 ? 'مقدم الحجز' : 'التأمين');
+    return label(P);
+  }
+  function checks() {
+    const W = [];
+    Object.values(K.halls).forEach(h => h.menus.forEach(m => { if (m.tiers && !(m.tiers[0] >= m.tiers[1] && m.tiers[1] >= m.tiers[2])) W.push(`تنبيه: ${h.name} – ${m.name}: شرائح الوجبة الإضافية مش متدرجة من الأعلى للأقل.`); if (h.pk.type === 'wk' && m.we < m.wd) W.push(`تنبيه: ${h.name} – ${m.name}: سعر نهاية الأسبوع أقل من منتصف الأسبوع.`); }));
+    K.addons.forEach(a => { if (!/\d/.test(String(a.p)) && !/%/.test(String(a.p))) W.push(`تنبيه: الإضافة «${a.n}» سعرها مفيهوش رقم.`); });
+    return W;
+  }
+  function log() {
+    const L = [...changes.values()].map(c => `• ${readable(c.path)}: ${c.old} ← ${c.v}`);
+    const W = checks();
+    $('#log').innerHTML = (L.length ? `<span class="ok">${L.length} تعديل:</span>\n` + esc(L.join('\n')) : 'لسه مفيش تعديلات.') + (W.length ? `\n\n<span class="err">${esc(W.join('\n'))}</span>` : '');
+  }
+
+  $('#file').addEventListener('change', e => {
+    const f = e.target.files[0]; if (!f) return; NAME = f.name;
+    const r = new FileReader(); r.onload = () => { try { load(String(r.result)); } catch (err) { alertBox(err.message); } }; r.readAsText(f, 'utf-8');
+  });
+  function alertBox(msg) { $('#intro').insertAdjacentHTML('beforeend', `<p class="err">${esc(msg)}</p>`); }
+  $('#save').addEventListener('click', () => {
+    if (!K) return;
+    const W = checks(); if (W.length && !confirm('فيه تنبيهات في الأسعار:\n' + W.join('\n') + '\n\nتحفظ برضه؟')) return;
+    const blob = new Blob(['window.DMKB=' + JSON.stringify(K) + ';\n'], { type: 'application/javascript' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'kb.js'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  });
+  // when the page is hosted next to the bot, load the live file directly
+  fetch('../bot/kb.js', { cache: 'no-store' }).then(r => r.ok ? r.text() : Promise.reject()).then(load).catch(() => {});
+})();
+</script>
+</body>
+</html>
