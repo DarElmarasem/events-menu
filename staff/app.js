@@ -367,17 +367,17 @@ ${whatIfHTML()}
   function logStat(type, total) { const L = lsGet(SK(), []); L.push({ type, total: total || 0, at: Date.now() }); lsSet(SK(), L.slice(-2000)); }
   function snap() { return Object.assign({}, Q, { date: Q.date ? Q.date.toISOString() : null, adds: JSON.parse(JSON.stringify(Q.adds)) }); }
   function loadSnap(x) { Object.assign(Q, x, { date: x.date ? new Date(x.date) : null, adds: x.adds || {} }); fillForm(); }
-  function fillForm() { $('#qEv').value = Q.ev; $('#qN').value = Q.n; $('#qDate').value = Q.date ? `${Q.date.getFullYear()}-${String(Q.date.getMonth() + 1).padStart(2, '0')}-${String(Q.date.getDate()).padStart(2, '0')}` : ''; $('#qName').value = Q.name || ''; $('#qPhone').value = Q.phone || ''; $('#qPrio').value = Q.prio || ''; $('#qBud').value = Q.bud || ''; $('#qSrc').value = Q.src || ''; $('#qNotes').value = Q.notes || ''; }
+  function fillForm() { $('#qEv').value = Q.ev; $('#qN').value = Q.n; $('#qDate').value = Q.date ? `${Q.date.getFullYear()}-${String(Q.date.getMonth() + 1).padStart(2, '0')}-${String(Q.date.getDate()).padStart(2, '0')}` : ''; $('#qName').value = Q.name || ''; $('#qPhone').value = Q.phone || ''; $('#qPrio').value = Q.prio || ''; $('#qBud').value = Q.bud || ''; $('#qSrc').value = Q.src || ''; $('#qNotes').value = Q.notes || ''; drawQTags('qTags'); }
   function saveHist(R, why) {
     R = R || computeQuote(); if (!R || !R.pk) return;
     if (!Q.no) Q.no = newNo();
     const H = lsGet(HK(), []), i = H.findIndex(x => x.no === Q.no);
     const old = i >= 0 ? H[i] : {};
-    const e = { no: Q.no, at: old.at || Date.now(), up: Date.now(), total: R.total, name: Q.name, phone: Q.phone, label: `${EVNAME[Q.ev]} | ${HN[Q.hall] || ''} | ${Q.n} فرد | ${R.pk.name}`, snap: snap(), status: old.status || 'اتبعت', reason: old.reason || '', followAt: old.followAt || Date.now() + 2 * 864e5, ref: Q.ref || old.ref || '', ev: EVNAME[Q.ev], hall: HN[Q.hall] || '', n: Q.n, pk: R.pk.name, emp: ME ? ME.name : '' };
+    const e = { no: Q.no, at: old.at || Date.now(), up: Date.now(), total: R.total, name: Q.name, phone: Q.phone, label: `${EVNAME[Q.ev]} | ${HN[Q.hall] || ''} | ${Q.n} فرد | ${R.pk.name}`, snap: snap(), status: old.status || 'اتبعت', reason: old.reason || '', followAt: old.followAt || Date.now() + 2 * 864e5, ref: Q.ref || old.ref || '', ev: EVNAME[Q.ev], hall: HN[Q.hall] || '', n: Q.n, pk: R.pk.name, emp: ME ? ME.name : '', visit: Q.visit || old.visit || '', tags: (Q.tags && Q.tags.length ? Q.tags : old.tags) || [] };
     if (i >= 0) H.splice(i, 1); H.unshift(e); lsSet(HK(), H.slice(0, 200)); pushQuote(e);
     logStat(why || 'save', R.total); $('#qNo').textContent = 'رقم العرض: ' + Q.no;
   }
-  function resetQuote() { Object.assign(Q, { ref: '', no: '', ev: 'wedding', n: 200, date: null, day: 'wd', hall: null, pk: null, adds: {}, name: '', phone: '', prio: '', bud: '', src: '', notes: '' }); OPTS = []; fillForm(); $('#qNo').textContent = ''; }
+  function resetQuote() { Object.assign(Q, { ref: '', no: '', ev: 'wedding', n: 200, date: null, day: 'wd', hall: null, pk: null, adds: {}, name: '', phone: '', prio: '', bud: '', src: '', notes: '', tags: [], visit: '' }); OPTS = []; if ($('#qDup')) $('#qDup').innerHTML = ''; fillForm(); $('#qNo').textContent = ''; }
 
   /* ---------- steps bar & bottom bar ---------- */
   function renderSteps(R) {
@@ -485,17 +485,24 @@ ${whatIfHTML()}
     const S = lsGet(SK(), []), t0 = today0().getTime(), m0 = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
     const cnt = (from, ty) => S.filter(x => x.at >= from && (!ty || ty.includes(x.type))).length;
     const H = lsGet(HK(), []), sumM = H.filter(x => x.at >= m0).reduce((a, x) => a + x.total, 0);
-    $('#homeOut').innerHTML = `<div class="hello"><img src="../bot/img/crest.png" alt="" style="height:64px"><div><h2>${greet} يا ${esc(ME.name)}</h2><p>${esc(ME.role)} | قسم الحفلات</p></div><div class="dt">${dateTxt(new Date())}<br><small>مواعيد القسم ١٠ ص – ١١ م</small></div></div>
-<div class="card" id="walkHome" hidden></div><div class="acts"><button class="act main" data-go="meet"><i>🤝</i><b>مقابلة عميل في المكتب</b><small>استقبال ← فهم الاحتياج ← شرح القاعة والباكدج ← المعاينة ← الأسعار ← العرض ← القفل</small></button><button class="act" data-go="new"><i>🧾</i><b>عرض سعر جديد</b><small>احسب وابعت في دقيقة</small></button><button class="act" data-go="rec"><i>🏛️</i><b>ترشيح قاعة</b><small>حسب العدد والفرق بينهم</small></button><button class="act" data-go="obj"><i>💬</i><b>رد على اعتراض</b><small>غالي، هفكر، خصم…</small></button><button class="act" data-go="budget"><i>💰</i><b>الأنسب للميزانية</b><small>أحسن اختيار في حدودها</small></button></div>
-<div class="stats"><div class="stat"><small>عروض النهارده</small><b>${AD(cnt(t0, ['save', 'wa', 'doc', 'img']))}</b></div><div class="stat"><small>اتبعتت واتساب النهارده</small><b>${AD(cnt(t0, ['wa']))}</b></div><div class="stat"><small>عروض الشهر</small><b>${AD(H.filter(x => x.at >= m0).length)}</b></div><div class="stat"><small>قيمة عروض الشهر</small><b>${money(sumM)}</b></div></div>
-${waitHomeHTML()}${followHTML()}<div class="card"><h3>آخر عروضي</h3>${histTable(H.slice(0, 6))}</div>`;
+    const act = (go, ic, b, sm, cls) => `<button class="act${cls ? ' ' + cls : ''}" data-go="${go}"><i>${svg(ic)}</i><b>${b}</b><small>${sm}</small></button>`;
+    $('#homeOut').innerHTML = `<div class="hello sm"><img src="../bot/img/crest.png" alt="" style="height:48px"><div><h2>${greet} يا ${esc(ME.name)}</h2><p>${esc(ME.role)} | ${dateTxt(new Date())} | مواعيد القسم ١٠ ص – ١١ م</p></div></div>
+<div class="desk"><div class="dcol">
+<div class="card" id="walkHome" hidden></div>
+${followHTML()}${waitHomeHTML()}${freeLeadsHTML()}${visitsHTML()}<div id="hoBox"></div>
+</div><div class="dcol side">
+<div class="acts v">${act('meet', 'users', 'مقابلة عميل في المكتب', 'استقبال ← احتياج ← شرح ← معاينة ← أسعار ← قفل', 'main')}${act('new', 'receipt', 'عرض سعر جديد', 'احسب وابعت في دقيقة')}${act('obj', 'chat', 'رد على اعتراض', 'غالي، هفكر، خصم…')}</div>
+${quickPriceHTML()}${goalHTML()}
+<div class="stats two"><div class="stat"><small>عروض النهارده</small><b>${AD(cnt(t0, ['save', 'wa', 'doc', 'img']))}</b></div><div class="stat"><small>متابعات النهارده</small><b>${AD(cnt(t0, ['fu']))}</b></div><div class="stat"><small>عروض الشهر</small><b>${AD(H.filter(x => x.at >= m0).length)}</b></div><div class="stat"><small>قيمة عروض الشهر</small><b>${money(sumM)}</b></div></div>
+</div></div>
+<div class="card"><h3>آخر عروضي</h3>${histTable(H.slice(0, 6))}</div>`;
     $$('#homeOut .act').forEach(b => b.onclick = () => { const g = b.dataset.go; if (g === 'new') { resetQuote(); goTab('quote'); } else if (g === 'meet') { newMeet(); MEET.step = 0; goTab('meet'); } else goTab(g); });
-    bindHist('#homeOut'); bindFollow(); drawWalkHome();
+    bindHist('#homeOut'); bindFollow(); drawWalkHome(); bindQuickPrice(); bindGoal(); bindVisits(); bindFreeLeads(); drawHandover();
     $$('#homeOut [data-hwa]').forEach(b => b.onclick = () => { const x = WAIT.find(w => w.id === b.dataset.hwa); window.open(waLinkTo(x.phone, waitMsg(x)), '_blank'); x.status = 'اتبلّغ'; api('staff_wait_set', { id: x.id, status: 'اتبلّغ' }); waitBadge(); renderHome(); });
   }
   function histTable(H) {
-    if (!H.length) return '<div class="empty">لسه معملتش عروض. ابدأ بـ «عرض سعر جديد».</div>';
-    return `<table class="q hist"><tr><th>رقم العرض</th><th>العميل</th><th>التفاصيل</th><th>التاريخ</th><th style="text-align:left">الإجمالي</th><th>الحالة</th><th></th></tr>${H.map(x => { const d = new Date(x.at); return `<tr><td><b dir="ltr">${esc(x.no)}</b></td><td>${esc(x.name || '—')}<br><small class="ctx" dir="ltr">${esc(x.phone || '')}</small></td><td><small>${ar(x.label)}</small></td><td><small>${dateTxt(d)}</small></td><td class="n">${money(x.total)}</td><td>${stSelect(x)}</td><td style="white-space:nowrap"><button class="btn" data-open="${x.no}">فتح</button> <button class="btn" data-dup="${x.no}">نسخة</button> <button class="btn" data-del="${x.no}" title="حذف">✕</button></td></tr>`; }).join('')}</table>`;
+    if (!H.length) return '<div class="empty">لسه مفيش عروض هنا. ابدأ بـ «مقابلة عميل» لو العميل قدامك، أو «عرض سعر جديد» لو على التليفون.</div>';
+    return `<table class="q hist"><tr><th>رقم العرض</th><th>العميل</th><th>التفاصيل</th><th>التاريخ</th><th style="text-align:left">الإجمالي</th><th>الحالة</th><th></th></tr>${H.map(x => { const d = new Date(x.at); return `<tr><td><b dir="ltr">${esc(x.no)}</b></td><td><a href="#" class="cl" data-client="${esc(ckey(x.phone, x.name))}">${esc(x.name || '—')}</a><br><small class="ctx" dir="ltr">${esc(x.phone || '')}</small></td><td><small>${ar(x.label)}</small></td><td><small>${dateTxt(d)}</small></td><td class="n">${money(x.total)}</td><td>${stSelect(x)}</td><td style="white-space:nowrap"><button class="btn" data-open="${x.no}">فتح</button> <button class="btn" data-dup="${x.no}">نسخة</button> <button class="btn" data-del="${x.no}" title="حذف">✕</button></td></tr>`; }).join('')}</table>`;
   }
   function bindHist(root) {
     const H = () => lsGet(HK(), []);
@@ -590,7 +597,7 @@ ${waitHomeHTML()}${followHTML()}<div class="card"><h3>آخر عروضي</h3>${hi
       setSync(true); return j;
     } catch (e) { setSync(false); return null; }
   }
-  function pushQuote(e) { api('staff_save', { q: { no: e.no, at: e.at, name: e.name, phone: e.phone, ev: e.ev, hall: e.hall, n: e.n, pk: e.pk, total: e.total, status: e.status, reason: e.reason, followAt: e.followAt, prio: Q.prio, bud: Q.bud, src: Q.src, notes: Q.notes, ref: e.ref, snap: e.snap } }); }
+  function pushQuote(e) { api('staff_save', { q: { no: e.no, at: e.at, name: e.name, phone: e.phone, ev: e.ev, hall: e.hall, n: e.n, pk: e.pk, total: e.total, status: e.status, reason: e.reason, followAt: e.followAt, prio: Q.prio, bud: Q.bud, src: Q.src, notes: [Q.notes, (e.tags || []).join('، ')].filter(Boolean).join(' | '), ref: e.ref, snap: e.snap } }); }
   async function syncHist() {
     const j = await api('staff_list'); if (!j || !j.rows) return false;
     const H = lsGet(HK(), []), byNo = {}; H.forEach(x => byNo[x.no] = x);
@@ -619,14 +626,14 @@ ${waitHomeHTML()}${followHTML()}<div class="card"><h3>آخر عروضي</h3>${hi
   function dueList() { const now = Date.now(); return lsGet(HK(), []).filter(x => !['اتحجز', 'خسرناه'].includes(x.status) && (x.followAt || x.at + 2 * 864e5) <= now && (x.phone || x.name)).sort((a, b) => (a.followAt || a.at) - (b.followAt || b.at)); }
   function followHTML() {
     const L = dueList();
-    return `<div class="card"><h3>متابعات النهارده ${L.length ? `<span class="pill r">${AD(L.length)}</span>` : '<span class="pill g">مفيش</span>'}</h3>${L.length ? L.slice(0, 12).map(x => { const d = Math.max(0, Math.round((Date.now() - (x.up || x.at)) / 864e5)); return `<div class="fu"><b>${esc(x.name || '—')} <small dir="ltr">${esc(x.phone || '')}</small><br><small>${ar(x.label)} | ${money(x.total)} | آخر تواصل من ${AD(d)} يوم | <span class="pill">${esc(x.status || 'اتبعت')}</span></small></b><button class="btn wa" data-fu="${esc(x.no)}">تابع واتساب</button><button class="btn" data-snooze="${esc(x.no)}">بعد يومين</button><button class="btn" data-open="${esc(x.no)}">فتح</button></div>`; }).join('') : '<p class="ctx">كل عملائك متابَعين ✓</p>'}</div>`;
+    return `<div class="card"><h3>محتاج تتابعهم النهارده ${L.length ? `<span class="pill r">${AD(L.length)}</span>` : '<span class="pill g">مفيش</span>'}</h3>${L.length ? L.slice(0, 12).map(x => { const d = Math.max(0, Math.round((Date.now() - (x.up || x.at)) / 864e5)); return `<div class="fu"><b><a href="#" class="cl" data-client="${esc(ckey(x.phone, x.name))}">${esc(x.name || '—')}</a> <small dir="ltr">${esc(x.phone || '')}</small><br><small>${ar(x.label)} | ${money(x.total)} | آخر تواصل من ${AD(d)} يوم | <span class="pill">${esc(x.status || 'اتبعت')}</span></small><br><small class="nx">${svg('bolt')} ${esc(nextStep(x).t)}</small></b><button class="btn wa" data-fu="${esc(x.no)}">تابع واتساب</button><button class="btn" data-snooze="${esc(x.no)}">بعد يومين</button><button class="btn" data-open="${esc(x.no)}">فتح</button></div>`; }).join('') : '<p class="ctx">كل عملائك متابَعين ✓ وقت كويس تراجع «عملاء الموقع» أو «قائمة الانتظار».</p>'}</div>`;
   }
   function bindFollow() {
     $$('#homeOut [data-fu]').forEach(b => b.onclick = () => {
       const H = lsGet(HK(), []), x = H.find(e => e.no === b.dataset.fu); if (!x) return;
       const txt = [`أهلاً${x.name ? ' ' + x.name : ''} 🌷`, `معاك ${ME.name} من قسم الحفلات بدار المراسم لضباط الشرطة.`, `حبيت أطمّن على حضرتك بخصوص عرض السعر (${x.hall} – ${AD(x.n)} فرد – حوالي ${fmt(x.total)} ج).`, 'لو فيه أي استفسار أو حابب نعدّل في الاختيارات أنا تحت أمرك، ويسعدنا نستقبلك تعاين القاعة يومياً من ١٠ الصبح لـ ١٠ بالليل.', 'وللأمانة، المواعيد بتتحجز بأسبقية سداد المقدم، فلو التاريخ مناسب لحضرتك متتأخرش.'].join('\n');
       const ph = Q.phone; Q.phone = x.phone; const l = waLink(txt); Q.phone = ph; window.open(l, '_blank');
-      x.followAt = Date.now() + 3 * 864e5; x.up = Date.now(); if (!x.status || x.status === 'اتبعت') x.status = 'متابعة لاحقة'; lsSet(HK(), H); api('staff_save', { q: x }); logStat('wa', 0); renderHome();
+      x.followAt = Date.now() + 3 * 864e5; x.up = Date.now(); if (!x.status || x.status === 'اتبعت') x.status = 'متابعة لاحقة'; lsSet(HK(), H); api('staff_save', { q: x }); logStat('fu', 0); renderHome();
     });
     $$('#homeOut [data-snooze]').forEach(b => b.onclick = () => { const H = lsGet(HK(), []), x = H.find(e => e.no === b.dataset.snooze); if (!x) return; x.followAt = Date.now() + 2 * 864e5; x.up = Date.now(); lsSet(HK(), H); api('staff_save', { q: x }); renderHome(); });
   }
@@ -848,7 +855,7 @@ ${pick.length > 1 ? '<div class="snav"><button id="cuPrev" title="السابق">
   const WHO = ['العريس', 'العروسة', 'العريس والعروسة', 'الأهل', 'صاحب المناسبة'];
   const PRIOS = ['الأكل والمنيو', 'الديكور والكوشة', 'التصوير', 'التوفير والسعر', 'الفخامة والمساحة'];
   const HSTYLE = { akhenaten: 'ملكي فخم – أكبر قاعات الدار', isis: 'فرعوني وعصري مع بعض', lotus: 'خاص وهادي – أجواء حديقة' };
-  function newMeet() { resetQuote(); Object.assign(MEET, { step: 0, viewed: false, viewAt: '', who: '', active: true }); Q.src = 'زيارة مباشرة للدار'; fillForm(); }
+  function newMeet() { resetQuote(); Object.assign(MEET, { step: 0, viewed: false, viewAt: '', who: '', active: true, logged: false }); Q.src = 'زيارة مباشرة للدار'; fillForm(); }
   const incOf = h => K.halls[h] ? (K.halls[h].inc || []).flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1])) : [];
   const incHas = (h, re) => incOf(h).filter(x => re.test(x));
   const mType = m => /^ob/.test(m.id) ? 'أوبن بوفيه' : /^sm/.test(m.id) ? 'ست منيو على الترابيزة' : 'هاي تي';
@@ -890,7 +897,7 @@ ${pick.length > 1 ? '<div class="snav"><button id="cuPrev" title="السابق">
 <div class="f" style="margin-top:12px"><label>اليوم</label><div class="seg" id="mDay"><button data-d="wd" class="${Q.day === 'wd' ? 'on' : ''}">منتصف الأسبوع</button><button data-d="we" class="${Q.day === 'we' ? 'on' : ''}">نهاية الأسبوع / عطلة</button></div></div>
 <div class="f" style="margin-top:12px"><label>أهم حاجة عنده</label><div class="seg" id="mPrio">${PRIOS.map(x => `<button data-d="${x}" class="${Q.prio === x ? 'on' : ''}">${x}</button>`).join('')}</div></div>
 <div class="row" style="margin-top:12px"><div class="f"><label>الميزانية التقريبية (لو قالها)</label><input id="mBud" type="number" value="${esc(Q.bud)}" placeholder="مثلاً 200000"></div><div class="f"><label>ملاحظات (للموظف)</label><input id="mNotes" value="${esc(Q.notes)}" placeholder="مثلاً: العروسة عايزة كوشة اسبيشيال"></div></div>
-<div id="mFit" style="margin-top:12px"></div><div class="btns"><button class="btn" id="mWait">التاريخ محجوز؟ سجّله على قائمة الانتظار</button></div></div></div>
+<div class="f" style="margin-top:12px"><label>ملاحظات سريعة</label><div id="mTags"></div></div><div id="mFit" style="margin-top:12px"></div><div class="btns"><button class="btn" id="mWait">التاريخ محجوز؟ سجّله على قائمة الانتظار</button></div></div></div>
 <div class="tip">لو قال ميزانية، متقولش أسعار دلوقتي. خليها في دماغك واستخدمها في الترشيح.</div>`,
 
     halls: () => {
@@ -976,7 +983,7 @@ ${ids.length ? `<div class="card prio"><h3>إضافات تناسب أولويت�
       const R = computeQuote(); if (!R || !R.pk) return `<div class="card"><div class="tip">اختار الباكدج الأول من «الأسعار».</div></div>`;
       saveMeet(R);
       return `<div class="grid2"><div>${sayBox(['أجهّز لحضرتك العرض مكتوب ورسمي باسمك.', 'ومحتاج رقم موبايل حضرتك عشان أبعته لك واتساب كمان، وأتابع معاك.'])}
-<div class="card"><h3>بيانات العميل</h3><div class="row"><div class="f"><label>اسم العميل</label><input id="oName" value="${esc(Q.name)}"></div><div class="f"><label>الموبايل</label><input id="oPhone" value="${esc(Q.phone)}" inputmode="tel" dir="ltr" placeholder="01xxxxxxxxx"></div></div>
+<div class="card"><h3>بيانات العميل</h3><div class="row"><div class="f"><label>اسم العميل</label><input id="oName" value="${esc(Q.name)}"></div><div class="f"><label>الموبايل</label><input id="oPhone" value="${esc(Q.phone)}" inputmode="tel" dir="ltr" placeholder="01xxxxxxxxx"></div></div><div id="oDup"></div>
 <div class="btns"><button class="btn pri" id="oDocB">اطبع العرض الرسمي (A4)</button><button class="btn wa" id="oWaB">ابعته واتساب</button></div><p class="ctx">رقم العرض: ${esc(Q.no)}</p></div></div>
 <div class="card mqr"><h3>العرض على موبايل العميل</h3>${qrSvg(quoteLink(R))}<p>خلّي العميل يصوّر الكود بكاميرا موبايله، وهيفتح له العرض بتفاصيله وأرقام الدار، من غير ما ياخد رقمه لو مش عايز.</p><b>${money(R.total)}</b></div></div>`;
     },
@@ -988,7 +995,7 @@ ${ids.length ? `<div class="card prio"><h3>إضافات تناسب أولويت�
 <div class="card"><h3>ملخص المقابلة</h3><table class="q">${sum.map(r => `<tr><td>${r[0]}</td><td><b>${r[1]}</b></td></tr>`).join('')}</table><div class="btns"><button class="btn" id="cSumCopy">نسخ الملخص</button></div></div></div>
 <div class="grid2"><div class="card"><h3>العميل موافق</h3><p>كمّل خطوات الحجز بالترتيب: تأكيد التاريخ، بيانات المتعاقد، المقدم، الاستمارة، وملخص طلب الحجز للحسابات.</p><div class="btns"><button class="btn pri" id="cCloseB" ${ok ? '' : 'disabled'}>اقفل البيعة</button></div></div>
 <div class="card"><h3>محتاج يفكر أو يستشير</h3><div class="chips">${['think', 'family', 'price', 'discount', 'date', 'deposit'].map(k => `<button data-ob="${k}">${OBJ.find(o => o[0] === k)[1]}</button>`).join('')}</div><div id="mObOut"></div>
-<div class="row" style="margin-top:12px;align-items:flex-end"><div class="f"><label>نتابع معاه</label><select id="cFu"><option value="1">بكره</option><option value="2" selected>بعد يومين</option><option value="3">بعد ٣ أيام</option><option value="7">بعد أسبوع</option></select></div><button class="btn" id="cFuB" ${ok ? '' : 'disabled'}>سجّل المتابعة</button></div><div class="btns"><button class="btn" id="cWait">التاريخ محجوز – قائمة الانتظار</button></div></div></div>`;
+<div class="f" style="margin-top:12px"><label>ملاحظات سريعة عن رد فعله</label><div id="cTags"></div></div><div class="row" style="margin-top:12px;align-items:flex-end"><div class="f"><label>نتابع معاه</label><select id="cFu"><option value="1">بكره</option><option value="2" selected>بعد يومين</option><option value="3">بعد ٣ أيام</option><option value="7">بعد أسبوع</option></select></div><button class="btn" id="cFuB" ${ok ? '' : 'disabled'}>سجّل المتابعة</button></div><div class="btns"><button class="btn" id="cWait">التاريخ محجوز – قائمة الانتظار</button></div></div></div>`;
     }
   };
 
@@ -1017,6 +1024,7 @@ ${ids.length ? `<div class="card prio"><h3>إضافات تناسب أولويت�
       $('#mBud').oninput = e => { Q.bud = e.target.value; };
       $('#mNotes').oninput = e => { Q.notes = e.target.value; };
       $('#mWait').onclick = openWaitForm;
+      drawQTags('mTags');
       mFit();
     },
     halls: () => { $$('#mtOut [data-mh]').forEach(b => b.onclick = () => { if (Q.hall !== b.dataset.mh) { Q.hall = b.dataset.mh; Q.pk = null; Q.adds = {}; } renderMeet(); }); },
@@ -1025,13 +1033,13 @@ ${ids.length ? `<div class="card prio"><h3>إضافات تناسب أولويت�
       if (!$('#mVd')) return;
       $('#mVd').onclick = () => { MEET.viewed = true; if (Q.no && lsGet(HK(), []).find(x => x.no === Q.no)) setStatus(Q.no, 'اتعاين'); toast('اتسجل: العميل عاين ✓'); renderMeet(); };
       $('#mVl').onclick = () => { $('#mVlBox').hidden = false; };
-      $('#mVsave').onclick = () => { MEET.viewAt = $('#mVat').value; if (MEET.viewAt && !/معاينة:/.test(Q.notes)) Q.notes = (Q.notes ? Q.notes + ' – ' : '') + 'معاينة: ' + MEET.viewAt.replace('T', ' '); toast('اتسجل ميعاد المعاينة'); renderMeet(); };
+      $('#mVsave').onclick = () => { MEET.viewAt = $('#mVat').value; Q.visit = MEET.viewAt; if (MEET.viewAt && !/معاينة:/.test(Q.notes)) Q.notes = (Q.notes ? Q.notes + ' – ' : '') + 'معاينة: ' + MEET.viewAt.replace('T', ' '); toast('اتسجل ميعاد المعاينة'); renderMeet(); };
     },
     price: () => { bindPick(); bindObs(); $$('#mtOut [data-sg]').forEach(b => b.onclick = () => { const i = b.dataset.sg; if (Q.adds[i]) delete Q.adds[i]; else Q.adds[i] = { qty: 1, opt: 0 }; renderMeet(); }); },
     offer: () => {
       if (!$('#oName')) return;
       const upd = () => { Q.name = $('#oName').value.trim(); Q.phone = $('#oPhone').value.trim(); fillForm(); };
-      $('#oName').oninput = () => { upd(); meetBar(); }; $('#oPhone').oninput = upd;
+      $('#oName').oninput = () => { upd(); meetBar(); }; $('#oPhone').oninput = () => { upd(); dupCheck(Q.phone, 'oDup'); }; if (Q.phone) dupCheck(Q.phone, 'oDup');
       $('#oName').onchange = $('#oPhone').onchange = () => saveMeet();
       $('#oDocB').onclick = () => { upd(); const R = computeQuote(); saveMeet(R, 'doc'); openDoc([optFrom(R)]); };
       $('#oWaB').onclick = () => { upd(); if (!Q.phone) { toast('اكتب موبايل العميل الأول'); $('#oPhone').focus(); return; } const R = computeQuote(); saveMeet(R, 'wa'); window.open(waLink(quoteText(R) + '\n\nعرضك بالتفاصيل:\n' + quoteLink(R)), '_blank'); };
@@ -1040,6 +1048,7 @@ ${ids.length ? `<div class="card prio"><h3>إضافات تناسب أولويت�
       bindObs();
       $('#cSumCopy').onclick = () => copyText([...$$('#mtOut table.q tr')].map(r => r.innerText.replace(/\t/g, ': ')).join('\n')).then(() => toast('اتنسخ الملخص ✓'));
       $('#cWait').onclick = openWaitForm;
+      drawQTags('cTags');
       if ($('#cCloseB')) $('#cCloseB').onclick = () => { saveMeet(); openClose(); };
       $('#cFuB').onclick = () => { saveMeet(); const H = lsGet(HK(), []), e = H.find(x => x.no === Q.no); if (!e) return; e.status = 'متابعة لاحقة'; e.followAt = Date.now() + (+$('#cFu').value) * 864e5; e.up = Date.now(); lsSet(HK(), H); api('staff_save', { q: e }); toast('اتسجلت المتابعة ✓ هتظهرلك في الرئيسية'); };
     }
@@ -1049,7 +1058,7 @@ ${ids.length ? `<div class="card prio"><h3>إضافات تناسب أولويت�
     R = R || computeQuote(); if (!R || !R.pk) return;
     const tag = MEET.who ? 'جه بنفسه: ' + MEET.who : 'زيارة للدار';
     if (!String(Q.notes || '').includes(tag)) Q.notes = (Q.notes ? Q.notes + ' – ' : '') + tag;
-    fillForm(); saveHist(R, why || 'save');
+    fillForm(); saveHist(R, why || 'save'); if (!MEET.logged) { MEET.logged = true; logStat('meet', R.total); }
     if (MEET.viewed) { const e = lsGet(HK(), []).find(x => x.no === Q.no); if (e && (!e.status || e.status === 'اتبعت')) setStatus(Q.no, 'اتعاين'); }
   }
 
@@ -1198,7 +1207,219 @@ ${L.length > 1 ? `<div class="snav"><button id="shPrev" title="السابق">›
     $('#tgCopy').onclick = () => copyText(j.url).then(() => toast('اتنسخ اللينك ✓'));
   }
   $('#tgBtn').onclick = tgLink;
-  function renderAll() { $('#arrows').hidden = false; $('#navMgr').hidden = !ME.mgr; renderHome(); renderQuote(); renderRules(); renderCall(); setSync(false, '● جاري الاتصال بسجل الدار…'); syncHist().then(ok => { if (ok) renderHome(); }); pollWalk(); loadWait().then(() => { if (!$('#t-home').hidden) renderHome(); }); api('staff_leads').then(j => { if (j && j.rows) { LEADS = j.rows; const f = LEADS.filter(x => !x.owner).length, bd = $('#leadsBadge'); bd.hidden = !f; bd.textContent = AD(f); } });  const hs = location.hash.slice(1); if (hs && $(`#nav button[data-t="${hs}"]`) && !$(`#nav button[data-t="${hs}"]`).hidden) goTab(hs); }
+  /* =========================================================
+     v6: icons, zoom, global search, client file, next step, duplicate check,
+         quick price, quick notes, shift handover, personal goal, «today's desk»
+     ========================================================= */
+  const IC = {
+    home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+    users: '<circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.6-3.4 2.8-5.3 5.5-5.3s4.9 1.9 5.5 5.3"/><circle cx="17" cy="9" r="2.6"/><path d="M16 14.6c2.5-.2 4.2 1.5 4.6 4.4"/>',
+    globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.6 3.6 5.4 3.6 8.5s-1 5.9-3.6 8.5c-2.6-2.6-3.6-5.4-3.6-8.5s1-5.9 3.6-8.5z"/>',
+    hourglass: '<path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/>',
+    folder: '<path d="M3 7.5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+    receipt: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+    columns: '<path d="M3 9.5 12 4l9 5.5"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/>',
+    wallet: '<path d="M4 7h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a1 1 0 0 1-1-1V7z"/><path d="M4 7l11-3v3"/><circle cx="16" cy="13.5" r="1.2"/>',
+    chat: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/>',
+    calendar: '<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+    mail: '<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/>',
+    building: '<path d="M4 21V6l8-3 8 3v15"/><path d="M9 21v-5h6v5M8 9h1M15 9h1M8 13h1M15 13h1"/>',
+    book: '<path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10"/>',
+    phone: '<path d="M6 3h3l1.5 4.5-2 1.3a11 11 0 0 0 6.7 6.7l1.3-2L21 15v3a2 2 0 0 1-2 2C10.7 20 4 13.3 4 5a2 2 0 0 1 2-2z"/>',
+    cap: '<path d="M2.5 9 12 5l9.5 4L12 13z"/><path d="M6.5 11v4.5c1.5 1.4 3.4 2 5.5 2s4-.6 5.5-2V11M21.5 9v5"/>',
+    chart: '<path d="M4 20V4M4 20h16"/><path d="M8 16v-4M12 16V8M16 16v-6"/>',
+    send: '<path d="M21 3 10 14"/><path d="M21 3 14.5 21 10 14 3 9.5z"/>',
+    search: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
+    star: '<path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>',
+    bolt: '<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>'
+  };
+  const svg = k => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k] || ''}</svg>`;
+  $$('[data-ic]').forEach(e => e.innerHTML = svg(e.dataset.ic));
+
+  /* ---------- font size ---------- */
+  let ZM = 1; try { ZM = +localStorage.getItem('dmst-zoom') || 1; } catch (e) { }
+  const setZoom = z => { ZM = Math.min(1.3, Math.max(0.85, Math.round(z * 100) / 100)); document.body.style.zoom = ZM; try { localStorage.setItem('dmst-zoom', ZM); } catch (e) { } };
+  setZoom(ZM); $('#zIn').onclick = () => setZoom(ZM + .05); $('#zOut').onclick = () => setZoom(ZM - .05);
+
+  /* ---------- clients ---------- */
+  const ph11 = s => { let p = String(s || '').replace(/[^\d]/g, ''); if (/^20\d{10}$/.test(p)) p = '0' + p.slice(2); return p.slice(-11); };
+  const ckey = (phone, name) => ph11(phone).length >= 10 ? 'p' + ph11(phone) : 'n' + norm(name).trim();
+  function allClients() {
+    const M = {}, add = (key, o) => { const c = M[key] = M[key] || { key, name: '', phone: '', items: [] }; c.name = c.name || o.name || ''; c.phone = c.phone || o.phone || ''; c.items.push(o); };
+    lsGet(HK(), []).forEach(x => (x.phone || x.name) && add(ckey(x.phone, x.name), { k: 'q', at: x.up || x.at, name: x.name, phone: x.phone, x }));
+    (LEADS || []).forEach(x => (x.phone || x.name) && add(ckey(x.phone, x.name), { k: 'l', at: x.last || x.first, name: x.name, phone: x.phone, x }));
+    (WAIT || []).forEach(x => (x.phone || x.name) && add(ckey(x.phone, x.name), { k: 'w', at: x.at, name: x.name, phone: x.phone, x }));
+    (WALK || []).forEach(x => (x.phone || x.name) && add(ckey(x.phone, x.name), { k: 'r', at: x.at, name: x.name, phone: x.phone, x }));
+    return Object.values(M).map(c => (c.items.sort((a, b) => b.at - a.at), c.at = c.items[0].at, c)).sort((a, b) => b.at - a.at);
+  }
+  /* ---------- global search ---------- */
+  function gsearch() {
+    const q = $('#gq').value.trim(), out = $('#gqOut'); if (q.length < 2) { out.hidden = true; return; }
+    const nq = norm(q).trim(), dq = q.replace(/[^\d]/g, '');
+    const L = allClients().filter(c => norm(c.name).includes(nq) || (dq.length >= 3 && ph11(c.phone).includes(dq)) || c.items.some(i => i.k === 'q' && norm(i.x.no).includes(nq))).slice(0, 8);
+    out.hidden = false;
+    out.innerHTML = L.length ? L.map(c => `<button type="button" data-ck="${esc(c.key)}"><b>${esc(c.name || 'عميل')}</b> <small dir="ltr">${esc(c.phone || '')}</small><br><small>${c.items.slice(0, 3).map(i => ({ q: 'عرض ' + esc(i.x.hall || '') + ' – ' + esc(i.x.status || 'اتبعت'), l: 'من الموقع', w: 'على الانتظار', r: 'في الاستقبال' })[i.k]).join(' | ')}</small></button>`).join('') : `<div class="ctx" style="padding:10px">مفيش عميل بالاسم أو الرقم ده. <button type="button" class="btn" id="gqNew">عرض سعر جديد باسم «${esc(q)}»</button></div>`;
+    $$('#gqOut [data-ck]').forEach(b => b.onclick = () => { out.hidden = true; $('#gq').value = ''; openClient(b.dataset.ck); });
+    if ($('#gqNew')) $('#gqNew').onclick = () => { out.hidden = true; resetQuote(); if (dq.length >= 10) Q.phone = q; else Q.name = q; fillForm(); $('#gq').value = ''; goTab('quote'); };
+  }
+  $('#gq').addEventListener('input', gsearch);
+  $('#gq').addEventListener('keydown', e => { if (e.key === 'Escape') { $('#gqOut').hidden = true; e.target.blur(); } if (e.key === 'Enter') { const b = $('#gqOut [data-ck]'); if (b) b.click(); } });
+  document.addEventListener('click', e => { if (!e.target.closest('.gsearch')) $('#gqOut').hidden = true; });
+  document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'ن')) { e.preventDefault(); $('#gq').focus(); $('#gq').select(); } });
+
+  /* ---------- next step for a quote ---------- */
+  function nextStep(x) {
+    const age = Math.round((Date.now() - (x.up || x.at)) / 864e5), due = (x.followAt || x.at + 2 * 864e5) <= Date.now(), st = x.status || 'اتبعت';
+    const hi = `أهلاً${x.name ? ' ' + x.name : ''} 🌷\nمعاك ${ME.name} من قسم الحفلات بدار المراسم لضباط الشرطة.\n`;
+    const det = `${x.hall || ''}${x.n ? ' – ' + AD(x.n) + ' فرد' : ''}${x.total ? ' – حوالي ' + fmt(x.total) + ' ج' : ''}`;
+    if (st === 'اتحجز') return { t: 'الحجز اتأكد. ابعتله رسالة ترحيب وجدول التحضيرات.', b: 'رسالة ترحيب', msg: hi + `ألف مبروك 🎉 تم تسجيل حجز حضرتك (${det}).\nأنا معاك في كل خطوة لحد يوم الفرح، وهبعتلك جدول التحضيرات والمواعيد المهمة.` };
+    if (st === 'دفع المقدم') return { t: 'دفع المقدم. فكّره إن ٥٠٪ من الباكدج خلال شهر من التعاقد بتثبّت السعر، وسلّم ملخص الحجز للحسابات.', b: 'تذكير الدفعة', msg: hi + `شكراً لثقة حضرتك 🌷 تذكير ودّي: سداد ٥٠٪ من قيمة الباكدج خلال شهر من التعاقد، ولو اتسدّد الباكدج كامل خلال ٣٠ يوم من المقدم السعر بيتثبّت لحضرتك.` };
+    if (st === 'اتعاين') return { t: 'عاين القاعة. ده أنسب وقت تعرض عليه تثبيت التاريخ بالمقدم قبل ما يتحجز.', b: 'اعرض تثبيت التاريخ', msg: hi + `شرّفتونا في المعاينة 🌷 وزي ما اتفقنا (${det}).\nالتواريخ بتتحجز بأسبقية سداد المقدم وتوقيع الاستمارة، فلو التاريخ مناسب نثبّته لحضرتك النهارده. يناسبك تعدّي إمتى؟` };
+    if (st === 'خسرناه') return { t: x.reason === 'السعر' ? 'خسرناه بسبب السعر. لو فيه منتصف أسبوع أو منيو أوفر، ده سبب كويس ترجع تكلمه.' : x.reason === 'التاريخ مش متاح' ? 'خسرناه بسبب التاريخ. سجّله على قائمة الانتظار لو التاريخ فضي.' : 'خسرناه. ممكن ترجع تكلمه بعد فترة بعرض جديد.', b: x.reason === 'السعر' ? 'اعرض بديل أوفر' : '', msg: hi + `حبيت أبلغ حضرتك إن فيه اختيارات أوفر لنفس العدد، منها منتصف الأسبوع ومنيوهات بأسعار أقل. تحب أبعتلك عرض جديد؟` };
+    if (due) return { t: `${age >= 2 ? `آخر تواصل من ${AD(age)} يوم. ` : ''}كلّمه النهارده واعزمه على المعاينة.`, b: 'رسالة متابعة', late: true, msg: hi + `حبيت أطمّن على حضرتك بخصوص عرض السعر (${det}).\nلو فيه أي استفسار أنا تحت أمرك، ويسعدنا نستقبلك تعاين القاعة يومياً من ١٠ الصبح لـ ١٠ بالليل. يناسبك يوم إيه؟` };
+    return { t: `المتابعة الجاية ${x.followAt ? dateTxt(new Date(x.followAt)) : 'بعد يومين'}. لو كلّمك قبلها، اعزمه على المعاينة.`, b: '' };
+  }
+  function sendStep(x) {
+    const s = nextStep(x); if (!s.msg) return;
+    window.open(waLinkTo(x.phone, s.msg), '_blank');
+    const H = lsGet(HK(), []), e = H.find(h => h.no === x.no);
+    if (e && !['اتحجز', 'خسرناه'].includes(e.status)) { e.followAt = Date.now() + 3 * 864e5; e.up = Date.now(); if (!e.status || e.status === 'اتبعت') e.status = 'متابعة لاحقة'; lsSet(HK(), H); api('staff_save', { q: e }); }
+    logStat('fu', 0); toast('اتسجلت المتابعة ✓ والمتابعة الجاية بعد ٣ أيام');
+  }
+
+  /* ---------- quick notes ---------- */
+  const TAGS = ['مهتم جداً', 'بيقارن بمكان تاني', 'الأهل هيقرروا', 'مستعجل على التاريخ', 'الميزانية ضيقة', 'عايز يعاين مع الأهل', 'سأل على التقسيط', 'عايز كوشة اسبيشيال', 'العدد ممكن يتغير'];
+  function tagsHTML(sel) { return TAGS.map(t => `<button type="button" class="${(sel || []).includes(t) ? 'on' : ''}" data-tag="${esc(t)}">${esc(t)}</button>`).join(''); }
+  function bindTags(root, get, set) { $$(root + ' [data-tag]').forEach(b => b.onclick = () => { const L = (get() || []).slice(), t = b.dataset.tag, i = L.indexOf(t); i >= 0 ? L.splice(i, 1) : L.push(t); set(L); b.classList.toggle('on', i < 0); }); }
+  function drawQTags(id) { const el = $('#' + id); if (!el) return; el.className = 'tags'; el.innerHTML = tagsHTML(Q.tags); bindTags('#' + id, () => Q.tags, L => { Q.tags = L; }); }
+
+  /* ---------- duplicate client check ---------- */
+  let DUPT = null;
+  function dupCheck(phone, boxId) {
+    clearTimeout(DUPT); const box = $('#' + boxId); if (!box) return;
+    if (ph11(phone).length < 11) { box.innerHTML = ''; return; }
+    DUPT = setTimeout(async () => {
+      const p = ph11(phone);
+      let rows = lsGet(HK(), []).filter(x => ph11(x.phone) === p && x.no !== Q.no).map(x => ({ src: 'عرض سعر', emp: ME.name, mine: true, status: x.status || 'اتبعت', at: x.up || x.at, hall: x.hall, name: x.name }));
+      const j = await api('staff_dup', { phone: p, no: Q.no }); if (j && j.rows) rows = j.rows;
+      if (!$('#' + boxId)) return;
+      const others = rows.filter(r => !r.mine && r.emp), mine = rows.filter(r => r.mine);
+      if (!rows.length) { $('#' + boxId).innerHTML = ''; return; }
+      const ago = t => { const d = Math.round((Date.now() - t) / 864e5); return d < 1 ? 'النهارده' : `من ${AD(d)} يوم`; };
+      $('#' + boxId).innerHTML = `<div class="dupw${others.length ? ' warn' : ''}"><b>${others.length ? '⚠️ العميل ده متسجل مع زميل' : 'ℹ️ العميل ده متسجل عندك قبل كده'}</b>${rows.slice(0, 4).map(r => `<div>• ${esc(r.src)}${r.emp ? ' مع <b>' + esc(r.emp) + '</b>' : ''}${r.hall ? ' – ' + esc(r.hall) : ''} (${esc(r.status || '')}) ${ago(r.at)}</div>`).join('')}${others.length ? '<small>نسّق مع زميلك الأول قبل ما تبعت عرض جديد، عشان العميل ميتلخبطش.</small>' : ''}${mine.length ? `<button type="button" class="btn" data-ck="${esc('p' + p)}" style="margin-top:6px">افتح ملف العميل</button>` : ''}</div>`;
+      $$('#' + boxId + ' [data-ck]').forEach(b => b.onclick = () => openClient(b.dataset.ck));
+    }, 600);
+  }
+  $('#qPhone').addEventListener('input', e => dupCheck(e.target.value, 'qDup'));
+
+  /* ---------- client file ---------- */
+  let CLPREV = 'home', CLKEY = null;
+  function showClientTab() {
+    const cur = $$('#nav button[data-t].on')[0]; if (cur && cur.dataset.t) CLPREV = cur.dataset.t;
+    $$('#nav button[data-t]').forEach(x => x.classList.remove('on'));
+    $$('main section').forEach(s => { const on = s.id === 't-client'; s.hidden = !on; s.classList.toggle('on', on); });
+    window.scrollTo(0, 0);
+  }
+  function openClient(key) {
+    CLKEY = key; const c = allClients().find(x => x.key === key); if (!c) { toast('مش لاقي العميل'); return; }
+    showClientTab();
+    const tk = 'dmst-tags-' + key, tags = lsGet(tk, []);
+    const quotes = c.items.filter(i => i.k === 'q').map(i => i.x), open = quotes.find(x => !['اتحجز', 'خسرناه'].includes(x.status)) || quotes[0];
+    const step = open ? nextStep(open) : null;
+    const row = i => {
+      const x = i.x, d = dateTxt(new Date(i.at));
+      if (i.k === 'q') return `<tr><td><span class="pill">عرض سعر</span><br><small dir="ltr">${esc(x.no)}</small></td><td>${ar(x.label || '')}<br><small>${money(x.total)}${x.emp && x.emp !== ME.name ? ' | ' + esc(x.emp) : ''}</small></td><td><small>${d}</small></td><td>${stSelect(x)}</td><td><button class="btn" data-open="${esc(x.no)}">فتح</button></td></tr>`;
+      if (i.k === 'l') return `<tr><td><span class="pill b">المساعد الذكي</span><br><small>${esc(x.ref || '')}</small></td><td>${esc([x.event, x.count ? AD(x.count) + ' فرد' : '', x.hall].filter(Boolean).join(' | '))}<br><small>${esc(x.stage || '')}</small></td><td><small>${d}</small></td><td>${x.owner ? esc(x.owner) : '<span class="pill r">محدش استلمه</span>'}</td><td></td></tr>`;
+      if (i.k === 'w') return `<tr><td><span class="pill">قائمة الانتظار</span></td><td>${esc(x.hall)} – ${isoTxt(x.date)}</td><td><small>${d}</small></td><td>${esc(x.status)}</td><td></td></tr>`;
+      return `<tr><td><span class="pill g">زيارة للاستقبال</span></td><td>${esc([x.ev, x.n ? AD(x.n) + ' فرد' : ''].filter(Boolean).join(' | '))}${x.notes ? '<br><small>' + esc(x.notes) + '</small>' : ''}</td><td><small>${d}</small></td><td>${x.taker ? esc(x.taker) : ''}</td><td></td></tr>`;
+    };
+    $('#clOut').innerHTML = `<div class="clhead"><button class="btn" id="clBack">→ رجوع</button><div><h2 style="margin:0">${esc(c.name || 'عميل')}</h2><p class="ctx" dir="ltr" style="text-align:right">${esc(c.phone || 'مفيش موبايل')}</p></div><div class="btns" style="margin:0 auto 0 0">${c.phone ? `<button class="btn wa" id="clWa">واتساب</button>` : ''}<button class="btn pri" id="clNew">عرض سعر جديد له</button><button class="btn" id="clWait">قائمة الانتظار</button></div></div>
+${step ? `<div class="card step${step.late ? ' late' : ''}"><h3>${svg('bolt')} الخطوة الجاية</h3><p>${esc(step.t)}</p>${step.b && c.phone ? `<button class="btn ${step.late ? 'wa' : 'pri'}" id="clStep">${esc(step.b)} واتساب</button>` : ''}</div>` : ''}
+<div class="grid2"><div class="card"><h3>كل تعاملاته مع الدار</h3><table class="q hist">${c.items.map(row).join('')}</table></div>
+<div class="card"><h3>ملاحظات سريعة عن العميل</h3><div class="tags" id="clTags">${tagsHTML(tags)}</div><p class="ctx">بتتحفظ مع العميل وتظهر في ملفه وفي ملاحظات عروضه.</p>
+<h3 style="margin-top:16px">الخلاصة</h3><table class="q"><tr><td>عدد العروض</td><td><b>${AD(quotes.length)}</b></td></tr><tr><td>أعلى عرض</td><td><b>${quotes.length ? money(Math.max(...quotes.map(x => x.total || 0))) : '—'}</b></td></tr><tr><td>آخر تواصل</td><td><b>${dateTxt(new Date(c.at))}</b></td></tr><tr><td>الموظف المسؤول</td><td><b>${esc((quotes[0] && quotes[0].emp) || ME.name)}</b></td></tr></table></div></div>`;
+    $('#clBack').onclick = () => goTab(CLPREV || 'home');
+    if ($('#clWa')) $('#clWa').onclick = () => window.open(waLinkTo(c.phone, `أهلاً${c.name ? ' ' + c.name : ''} 🌷\nمعاك ${ME.name} من قسم الحفلات بدار المراسم لضباط الشرطة.\n`), '_blank');
+    if ($('#clStep')) $('#clStep').onclick = () => { sendStep(open); openClient(key); };
+    $('#clNew').onclick = () => { resetQuote(); Q.name = c.name; Q.phone = c.phone; Q.tags = tags.slice(); fillForm(); goTab('quote'); };
+    $('#clWait').onclick = () => { Q.name = c.name; Q.phone = c.phone; openWaitForm(); };
+    bindTags('#clTags', () => lsGet(tk, []), L => { lsSet(tk, L); const H = lsGet(HK(), []), e = open && H.find(h => h.no === open.no); if (e) { e.tags = L; e.up = Date.now(); lsSet(HK(), H); api('staff_save', { q: Object.assign({}, e, { notes: [e.notes, L.join('، ')].filter(Boolean).join(' | ') }) }); } });
+    bindHist('#clOut');
+  }
+  document.addEventListener('click', e => { const b = e.target.closest('[data-client]'); if (b) { e.preventDefault(); openClient(b.dataset.client); } });
+
+  /* ---------- quick price ---------- */
+  let QP = { n: 200, d: 'wd', ev: 'wedding' };
+  function quickPriceHTML() {
+    return `<div class="card qp"><h3>${svg('bolt')} سعر سريع للتليفون</h3><div class="row" style="align-items:flex-end"><div class="f"><label>المناسبة</label><select id="qpEv">${Object.entries(EVNAME).map(([k, v]) => `<option value="${k}"${QP.ev === k ? ' selected' : ''}>${v}</option>`).join('')}</select></div><div class="f" style="max-width:110px"><label>العدد</label><input id="qpN" type="number" value="${QP.n}"></div><div class="seg" id="qpD"><button data-d="wd" class="${QP.d === 'wd' ? 'on' : ''}">وسط الأسبوع</button><button data-d="we" class="${QP.d === 'we' ? 'on' : ''}">آخره</button></div></div><div id="qpOut"></div></div>`;
+  }
+  function drawQuickPrice() {
+    const el = $('#qpOut'); if (!el) return;
+    const hs = hallsFor(QP.ev, QP.n).filter(h => h.ok);
+    if (!hs.length) { el.innerHTML = '<p class="ctx">مفيش قاعة مناسبة للعدد ده.</p>'; return; }
+    el.innerHTML = `<div class="qpl">${hs.map(h => { const P = packagesFor(QP.ev, h.id, QP.n, QP.d).map(p => p.total).filter(Boolean); if (!P.length) return ''; const lo = Math.min(...P), hi = Math.max(...P); return `<div class="qpr"><div><b>${HN[h.id] || h.name}</b><span>${money(lo)}${hi > lo ? ' – ' + money(hi) : ''}</span><small>${money(Math.round(lo / QP.n))}${hi > lo ? ' – ' + money(Math.round(hi / QP.n)) : ''} للفرد</small></div><button class="btn" data-qph="${h.id}">عرض كامل</button></div>`; }).join('')}</div><p class="ctx">من أوفر لأغلى باكدج في كل قاعة، شامل الوجبات الإضافية. للتفاصيل افتح «عرض كامل».</p>`;
+    $$('[data-qph]').forEach(b => b.onclick = () => { resetQuote(); Object.assign(Q, { ev: QP.ev, n: QP.n, day: QP.d, hall: b.dataset.qph }); fillForm(); goTab('quote'); });
+  }
+  function bindQuickPrice() {
+    if (!$('#qpEv')) return;
+    $('#qpEv').onchange = e => { QP.ev = e.target.value; drawQuickPrice(); };
+    $('#qpN').oninput = e => { QP.n = Math.max(1, +e.target.value || 0); drawQuickPrice(); };
+    seg('#qpD', QP.d, d => { QP.d = d; $$('#qpD button').forEach(x => x.classList.toggle('on', x.dataset.d === d)); drawQuickPrice(); });
+    drawQuickPrice();
+  }
+
+  /* ---------- personal goal ---------- */
+  const GK = () => 'dmst-goal-' + (ME ? ME.id : 'x');
+  function goalHTML() {
+    const g = lsGet(GK(), { q: 3, fu: 5, m: 2 }), t0 = today0().getTime(), S = lsGet(SK(), []).filter(x => x.at >= t0);
+    const H = lsGet(HK(), []).filter(x => x.at >= t0);
+    const v = { q: H.length, fu: S.filter(x => x.type === 'fu').length, m: S.filter(x => x.type === 'meet').length };
+    const bar = (k, n) => { const p = Math.min(100, Math.round(v[k] * 100 / Math.max(1, g[k]))); return `<div class="gl"><div><span>${n}</span><b>${AD(v[k])} / ${AD(g[k])}</b></div><i><u style="width:${p}%;${p >= 100 ? 'background:var(--ok)' : ''}"></u></i></div>`; };
+    return `<div class="card goal"><h3>${svg('star')} هدفي النهارده <button class="btn" id="gEdit" style="padding:2px 10px;margin-inline-start:auto;font-size:13px">تعديل</button></h3>${bar('q', 'عروض أسعار')}${bar('fu', 'متابعات')}${bar('m', 'مقابلات في المكتب')}</div>`;
+  }
+  function bindGoal() {
+    if (!$('#gEdit')) return;
+    $('#gEdit').onclick = () => { const g = lsGet(GK(), { q: 3, fu: 5, m: 2 }); modal(`<h3>هدفي النهارده</h3><p class="ctx">انت اللي بتحدده، ومحدش بيشوفه غيرك.</p><div class="row"><div class="f"><label>عروض أسعار</label><input id="gq1" type="number" value="${g.q}"></div><div class="f"><label>متابعات</label><input id="gq2" type="number" value="${g.fu}"></div><div class="f"><label>مقابلات</label><input id="gq3" type="number" value="${g.m}"></div></div><div class="btns"><button class="btn pri" id="gSave">حفظ</button></div>`); $('#gSave').onclick = () => { lsSet(GK(), { q: +$('#gq1').value || 1, fu: +$('#gq2').value || 1, m: +$('#gq3').value || 1 }); $('#modal').hidden = true; renderHome(); }; };
+  }
+
+  /* ---------- shift handover ---------- */
+  let HO = null;
+  async function loadHandover() { const j = await api('staff_handover', { op: 'list' }); HO = j && j.rows ? j.rows : null; if (!$('#t-home').hidden && $('#hoBox')) drawHandover(); }
+  function drawHandover() {
+    const el = $('#hoBox'); if (!el) return;
+    const L = (HO || []).filter(x => x.from !== ME.name && !x.readBy.split('، ').includes(ME.name));
+    el.innerHTML = `<div class="card"><h3>تسليم الوردية ${L.length ? `<span class="pill r">${AD(L.length)} جديد</span>` : ''}<button class="btn" id="hoNew" style="margin-inline-start:auto">سلّم ورديتك</button></h3>${L.length ? L.map(x => `<div class="ho"><div><b>${esc(x.from)}</b> <small>${esc(x.shift || '')} | ${dateTxt(new Date(x.at))}</small>${x.note ? `<p>${esc(x.note)}</p>` : ''}${x.clients.length ? `<ul>${x.clients.map(c => `<li>${esc(c.name)}${c.what ? ' – ' + esc(c.what) : ''}</li>`).join('')}</ul>` : ''}</div><button class="btn" data-hor="${x.row}">اتقرأ ✓</button></div>`).join('') : '<p class="ctx">مفيش تسليم جديد من الوردية التانية.</p>'}</div>`;
+    $$('[data-hor]').forEach(b => b.onclick = async () => { const x = HO.find(h => h.row === +b.dataset.hor); x.readBy = (x.readBy ? x.readBy + '، ' : '') + ME.name; drawHandover(); await api('staff_handover', { op: 'read', row: x.row }); });
+    $('#hoNew').onclick = openHandover;
+  }
+  function openHandover() {
+    const D = dueList().concat(lsGet(HK(), []).filter(x => x.status === 'اتعاين' || x.status === 'دفع المقدم')).filter((x, i, a) => a.findIndex(y => y.no === x.no) === i).slice(0, 15);
+    modal(`<h3>تسليم الوردية</h3><p class="ctx">اللي هتكتبه هيظهر للوردية التانية في «مكتب النهارده»${typeof WAIT !== 'undefined' ? '، ويتبعت لجروب القسم على تليجرام' : ''}.</p><div class="f"><label>ملاحظات للوردية الجاية</label><textarea id="hoNote" rows="4" style="width:100%;padding:10px;border-radius:12px;border:1px solid #D9CCAE"></textarea></div>${D.length ? `<h4 style="margin:10px 0 6px">عملاء محتاجين متابعة</h4><table class="q">${D.map(x => `<tr><td><label class="ck"><input type="checkbox" data-hoc="${esc(x.no)}"> ${esc(x.name || x.no)}</label></td><td><input data-how="${esc(x.no)}" placeholder="المطلوب (مثلاً: هيرد بكره الصبح)" style="width:100%;padding:6px 10px;border-radius:10px;border:1px solid #D9CCAE"></td></tr>`).join('')}</table>` : ''}<div class="btns"><button class="btn pri" id="hoSend">تسليم</button></div>`);
+    $('#hoSend').onclick = async () => {
+      const cl = $$('[data-hoc]').filter(c => c.checked).map(c => { const x = D.find(d => d.no === c.dataset.hoc); return { no: x.no, name: x.name || x.no, what: ($(`[data-how="${x.no}"]`) || {}).value || '' }; });
+      const note = $('#hoNote').value.trim(); if (!note && !cl.length) { toast('اكتب ملاحظة أو اختار عميل'); return; }
+      const j = await api('staff_handover', { op: 'add', note, clients: cl, shift: ME.role }); if (!j || !j.ok) { toast('مقدرتش أوصل لسجل الدار'); return; }
+      $('#modal').hidden = true; toast('اتسلّمت الوردية ✓'); loadHandover();
+    };
+  }
+
+  /* ---------- today's visits ---------- */
+  function visitsHTML() {
+    const t0 = today0().getTime(), t3 = t0 + 3 * 864e5;
+    const L = lsGet(HK(), []).filter(x => x.visit).map(x => Object.assign({ vt: +new Date(x.visit) }, x)).filter(x => x.vt >= t0 && x.vt < t3).sort((a, b) => a.vt - b.vt);
+    if (!L.length) return '';
+    return `<div class="card"><h3>${svg('calendar')} معاينات جاية</h3>${L.map(x => { const d = new Date(x.vt), today = x.vt < t0 + 864e5; return `<div class="fu"><b><span class="pill ${today ? 'r' : ''}">${today ? 'النهارده' : DAYS[d.getDay()]} ${AD(String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'))}</span> ${esc(x.name || '—')}<br><small>${ar(x.label || '')}</small></b>${x.phone ? `<button class="btn wa" data-vwa="${esc(x.no)}">تأكيد الميعاد</button>` : ''}<button class="btn" data-client="${esc(ckey(x.phone, x.name))}">ملف العميل</button></div>`; }).join('')}</div>`;
+  }
+  function bindVisits() { $$('[data-vwa]').forEach(b => b.onclick = () => { const x = lsGet(HK(), []).find(e => e.no === b.dataset.vwa); const d = new Date(x.visit); window.open(waLinkTo(x.phone, `أهلاً${x.name ? ' ' + x.name : ''} 🌷\nمعاك ${ME.name} من دار المراسم لضباط الشرطة.\nبنأكد مع حضرتك ميعاد معاينة ${x.hall || 'القاعة'} يوم ${dateTxt(d)} الساعة ${AD(String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'))}.\nالعنوان: شارع حديقة الزهرية – الزمالك، وفيه جراج داخلي. في انتظار حضرتك.`), '_blank'); }); }
+
+  /* ---------- free website leads ---------- */
+  function freeLeadsHTML() {
+    const L = (LEADS || []).filter(x => !x.owner).slice(0, 5); if (!L.length) return '';
+    return `<div class="card"><h3>${svg('globe')} عملاء موقع محدش استلمهم <span class="pill r">${AD((LEADS || []).filter(x => !x.owner).length)}</span><button class="btn" id="flAll" style="margin-inline-start:auto">الكل</button></h3>${L.map(x => `<div class="fu"><b>${esc(x.name || 'عميل')} <small>${esc(x.ref || '')}</small><br><small>${esc([x.event, x.count ? AD(x.count) + ' فرد' : '', x.hall, x.stage].filter(Boolean).join(' | '))}</small></b><button class="btn pri" data-flo="${esc(x.id)}">استلمه وافتحه</button></div>`).join('')}</div>`;
+  }
+  function bindFreeLeads() { if ($('#flAll')) $('#flAll').onclick = () => goTab('leads'); $$('[data-flo]').forEach(b => b.onclick = async () => { b.disabled = true; const x = LEADS.find(l => l.id === b.dataset.flo); const j = await api('staff_claim', { id: x.id }); if (j && j.ok === false && j.err === 'taken') { toast('العميل ده استلمه ' + j.owner); x.owner = j.owner; renderHome(); return; } x.owner = ME.name; toast('اتسجل العميل باسمك ✓'); openLead(x); }); }
+
+  function renderAll() { $('#arrows').hidden = false; $('#navMgr').hidden = !ME.mgr; $('#ngMgr').hidden = !ME.mgr; loadHandover(); renderHome(); renderQuote(); renderRules(); renderCall(); setSync(false, '● جاري الاتصال بسجل الدار…'); syncHist().then(ok => { if (ok) renderHome(); }); pollWalk(); loadWait().then(() => { if (!$('#t-home').hidden) renderHome(); }); api('staff_leads').then(j => { if (j && j.rows) { LEADS = j.rows; if (!$('#t-home').hidden) renderHome(); const f = LEADS.filter(x => !x.owner).length, bd = $('#leadsBadge'); bd.hidden = !f; bd.textContent = AD(f); } });  const hs = location.hash.slice(1); if (hs && $(`#nav button[data-t="${hs}"]`) && !$(`#nav button[data-t="${hs}"]`).hidden) goTab(hs); }
   // stay signed in after a page refresh (runs last, once everything above is defined)
   let SU = null; try { SU = USERS.find(x => x.id === sessionStorage.getItem('dm-staff')); } catch (e) { }
   if (SU) enter(SU);

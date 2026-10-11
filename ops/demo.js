@@ -233,6 +233,8 @@ function staff_(d) {
   if (d.kind === 'staff_wait_set') return json_(waitSet_(me, String(d.id || ''), String(d.status || '')));
   if (d.kind === 'staff_wait_free') return json_(waitFree_(me, String(d.hall || ''), String(d.date || '')));
   if (d.kind === 'staff_tg_code') return json_(tgCode_(me));
+  if (d.kind === 'staff_dup') return json_(staffDup_(me, String(d.phone || ''), String(d.no || '')));
+  if (d.kind === 'staff_handover') return json_(handover_(me, d));
   return json_({ ok: false, err: 'kind' });
 }
 function staffSheet_() {
@@ -854,6 +856,41 @@ function maSelfTest() {
   const tr = ScriptApp.getProjectTriggers().map(t => t.getHandlerFunction()); ['tgPoll', 'maHourly', 'maMorning'].forEach(f => ok('تشغيل تلقائي: ' + f, tr.indexOf(f) >= 0));
   if (ad.length) { const r = tgApi_('sendMessage', { chat_id: ad[0].id, text: '🧪 رسالة اختبار من MARASEM AI – الربط شغال ✓' }); ok('رسالة اختبار وصلت للمدير', r && r.ok); }
   Logger.log(out.join('\n')); return out;
+}
+
+
+/* =========================================================
+   مساعد الموظف: العميل المكرر + تسليم الوردية
+   ========================================================= */
+const ph11_ = s => { let p = String(s || '').replace(/[^\d]/g, ''); if (/^20\d{10}$/.test(p)) p = '0' + p.slice(2); return p.slice(-11); };
+// بيدوّر على الموبايل في عروض كل الموظفين وعملاء الموقع والاستقبال – بيرجّع الأسماء والحالات بس
+function staffDup_(me, phone, no) {
+  const p = ph11_(phone); if (p.length < 10) return { ok: true, rows: [] };
+  const R = [];
+  staffList_({ name: '' }, true).forEach(x => { if (ph11_(x.phone) === p && x.no !== no) R.push({ src: 'عرض سعر', emp: x.emp, mine: x.emp === me.name, status: x.status, at: x.at || x.up, no: x.no, name: x.name, hall: x.hall, total: x.total }); });
+  leadsList_().forEach(x => { if (ph11_(x.phone) === p) R.push({ src: 'المساعد الذكي على الموقع', emp: x.owner || '', mine: x.owner === me.name, status: x.stage, at: x.last || x.first, ref: x.ref, name: x.name }); });
+  waitList_().forEach(x => { if (ph11_(x.phone) === p && ['منتظر', 'التاريخ فضي – بلّغ العميل'].indexOf(x.status) >= 0) R.push({ src: 'قائمة الانتظار', emp: x.emp, mine: x.emp === me.name, status: x.status, at: x.at, name: x.name, hall: x.hall }); });
+  return { ok: true, rows: R.sort((a, b) => b.at - a.at).slice(0, 8) };
+}
+const HO_SHEET = 'تسليم الورديات';
+const HO_HEAD = ['الوقت', 'من', 'الوردية', 'الملاحظات', 'العملاء', 'اتقرأ بواسطة'];
+function handover_(me, d) {
+  const sh = sheetOf_(HO_SHEET, HO_HEAD);
+  if (d.op === 'add') {
+    const note = clip_(d.note, 2000), cl = (d.clients || []).slice(0, 20).map(c => ({ no: clip_(c.no, 30), name: clip_(c.name, 60), what: clip_(c.what, 200) }));
+    if (!note && !cl.length) return { ok: false, err: 'empty' };
+    sh.appendRow([new Date(), me.name, clip_(d.shift, 30), note, JSON.stringify(cl), '']);
+    if (typeof tgGroup_ === 'function' && tgOn_()) tgGroup_(`📝 <b>تسليم وردية من ${hx_(me.name)}</b> (${hx_(d.shift || '')})${note ? '\n' + hx_(note.slice(0, 500)) : ''}${cl.length ? '\n\nعملاء محتاجين متابعة:\n' + cl.map(c => '• ' + hx_(c.name) + (c.what ? ' – ' + hx_(c.what) : '')).join('\n') : ''}`, [appBtn_('افتح البرنامج')]);
+    return { ok: true };
+  }
+  if (d.op === 'read') {
+    const r = +d.row; if (r < 2 || r > sh.getLastRow()) return { ok: false };
+    const cur = String(sh.getRange(r, 6).getValue() || ''); if (cur.split('، ').indexOf(me.name) < 0) sh.getRange(r, 6).setValue(cur ? cur + '، ' + me.name : me.name);
+    return { ok: true };
+  }
+  const last = sh.getLastRow(); if (last < 2) return { ok: true, rows: [] };
+  const from = Math.max(2, last - 19), since = Date.now() - 36 * 3600e3;
+  return { ok: true, rows: sh.getRange(from, 1, last - from + 1, HO_HEAD.length).getValues().map((r, i) => ({ row: from + i, at: +new Date(r[0]) || 0, from: r[1], shift: r[2], note: r[3], clients: (() => { try { return JSON.parse(r[4] || '[]'); } catch (e) { return []; } })(), readBy: String(r[5] || '') })).filter(x => x.at >= since).reverse() };
 }
 
 return { maRoute_, maPeople_, maSavePerson_, staffSave_, saveLead_, walkinSave_, waitAdd_ };

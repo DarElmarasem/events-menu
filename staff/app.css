@@ -353,3 +353,56 @@ nav button.tgb{margin-top:4px;font-size:14px;color:#CFC6B4;border:1px dashed rgb
 .wrap.mini nav button.tgb em{display:none}
 .tgl{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:center}
 .tgl .mqr svg{width:210px;height:210px}
+/* ===== v6: grouped nav, icons, search, desk, client file ===== */
+nav .ngrp{margin:12px 14px 2px;font-size:11.5px;font-weight:800;letter-spacing:.06em;color:#8E8778}
+nav .ngrp:first-of-type{margin-top:2px}
+.wrap.mini nav .ngrp{font-size:0;height:1px;margin:8px 10px;background:rgba(200,164,100,.25)}
+nav button span[data-ic]{display:inline-flex;align-items:center;justify-content:center;color:var(--gold)}
+nav button.on span[data-ic]{color:#0A1120}
+nav button{padding:9px 14px}
+header .gsearch{position:relative;flex:1;max-width:460px;margin-inline-start:24px;display:flex;align-items:center;background:#111B30;border:1px solid rgba(200,164,100,.45);border-radius:12px;padding:0 10px;color:var(--gold)}
+header .gsearch input{flex:1;border:0;background:transparent;color:#F1DFB5;padding:9px 8px;outline:none;font-size:14.5px}
+header .gsearch input::placeholder{color:#8E8778}
+#gqOut{position:absolute;top:calc(100% + 6px);right:0;left:0;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px rgba(10,17,32,.25);max-height:60vh;overflow:auto;z-index:40}
+#gqOut button{display:block;width:100%;text-align:right;padding:10px 14px;border:0;border-bottom:1px solid #F0E8D6;background:#fff;cursor:pointer;line-height:1.5}
+#gqOut button:hover{background:#FBF6EA}
+#gqOut small{color:var(--mut)}
+header .zoom{display:flex;gap:4px}
+header .zoom button{padding:5px 9px;border-radius:9px;border:1px solid rgba(200,164,100,.5);background:transparent;color:var(--gold2);cursor:pointer;font-weight:700}
+.hello.sm{padding:14px 22px;margin-bottom:14px}.hello.sm h2{font-size:20px;margin:0}
+.desk{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.desk .dcol{min-width:0}
+.acts.v{grid-template-columns:1fr 1fr}
+.acts.v .act.main{grid-column:1/-1}
+.act i{display:inline-flex;color:var(--goldD)}
+.act i svg{width:28px;height:28px}
+.act.main i{color:var(--gold)}
+.stats.two{grid-template-columns:1fr 1fr}
+.qp .row{gap:8px}.qp .seg button{padding:8px 10px}
+.goal .gl{margin:8px 0}.goal .gl div{display:flex;justify-content:space-between;font-size:14px}
+.goal .gl i{display:block;height:9px;border-radius:6px;background:#EFE7D4;overflow:hidden;margin-top:4px}
+.goal .gl u{display:block;height:100%;background:linear-gradient(90deg,#C8A464,#8C6A2E)}
+.card h3 svg{vertical-align:-4px;color:var(--goldD)}
+.card h3{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fu .nx{color:var(--goldD);font-weight:700}
+.fu .nx svg{width:14px;height:14px;vertical-align:-2px}
+a.cl{color:var(--navy);font-weight:800;text-decoration:none;border-bottom:1px dashed var(--gold)}
+a.cl:hover{color:var(--goldD)}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tags button{padding:5px 12px;border-radius:999px;border:1px solid #D9CCAE;background:#fff;font-size:13.5px;cursor:pointer}
+.tags button.on{background:var(--navy);color:var(--gold2);border-color:var(--navy)}
+.dupw{margin-top:10px;padding:10px 14px;border-radius:12px;background:#EEF3FB;color:#1E4E8C;font-size:14px;line-height:1.7}
+.dupw.warn{background:#FFF4DC;color:#8A5A00;border:1px solid #F0D99A}
+.dupw small{display:block;margin-top:4px}
+.clhead{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.step{border-color:var(--gold);background:#FFFDF6}
+.step.late{border-color:#F2B8B1;background:#FFF8F7}
+.step h3 svg{color:var(--goldD)}
+.ho{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed #EBE2CC}
+.ho>div{flex:1}.ho p{margin:4px 0}.ho ul{margin:4px 0;padding-inline-start:18px}
+@media (max-width:1150px){.desk{grid-template-columns:1fr}header .gsearch{max-width:300px}}
+.qpl{display:grid;gap:8px;margin-top:10px}
+.qpr{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:#FBF8F1;border:1px solid #EFE5CF}
+.qpr>div{flex:1;min-width:0}
+.qpr b{display:block}.qpr span{display:block;font-weight:800;color:var(--wine)}.qpr small{color:var(--mut)}
+.qpr .btn{padding:6px 12px;white-space:nowrap}
