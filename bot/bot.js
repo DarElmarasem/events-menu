@@ -314,6 +314,24 @@ body.printing .dmb-launch,body.printing .dmb-panel{display:none!important}
 html.dmb-open,html.dmb-open body{overflow:hidden}
 .dmb-panel{left:0!important;right:0!important;top:0!important;bottom:auto!important;width:auto!important;height:var(--dmb-vh,100dvh)!important;transform:translate3d(0,var(--dmb-vt,0px),0);border-radius:0!important;box-shadow:0 0 0 100vmax #0A1120!important;animation:dmbFade .25s ease-out;--col:900px;--gut:max(14px,calc((100% - var(--col)) / 2))}
 @keyframes dmbFade{from{opacity:0}to{opacity:1}}
+/* ---- layout: header/bars fixed size, conversation scrolls (min-height:0), input bar never shrinks or leaves the panel ---- */
+:root{--dmb-vh0:100vh}
+@supports (height:100dvh){:root{--dmb-vh0:100dvh}}
+.dmb-panel{height:var(--dmb-vh,var(--dmb-vh0))!important;display:flex!important;flex-direction:column!important}
+.dmb-panel>*{flex:0 0 auto}
+.dmb-panel>.dmb-log{flex:1 1 0!important;min-height:0!important}
+.dmb-panel>.dmb-in{flex:0 0 auto!important;position:relative}
+.dmb-panel>.dmb-chips{flex:0 1 auto!important;min-height:0;overflow-y:auto}
+.dmb-short .dmb-chips{max-height:64px}
+.dmb-tiny .dmb-chips{max-height:46px}
+.dmb-short .dmb-tels,.dmb-short .dmb-cr,.dmb-short .dmb-sig{display:none!important}
+.dmb-short .dmb-chips{flex-wrap:nowrap!important;overflow-x:auto;padding-top:6px!important;padding-bottom:6px!important}
+.dmb-short .dmb-log{padding-top:10px}
+.dmb-kb .dmb-chips{max-height:52px}
+.dmb-tiny .dmb-nav,.dmb-tiny .dmb-hd{display:none!important}
+.dmb-tiny .dmb-chips{padding-top:3px!important;padding-bottom:3px!important}
+.dmb-tiny .dmb-in{padding-top:6px;padding-bottom:6px}
+.dmb-tiny .dmb-log{padding-top:6px;padding-bottom:4px}
 .dmb-panel .dmb-hd{padding-inline:var(--gut)}
 .dmb-panel .dmb-log{padding-inline:var(--gut)}
 .dmb-panel .dmb-chips{padding-inline:var(--gut)}
@@ -469,22 +487,30 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   }
   const vv = window.visualViewport;
   let fitRaf = 0;
+  // iOS Safari: the keyboard shrinks only the *visual* viewport. The panel follows it (height + offset), and the fixed
+  // parts around the conversation are compacted by the space actually left, so the input bar is never pushed out.
   function fitVV() {
     cancelAnimationFrame(fitRaf);
     fitRaf = requestAnimationFrame(() => {
-      if (panel.hidden || !MOB()) { panel.style.removeProperty('--dmb-vh'); panel.style.removeProperty('--dmb-vt'); return; }
-      const h = vv ? vv.height : window.innerHeight, top = vv ? vv.offsetTop : 0;
+      if (panel.hidden || !MOB()) { panel.style.removeProperty('--dmb-vh'); panel.style.removeProperty('--dmb-vt'); panel.classList.remove('dmb-kb', 'dmb-short', 'dmb-tiny'); return; }
+      const h = vv ? vv.height : window.innerHeight, top = vv ? Math.max(0, vv.offsetTop) : 0;
+      const layoutH = document.documentElement.clientHeight || window.innerHeight || h;
       panel.style.setProperty('--dmb-vh', Math.round(h) + 'px');
       panel.style.setProperty('--dmb-vt', Math.round(top) + 'px');
-      // keyboard open on a phone: hide the bars above/below the chat so the conversation itself stays readable
-      const kb = document.activeElement === input && h < (window.innerHeight || h) * 0.8;
+      const focused = document.activeElement === input;
+      const kb = focused && (layoutH - h > 120 || h < (window.innerHeight || h) * 0.8);
       panel.classList.toggle('dmb-kb', kb);
-      if (document.activeElement === input) scroll();
+      panel.classList.toggle('dmb-short', h < 600);
+      panel.classList.toggle('dmb-tiny', h < 340);
+      if (focused) scroll();
     });
   }
-  if (vv) { vv.addEventListener('resize', fitVV); vv.addEventListener('scroll', fitVV); }
-  window.addEventListener('resize', fitVV);
-  window.addEventListener('orientationchange', () => setTimeout(fitVV, 350));
+  if (!window.__dmbVV) {   // guard: register the viewport listeners once only
+    window.__dmbVV = true;
+    if (vv) { vv.addEventListener('resize', fitVV); vv.addEventListener('scroll', fitVV); }
+    window.addEventListener('resize', fitVV);
+    window.addEventListener('orientationchange', () => setTimeout(fitVV, 350));
+  }
   ['focus', 'blur'].forEach(ev => input.addEventListener(ev, () => { fitVV(); [80, 250, 500, 800].forEach(d => setTimeout(fitVV, d)); }));
   let retEl = null;
   function showRet() { const a = launch.querySelector('.dmb-lt .ar'); if (a) { if (!a.dataset.o) a.dataset.o = a.textContent; a.textContent = tr('↩ رجوع للمساعد الذكي', '↩ Back to the assistant'); } launch.classList.add('ret'); mini.classList.add('ret'); document.documentElement.classList.add('dmb-retmode'); const ma = mini.querySelector('.dmb-lt .ar'); if (ma) ma.textContent = a ? a.textContent : ''; }
