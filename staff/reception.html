@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0A1120">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>أهلاً بحضرتك – دار المراسم لضباط الشرطة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--night:#0A1120;--night2:#111B30;--gold:#C8A464;--gold2:#E9D3A1;--cream:#F1DFB5;--mut:#CFC6B4}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:radial-gradient(120% 80% at 50% 0%,#17233B 0%,#0A1120 65%) fixed;color:var(--cream);font:600 19px/1.7 "Cairo",Tahoma,sans-serif;user-select:none}
+.wrap{min-height:100%;display:flex;flex-direction:column;max-width:980px;margin:0 auto;padding:22px 28px}
+.top{display:flex;align-items:center;gap:14px}
+.top img{height:58px}
+.top b{font-size:20px;color:var(--gold2)}
+.dots{margin-inline-start:auto;display:flex;gap:8px}
+.dots i{width:12px;height:12px;border-radius:50%;background:#2A3550}
+.dots i.on{background:var(--gold)}
+.scr{flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 0}
+h1{margin:0 0 6px;font-size:36px;color:#F6E3B4;line-height:1.4}
+h2{margin:0 0 6px;font-size:28px;color:#F6E3B4}
+p.s{margin:0 0 22px;color:var(--mut);font-size:19px;font-weight:500}
+label.l{display:block;margin:18px 0 8px;color:var(--gold2);font-size:18px}
+input,textarea{width:100%;padding:16px 18px;border-radius:16px;border:1px solid rgba(200,164,100,.55);background:#0A1120;color:#F6E3B4;font:600 22px "Cairo",Tahoma,sans-serif;outline:none}
+input:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,164,100,.25)}
+textarea{font-size:19px;min-height:90px;resize:none}
+.ch{display:flex;flex-wrap:wrap;gap:12px}
+.ch button{padding:16px 24px;border-radius:16px;border:1px solid rgba(200,164,100,.5);background:rgba(200,164,100,.06);color:var(--cream);font:700 20px "Cairo",Tahoma,sans-serif;cursor:pointer;min-width:140px}
+.ch button.on{background:linear-gradient(180deg,#F6E3B4,#C8A464);color:#0A1120;border-color:transparent}
+.ch.big button{flex:1 1 calc(33% - 12px);padding:24px 14px;font-size:22px}
+.num{display:flex;align-items:center;gap:14px}
+.num button{width:74px;height:74px;border-radius:50%;border:1px solid var(--gold);background:transparent;color:var(--gold2);font-size:36px;cursor:pointer}
+.num input{width:200px;text-align:center;font-size:34px}
+.nav{display:flex;gap:14px;padding-top:12px}
+.nav button{padding:18px 34px;border-radius:18px;border:1px solid var(--gold);background:transparent;color:var(--gold2);font:800 21px "Cairo",Tahoma,sans-serif;cursor:pointer}
+.nav .go{margin-inline-start:auto;background:linear-gradient(180deg,#F6E3B4,#C8A464);color:#0A1120;border:0;min-width:220px}
+.nav .go:disabled{opacity:.45}
+.hint{color:var(--mut);font-size:16px;font-weight:500;margin-top:8px}
+.start{align-items:center;text-align:center}
+.start img{height:150px;margin-bottom:10px}
+.start .go{margin-top:30px;padding:22px 60px;border-radius:20px;border:0;background:linear-gradient(180deg,#F6E3B4,#C8A464);color:#0A1120;font:800 26px "Cairo",Tahoma,sans-serif;cursor:pointer}
+.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
+.photos figure{margin:0}
+.photos img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:16px;border:1px solid rgba(200,164,100,.5)}
+.photos figcaption{text-align:center;color:var(--gold2);margin-top:6px}
+.err{color:#F28B82;font-size:17px;min-height:26px;margin-top:8px}
+@media (max-width:700px){h1{font-size:28px}.ch.big button{flex-basis:calc(50% - 12px)}.photos{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><img src="../bot/img/crest.png" alt=""><b>دار المراسم لضباط الشرطة</b><div class="dots" id="dots"></div></div>
+  <div class="scr" id="scr"></div>
+  <div class="nav" id="nav"></div>
+</div>
+<script>
+(() => {
+  const API = 'https://script.google.com/macros/s/AKfycbyLhYKrvKr6kzHtjMg-x6bkk-dHDMRFWwKXLxffVFIPd6FyReQCvHzOFcJXTCVnv0qCuA/exec';
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const AD = s => String(s).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const EV = ['حفل زفاف', 'خطوبة', 'عقد قران', 'عيد ميلاد', 'عقيقة', 'مناسبة خاصة / مؤتمر'];
+  const WHO = ['العريس', 'العروسة', 'العريس والعروسة', 'الأهل', 'صاحب المناسبة'];
+  const PRIO = ['الأكل والمنيو', 'الديكور والكوشة', 'التصوير', 'التوفير والسعر', 'الفخامة والمساحة'];
+  const BUD = ['أقل من ١٥٠ ألف', '١٥٠ – ٢٥٠ ألف', '٢٥٠ – ٣٥٠ ألف', 'أكتر من ٣٥٠ ألف', 'لسه مش محددة'];
+  const SRC = ['فيسبوك', 'إنستجرام', 'بحث جوجل / الخرائط', 'ترشيح من الأهل أو الأصدقاء', 'حضر مناسبة بالدار', 'المساعد الذكي على الموقع', 'أخرى'];
+  const DAYS = ['منتصف الأسبوع (الأحد – الأربعاء)', 'نهاية الأسبوع (الخميس – السبت)', 'مش فارق'];
+  let D, step, timer;
+  const reset = () => { D = { name: '', who: '', ev: '', n: 150, date: '', day: '', prio: '', bud: '', src: '', phone: '', notes: '' }; step = 0; draw(); };
+  const chips = (key, L, big) => `<div class="ch${big ? ' big' : ''}" data-k="${key}">${L.map(x => `<button type="button" class="${D[key] === x ? 'on' : ''}">${x}</button>`).join('')}</div>`;
+  const S = [
+    { v: () => `<div class="scr start"><img src="../bot/img/crest.png" alt=""><h1>أهلاً وسهلاً بحضرتك في دار المراسم</h1><p class="s">لحد ما موظف الحجز يكون مع حضرتك، عرّفنا على مناسبتك في أقل من دقيقة،<br>عشان نجهّز لك الأنسب من أول كلمة.</p><button class="go" id="go0">يلا نبدأ</button></div>`, nav: false },
+    { v: () => `<h2>أتشرف باسم حضرتك؟</h2><p class="s">والاسم ده اللي الموظف هيرحّب بيه بحضرتك.</p><input id="fName" value="${esc(D.name)}" placeholder="الاسم" autocomplete="off"><label class="l">مين اللي شرّفنا النهارده؟</label>${chips('who', WHO)}`, ok: () => D.name.trim().length > 1 },
+    { v: () => `<h2>المناسبة إيه بإذن الله؟</h2><p class="s">ألف مبروك مقدماً.</p>${chips('ev', EV, true)}<label class="l">عدد المعازيم المتوقع تقريباً</label><div class="num"><button type="button" id="nM">−</button><input id="fN" type="number" inputmode="numeric" value="${D.n}"><button type="button" id="nP">+</button></div>`, ok: () => !!D.ev && D.n > 0 },
+    { v: () => `<h2>حددتوا التاريخ؟</h2><p class="s">لو لسه، مفيش مشكلة، قولنا اليوم اللي يناسبكم.</p><input id="fDate" type="date" value="${esc(D.date)}"><label class="l">اليوم المناسب</label>${chips('day', DAYS)}`, ok: () => true },
+    { v: () => `<h2>إيه أكتر حاجة تفرق معاك في اليوم ده؟</h2><p class="s">عشان نرشّح لك اللي على ذوقك.</p>${chips('prio', PRIO, true)}<label class="l">الميزانية التقريبية (اختياري)</label>${chips('bud', BUD)}`, ok: () => true },
+    { v: () => `<h2>آخر حاجة</h2><label class="l">عرفت الدار منين؟</label>${chips('src', SRC)}<label class="l">رقم الموبايل (اختياري – عشان نبعت لحضرتك العرض)</label><input id="fPhone" type="tel" inputmode="tel" dir="ltr" value="${esc(D.phone)}" placeholder="01xxxxxxxxx" style="text-align:right"><label class="l">حابب تقول لنا حاجة قبل ما نبدأ؟ (اختياري)</label><textarea id="fNotes" placeholder="مثلاً: عايزين كوشة مختلفة، أو فيه كبار سن محتاجين مكان قريب">${esc(D.notes)}</textarea><div class="err" id="err"></div>`, ok: () => true, last: true },
+    { v: () => `<div class="scr start" style="padding:0"><h1>شكراً يا ${esc(D.name.trim() || 'فندم')}، نوّرتنا</h1><p class="s">موظف الحجز وصلته بياناتك، وهيكون مع حضرتك حالاً.<br>ولحد ما ييجي، اتفرّج على قاعاتنا:</p><div class="photos"><figure><img src="../bot/img/akhenaten.jpg" alt=""><figcaption>قاعة أخناتون</figcaption></figure><figure><img src="../bot/img/isis.jpg" alt=""><figcaption>قاعة إيزيس</figcaption></figure><figure><img src="../bot/img/lotus.jpg" alt=""><figcaption>قاعة اللوتس</figcaption></figure></div></div>`, nav: false }
+  ];
+  function draw() {
+    clearTimeout(timer);
+    const s = S[step];
+    $('#dots').innerHTML = step > 0 && step < S.length - 1 ? S.slice(1, -1).map((x, i) => `<i class="${i + 1 <= step ? 'on' : ''}"></i>`).join('') : '';
+    $('#scr').innerHTML = s.v(); $('#scr').className = 'scr';
+    $('#nav').innerHTML = s.nav === false ? '' : `<button type="button" id="back">→ رجوع</button><button type="button" class="go" id="next">${s.last ? 'إرسال للموظف ✓' : 'التالي ←'}</button>`;
+    bind();
+    // tablet left idle on a half-filled form goes back to the welcome screen
+    timer = setTimeout(reset, step === S.length - 1 ? 45000 : 180000);
+  }
+  function bind() {
+    const v = () => { const n = $('#next'); if (n) n.disabled = !S[step].ok(); };
+    if ($('#go0')) $('#go0').onclick = () => { step = 1; draw(); };
+    $$('.ch').forEach(g => g.querySelectorAll('button').forEach(b => b.onclick = () => { const k = g.dataset.k; D[k] = D[k] === b.textContent ? '' : b.textContent; g.querySelectorAll('button').forEach(x => x.classList.toggle('on', x.textContent === D[k])); v(); restart(); }));
+    const inp = (id, k, f) => { const e = $(id); if (e) e.oninput = () => { D[k] = f ? f(e.value) : e.value; v(); restart(); }; };
+    inp('#fName', 'name'); inp('#fN', 'n', x => Math.max(0, Math.min(2000, +x || 0))); inp('#fDate', 'date'); inp('#fPhone', 'phone'); inp('#fNotes', 'notes');
+    if ($('#nM')) { const st = k => { D.n = Math.max(10, (+D.n || 0) + k); $('#fN').value = D.n; v(); }; $('#nM').onclick = () => st(-10); $('#nP').onclick = () => st(10); }
+    if ($('#back')) $('#back').onclick = () => { step--; draw(); };
+    if ($('#next')) $('#next').onclick = () => S[step].last ? send() : (step++, draw());
+    v(); if ($('#fName')) $('#fName').focus();
+  }
+  const restart = () => { clearTimeout(timer); timer = setTimeout(reset, 180000); };
+  async function send() {
+    const b = $('#next'); b.disabled = true; b.textContent = 'جاري الإرسال…';
+    const body = JSON.stringify(Object.assign({ kind: 'walkin' }, D));
+    try {
+      const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body });
+      const j = await r.json(); if (!j.ok) throw 0;
+    } catch (e) {
+      // no internet: keep it and resend later, the client still sees the thank-you screen
+      try { const q = JSON.parse(localStorage.getItem('dm-walk-q') || '[]'); q.push(body); localStorage.setItem('dm-walk-q', JSON.stringify(q)); } catch (x) { }
+    }
+    step = S.length - 1; draw();
+  }
+  async function flush() {
+    let q = []; try { q = JSON.parse(localStorage.getItem('dm-walk-q') || '[]'); } catch (e) { }
+    if (!q.length) return; const left = [];
+    for (const body of q) { try { const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body }); const j = await r.json(); if (!j.ok) left.push(body); } catch (e) { left.push(body); } }
+    try { localStorage.setItem('dm-walk-q', JSON.stringify(left)); } catch (e) { }
+  }
+  setInterval(flush, 60000); flush();
+  reset();
+})();
+</script>
+</body>
+</html>

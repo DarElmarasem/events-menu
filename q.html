@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0A1120">
+<title>عرض السعر – دار المراسم لضباط الشرطة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--night:#0A1120;--gold:#C8A464;--gold2:#E9D3A1;--paper:#F6F2E9;--ink:#1B2336;--mut:#6B6F7B;--line:#E6DCC4;--wine:#5E1B2C}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font:500 15.5px/1.75 "Cairo",Tahoma,sans-serif}
+header{background:radial-gradient(120% 90% at 50% 0%,#17233B 0%,#0A1120 70%);color:var(--gold2);text-align:center;padding:22px 16px 26px;border-bottom:2px solid var(--gold)}
+header img{height:74px}
+header h1{margin:6px 0 0;font-size:20px}
+header p{margin:0;color:#CFC6B4;font-size:13.5px}
+main{max-width:640px;margin:0 auto;padding:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(10,17,32,.04)}
+.card h2{margin:0 0 8px;font-size:17px}
+.hi{color:var(--mut);font-size:14px}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:14.5px}
+.meta span{color:var(--mut)}
+.ph{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+td{padding:8px 4px;border-bottom:1px dashed #EBE2CC;vertical-align:top}
+td.n{text-align:left;white-space:nowrap;font-weight:700}
+tr.tot td{border:0;border-top:2px solid var(--night);font-size:17px;font-weight:800;padding-top:10px}
+tr.tot td.n{color:var(--wine)}
+.pay{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pay div{background:#FBF7EE;border-radius:12px;padding:10px;text-align:center}
+.pay small{display:block;color:var(--mut)}
+.pay b{font-size:17px}
+details{border-top:1px dashed #E2D7BD;padding-top:8px;margin-top:8px}
+summary{cursor:pointer;font-weight:700}
+ul{margin:6px 0;padding-inline-start:20px}
+.btns{display:grid;gap:10px}
+.btn{display:block;text-align:center;padding:13px;border-radius:14px;font-weight:800;text-decoration:none;font-size:16px}
+.wa{background:#1DA851;color:#fff}
+.gold{background:linear-gradient(180deg,#F6E3B4,#C8A464);color:var(--night)}
+.ol{border:1px solid var(--night);color:var(--night);background:#fff}
+.note{font-size:12.5px;color:var(--mut);text-align:center;margin:14px 0 30px}
+.warn{background:#FFF4DC;color:#8A5A00;border-radius:12px;padding:10px 12px;font-size:14px}
+.err{text-align:center;padding:40px 16px}
+</style>
+</head>
+<body>
+<header><img src="bot/img/crest.png" alt=""><h1>دار المراسم لضباط الشرطة</h1><p>قسم الحفلات – الزمالك، القاهرة</p></header>
+<main id="out"></main>
+<script src="bot/kb.js"></script>
+<script src="staff/calc.js"></script>
+<script>
+(() => {
+  const K = window.DMKB, C = window.DMCORE(K), { AD, money, esc, ar, dateTxt, EVNAME, HN, PHONES, itemCount } = C;
+  const out = document.getElementById('out');
+  const STAFF = { sara: 'أ. سارة سيد', sayed: 'أ. سيد إبراهيم', nirvana: 'أ. نرفانا عماد', samar: 'أ. سمر إسماعيل', islam: 'أ. إسلام مختار', hoda: 'أ. هدى محمد', dina: 'أ. دينا هشام', manager: 'عميد / محمد المغازي' };
+  let o = null;
+  try { const h = location.hash.slice(1).replace(/-/g, '+').replace(/_/g, '/'); o = JSON.parse(decodeURIComponent(escape(atob(h + '==='.slice((h.length + 3) % 4))))); } catch (e) { }
+  if (!o || !o.h || !o.e) { out.innerHTML = `<div class="card err"><h2>الرابط ده مش كامل</h2><p class="hi">اطلب من موظف الحجز يبعتلك العرض تاني، أو كلمنا على ${PHONES[0]}.</p></div>`; return; }
+  const pd = s => { if (!s) return null; const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+  const Q = { ev: o.e, hall: o.h, n: +o.n || 0, day: o.d === 'we' ? 'we' : 'wd', pk: o.p, adds: {}, date: pd(o.dt) };
+  (o.a || []).forEach(a => { Q.adds[a[0]] = { qty: a[1] || 1, opt: a[2] || 0 }; });
+  const R = C.quoteOf(Q);
+  if (!R || !R.pk) { out.innerHTML = `<div class="card err"><h2>العرض ده محتاج تحديث</h2><p class="hi">كلمنا على ${PHONES[0]} وهنجهّزلك عرض جديد.</p></div>`; return; }
+  const wed = Q.ev === 'wedding' || Q.ev === 'engagement', H = wed ? K.halls[Q.hall] : null;
+  const photo = ['akhenaten', 'isis', 'lotus'].includes(Q.hall) ? `<img class="ph" src="bot/img/${Q.hall}.jpg" alt="">` : '';
+  const desc = wed && K.desc[Q.hall] ? K.desc[Q.hall].desc : '';
+  const inc = wed ? (H.inc || []).map(s => `<b>${ar(s.h)}</b><ul>${s.o.filter(x => x[0] === 'i').map(x => `<li>${ar(x[1])}</li>`).join('')}</ul>`).join('') : '';
+  const menu = R.pk.m ? (R.pk.m.c || []).map(s => `<b>${ar(s.h || 'الأصناف')}</b><ul>${s.o.filter(x => x[0] === 'i').map(x => `<li>${ar(x[1])}</li>`).join('')}</ul>`).join('') : '';
+  const changed = o.t && Math.abs(o.t - R.total) > 1;
+  const wa = `https://wa.me/2${PHONES[0]}?text=` + encodeURIComponent(`السلام عليكم، بخصوص عرض السعر رقم ${o.no || ''}${o.nm ? ' باسم ' + o.nm : ''} (${HN[Q.hall] || ''} – ${Q.n} فرد). حابب أكمل الحجز / عندي استفسار.`);
+  document.title = `عرض السعر ${o.no || ''} – دار المراسم`;
+  out.innerHTML = `<div class="card"><h2>عرض سعر تقديري${o.nm ? ' – ' + esc(o.nm) : ''}</h2><p class="hi">رقم العرض ${esc(o.no || '—')}${o.at ? ' | بتاريخ ' + dateTxt(pd(o.at)) : ''}</p>
+<div class="meta"><div><span>المناسبة:</span> ${EVNAME[Q.ev] || ''}</div><div><span>القاعة:</span> ${HN[Q.hall] || ''}</div><div><span>العدد:</span> ${AD(Q.n)} فرد</div><div><span>اليوم:</span> ${Q.day === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}</div>${Q.date ? `<div style="grid-column:1/-1"><span>التاريخ:</span> ${dateTxt(Q.date)}</div>` : ''}</div>${photo}${desc ? `<p class="hi" style="margin:10px 0 0">${esc(desc)}</p>` : ''}</div>
+<div class="card"><h2>تفاصيل العرض</h2><table>${R.lines.map(l => `<tr><td>${ar(l.t)}</td><td class="n">${money(l.v)}</td></tr>`).join('')}<tr class="tot"><td>الإجمالي التقديري</td><td class="n">${money(R.total)}</td></tr></table><p class="hi" style="margin:6px 0 0">حوالي ${money(Math.round(R.total / Q.n))} للفرد${R.pk.m ? ' | ' + AD(itemCount(R.pk.m)) + ' صنف' : ''}</p>${R.notes.length ? `<p class="hi">${R.notes.map(ar).join('<br>')}</p>` : ''}${changed ? '<p class="warn">الأسعار اتحدثت بعد تاريخ العرض. كلمنا نأكدلك الرقم النهائي.</p>' : ''}
+${menu ? `<details><summary>أصناف ${ar(R.pk.name)}</summary>${menu}</details>` : ''}${inc ? `<details><summary>الباكدج شامل إيه</summary>${inc}</details>` : ''}</div>
+${R.dep ? `<div class="card"><h2>خطوات الدفع</h2><div class="pay"><div><small>مقدم الحجز</small><b>${money(R.dep)}</b></div><div><small>التأمين (مسترد بعد الحفل)</small><b>${money(R.ins)}</b></div><div><small>خلال شهر من التعاقد</small><b>٥٠٪ من الباكدج</b></div><div><small>قبل الحفل بشهر</small><b>استكمال القيمة</b></div></div><p class="hi" style="margin:10px 0 0">التاريخ بيتثبّت بسداد المقدم وتوقيع استمارة التعاقد.</p></div>` : ''}
+<div class="card btns"><a class="btn wa" href="${wa}" target="_blank" rel="noopener">كلّمنا واتساب وكمّل الحجز</a><a class="btn gold" href="tel:${PHONES[0]}">اتصل بالدار ${PHONES[0]}</a><a class="btn ol" href="index.html?ai=1&hall=${encodeURIComponent(Q.hall)}&src=quote">اسأل مساعد الدار الذكي</a></div>
+<p class="note">${o.s ? 'موظف الحجز: ' + esc(STAFF[o.s] || o.s) + ' | ' : ''}الأسعار تقديرية وفق قوائم الدار، ويُعتمد السعر النهائي عند التعاقد.<br>المعاينة يومياً من ١٠ صباحاً حتى ١٠ مساءً | ${PHONES.join(' – ')}</p>`;
+})();
+</script>
+</body>
+</html>

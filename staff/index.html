@@ -35,20 +35,48 @@
     <nav id="nav">
       <div class="navt"><em>القائمة</em><button type="button" id="navMini" title="تصغير القائمة">⇆</button></div>
       <button data-t="home" class="on"><span>🏠</span><em>الرئيسية</em></button>
+      <button data-t="meet"><span>🤝</span><em>مقابلة عميل</em><i class="badge" id="meetBadge" hidden></i></button>
+      <button data-t="leads"><span>🌐</span><em>عملاء الموقع</em><i class="badge" id="leadsBadge" hidden></i></button>
       <button data-t="quote"><span>🧾</span><em>عرض سعر للعميل</em></button>
       <button data-t="rec"><span>🏛️</span><em>ترشيح ومقارنة</em></button>
       <button data-t="budget"><span>💰</span><em>الأنسب للميزانية</em></button>
       <button data-t="obj"><span>💬</span><em>الرد على الاعتراضات</em></button>
       <button data-t="plan"><span>📅</span><em>خطة الدفع والتحضيرات</em></button>
       <button data-t="msgs"><span>✉️</span><em>رسائل العملاء</em></button>
+      <button data-t="wait"><span>⏳</span><em>قائمة الانتظار</em><i class="badge" id="waitBadge" hidden></i></button>
       <button data-t="hist"><span>🗂️</span><em>سجل عروضي</em></button>
+      <button data-t="halls"><span>🏛️</span><em>ورق القاعات</em></button>
       <button data-t="rules"><span>📜</span><em>الشروط والأحكام</em></button>
       <button data-t="call"><span>☎️</span><em>سكريبت المكالمة</em></button>
-      <div class="hint"><b>اختصارات:</b><br><kbd>N</kbd> عرض سعر جديد · <kbd>P</kbd> العرض الرسمي<br><kbd>W</kbd> واتساب · <kbd>/</kbd> بحث الشروط · <kbd>H</kbd> الرئيسية</div>
+      <button data-t="train"><span>🎓</span><em>التدريب</em></button>
+      <button data-t="mgr" id="navMgr" hidden><span>📊</span><em>لوحة المدير</em></button>
+      <div class="sync" id="syncSt"></div>
+      <button type="button" class="tgb" id="tgBtn"><span>📲</span><em>ربط تليجرام</em></button>
+      <div class="hint"><b>اختصارات:</b><br><kbd>M</kbd> مقابلة عميل | <kbd>N</kbd> عرض سعر جديد | <kbd>P</kbd> العرض الرسمي<br><kbd>W</kbd> واتساب | <kbd>/</kbd> بحث الشروط | <kbd>H</kbd> الرئيسية</div>
     </nav>
     <main>
       <!-- الرئيسية -->
       <section id="t-home" class="on"><div id="homeOut"></div></section>
+
+      <!-- مقابلة عميل -->
+      <section id="t-meet" hidden>
+        <h2>مقابلة عميل في المكتب</h2>
+        <p class="sub">امشي مع العميل خطوة خطوة: افهم احتياجه، واشرح القاعة والباكدج، وخده يعاين، وبعدين الأسعار والعرض والقفل. اللي بتكتبه هنا بيتحسب منه العرض على طول.</p>
+        <div class="stepsbar" id="mtSteps"></div>
+        <div id="mtOut"></div>
+        <div class="bbar" id="mtBar"></div>
+      </section>
+
+      <!-- قائمة الانتظار -->
+      <section id="t-wait" hidden>
+        <h2>قائمة الانتظار</h2>
+        <p class="sub">العميل اللي عايز تاريخ محجوز يتسجل هنا. ولو حجز اتلغى، سجّل إن التاريخ فضي، والعملاء المستنيين يتعلّموا عند الموظف بتاعهم برسالة جاهزة.</p>
+        <div class="grid2">
+          <div class="card"><h3>عميل عايز تاريخ محجوز</h3><div id="wFormBox"></div></div>
+          <div class="card"><h3>تاريخ فضي (حجز اتلغى أو اتأجل)</h3><div class="row" style="align-items:flex-end"><div class="f"><label>القاعة</label><select id="wFreeHall"></select></div><div class="f"><label>التاريخ</label><input id="wFreeDate" type="date"></div><button class="btn pri" id="wFreeB">مين مستني التاريخ ده؟</button></div><p class="ctx">هيطلع العملاء المستنيين نفس التاريخ، واللي قالوا يقبلوا تاريخ قريب (لحد أسبوعين)، بالترتيب.</p></div>
+        </div>
+        <div class="card"><div class="row" style="align-items:center;margin-bottom:10px"><h3 style="margin:0">المسجّلين</h3><div class="seg" id="wF"><button data-d="open" class="on">لسه مستنيين</button><button data-d="mine">بتوعي</button><button data-d="all">الكل</button></div></div><div id="wOut"></div></div>
+      </section>
 
       <!-- عرض سعر -->
       <section id="t-quote" hidden>
@@ -71,9 +99,10 @@
             <div class="card" id="cs4"><h3>٤. الإضافات</h3><div class="bundles" id="qBundles"></div><div id="qAdds"></div></div>
             <div class="card" id="cs5"><h3>٥. بيانات العميل واحتياجه</h3>
               <div class="row"><div class="f"><label>اسم العميل</label><input id="qName" placeholder="مثلاً: أ. أحمد"></div><div class="f"><label>موبايل العميل</label><input id="qPhone" placeholder="01xxxxxxxxx" inputmode="tel" dir="ltr"></div></div>
-              <div class="row" style="margin-top:10px"><div class="f"><label>أهم حاجة عند العميل</label><select id="qPrio"><option value="">—</option><option>الأكل والمنيو</option><option>الديكور والكوشة</option><option>التصوير</option><option>التوفير والسعر</option><option>الفخامة والمساحة</option></select></div><div class="f"><label>الميزانية التقريبية (ج)</label><input id="qBud" type="number" placeholder="مثلاً 200000"></div><div class="f"><label>عرف الدار منين</label><select id="qSrc"><option value="">—</option><option>فيسبوك</option><option>إنستجرام</option><option>بحث جوجل / الخرائط</option><option>ترشيح من الأهل أو الأصدقاء</option><option>حضر مناسبة بالدار</option><option>المساعد الذكي على الموقع</option><option>أخرى</option></select></div></div>
+              <div class="row" style="margin-top:10px"><div class="f"><label>أهم حاجة عند العميل</label><select id="qPrio"><option value="">—</option><option>الأكل والمنيو</option><option>الديكور والكوشة</option><option>التصوير</option><option>التوفير والسعر</option><option>الفخامة والمساحة</option></select></div><div class="f"><label>الميزانية التقريبية (ج)</label><input id="qBud" type="number" placeholder="مثلاً 200000"></div><div class="f"><label>عرف الدار منين</label><select id="qSrc"><option value="">—</option><option>فيسبوك</option><option>إنستجرام</option><option>بحث جوجل / الخرائط</option><option>ترشيح من الأهل أو الأصدقاء</option><option>زيارة مباشرة للدار</option><option>حضر مناسبة بالدار</option><option>المساعد الذكي على الموقع</option><option>أخرى</option></select></div></div>
               <div class="f" style="margin-top:10px"><label>ملاحظات (للموظف فقط)</label><input id="qNotes" placeholder="مثلاً: العروسة عايزة كوشة اسبيشيال – هيرجع بعد استشارة الأهل"></div>
             </div>
+            <div class="card prio" id="qPrioCard" hidden></div>
           </div>
           <div class="sticky"><div class="card" id="qOut"></div><div class="card" id="qOpts"></div></div>
         </div>
@@ -96,6 +125,37 @@
         <div class="row" style="margin-top:10px" id="mExtra"></div>
         <div class="f" style="margin-top:12px"><label>نص الرسالة</label><textarea id="mTxt" rows="9" style="padding:12px;border-radius:12px;border:1px solid #D9CCAE;font-size:15px;line-height:1.8"></textarea></div>
         <div class="btns"><button class="btn wa" id="mWa">إرسال على واتساب</button><button class="btn" id="mCopy">نسخ</button></div></div>
+      </section>
+
+      <!-- عملاء الموقع -->
+      <section id="t-leads" hidden>
+        <h2>عملاء الموقع</h2>
+        <p class="sub">العملاء اللي سجّلوا من المساعد الذكي على الموقع. استلم العميل باسمك، وافتح عرضه وكمّل عليه.</p>
+        <div class="card"><div class="row" style="align-items:flex-end"><div class="f"><input id="lQ" placeholder="ابحث بالاسم أو الموبايل أو رقم الطلب…"></div><div class="seg" id="lF"><button data-d="all" class="on">الكل</button><button data-d="free">غير مستلَمين</button><button data-d="mine">بتوعي</button></div><button class="btn" id="lRef">تحديث</button></div><div id="lOut" style="margin-top:12px"></div></div>
+      </section>
+
+      <!-- ورق القاعات -->
+      <section id="t-halls" hidden>
+        <h2>ورق القاعات</h2>
+        <p class="sub">كل اللي محتاج تقوله عن كل قاعة، بنفس الأرقام والكلام لكل الفريق.</p>
+        <div class="seg" id="hlSel" style="margin-bottom:14px"></div>
+        <div id="hlOut"></div>
+      </section>
+
+      <!-- التدريب -->
+      <section id="t-train" hidden>
+        <h2>التدريب</h2>
+        <p class="sub">أسئلة سريعة على الأسعار والسعات والشروط، وتمرين على الرد على اعتراضات العملاء.</p>
+        <div class="seg" id="trSel" style="margin-bottom:14px"><button data-d="facts" class="on">أسئلة الأسعار والشروط</button><button data-d="obj">تمرين الاعتراضات</button></div>
+        <div id="trOut"></div>
+      </section>
+
+      <!-- لوحة المدير -->
+      <section id="t-mgr" hidden>
+        <h2>لوحة المدير</h2>
+        <p class="sub">أداء فريق الحفلات من سجل العروض المشترك.</p>
+        <div class="row" style="margin-bottom:12px"><div class="seg" id="mgP"><button data-d="month" class="on">الشهر ده</button><button data-d="last">الشهر اللي فات</button><button data-d="all">الكل</button></div><button class="btn" id="mgRef">تحديث</button></div>
+        <div id="mgOut"></div>
       </section>
 
       <!-- السجل -->
@@ -151,9 +211,12 @@
 
 <div class="arrows" id="arrows" hidden><button type="button" id="upBtn" title="لأعلى">▲</button><button type="button" id="downBtn" title="لأسفل">▼</button></div>
 <div id="doc" hidden></div>
+<div id="cust" hidden></div>
 <div class="modal" id="modal" hidden><div class="box"><button class="x" id="modalX">✕</button><div id="modalBody"></div></div></div>
 
 <script src="../bot/kb.js"></script>
+<script src="calc.js"></script>
+<script src="qr.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

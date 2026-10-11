@@ -5,95 +5,8 @@
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
   const USERS = [{"id": "sara", "name": "أ. سارة سيد", "role": "رئيس قسم الحفلات", "h": "5220d0af1bfc7656a0362cbcac3767b924c067bff4fe9ffbc813ef798e89416b"}, {"id": "sayed", "name": "أ. سيد إبراهيم", "role": "الفترة الصباحية", "h": "d603a7a0c806e0ed1b5f42c3b6de090092fc3393ff05ba7cfb6fecafe99e2988"}, {"id": "nirvana", "name": "أ. نرفانا عماد", "role": "الفترة الصباحية", "h": "0ad82549b7825b116b2d59a527d67edbffa10b2e9ab19b5aa722cee2aa9d65c6"}, {"id": "samar", "name": "أ. سمر إسماعيل", "role": "الفترة المسائية", "h": "b410543579a2e347743b0f8640531af75ad51252834163bbc0ce0191d109396c"}, {"id": "islam", "name": "أ. إسلام مختار", "role": "الفترة المسائية", "h": "269d2c49d9a3ce131aefac82ad765aba6c43bff874ff47775f58974f53901849"}, {"id": "hoda", "name": "أ. هدى محمد", "role": "الفترة المسائية", "h": "be0784aff7d80a2e04cf8a3fedc8969aa4c372392efaf660924ab7a1b627f04b"}, {"id": "dina", "name": "أ. دينا هشام", "role": "الفترة المسائية", "h": "737fb657b06715761e5df19917faa7276d0066f6daeab3b6ed54b6ed41bde0c1"}, {"id": "manager", "name": "عميد / محمد المغازي", "role": "مدير الدار", "h": "c2625e59a50791e80339c65283c51cedab06743da1f6fdf60f34c5a84261d1fd"}];
 
-  /* ---------- helpers ---------- */
-  const AD = s => String(s).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
-  const fmt = n => AD(String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '٬'));
-  const money = n => fmt(n) + ' ج';
-  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const ar = s => esc(AD(String(s).replace(/(\d),(\d{3})/g, '$1٬$2')));
-  const norm = s => ' ' + String(s || '').replace(/[ًٌٍَُِّْـ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).toLowerCase().replace(/[^ء-ي0-9a-z]+/g, ' ').trim() + ' ';
-  const toast = t => { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 1800); };
-  const r500 = v => Math.round(v / 500) * 500;
-  const DAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-  const MON = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-  const dateTxt = d => `${DAYS[d.getDay()]} ${AD(d.getDate())} ${MON[d.getMonth()]} ${AD(d.getFullYear())}`;
-  const today0 = () => new Date(new Date().toDateString());
-  const addDays = (d, k) => { const x = new Date(d); x.setDate(x.getDate() + k); return x; };
-  const EVNAME = { wedding: 'حفل زفاف', engagement: 'خطوبة', katb: 'عقد قران', birthday: 'عيد ميلاد', aqiqa: 'عقيقة', special: 'مناسبة خاصة / مؤتمر' };
-  const HN = { akhenaten: 'قاعة أخناتون', isis: 'قاعة إيزيس', lotus: 'قاعة اللوتس', mawadda: 'قاعة المودة والرحمة', glass: 'قاعة أوبن إير', roof: 'الروف توب', lulu: 'قاعة اللؤلؤة', marasem: 'قاعة المراسم' };
-  const PHONES = ['01111117958', '01010107958', '01222227958'];
-
-  /* ---------- pricing (same rules as the public assistant) ---------- */
-  const SETUP = {};
-  function setupFee(H) { const id = H && H.menu; if (!id) return 0; if (!(id in SETUP)) { const a = K.addons.find(x => x.s === id && /^فرد إضافي/.test(x.n)); SETUP[id] = a ? +String(a.p).replace(/,/g, '').match(/\d+/)[0] : 0; } return SETUP[id]; }
-  function tierCost(extra, t) {
-    const a = Math.min(extra, 50), b = Math.min(Math.max(extra - 50, 0), 50), c = Math.max(extra - 100, 0);
-    return { total: a * t[0] + b * t[1] + c * t[2], parts: [[a, t[0], 'أول ٥٠ وجبة'], [b, t[1], 'من ٥١ إلى ١٠٠ وجبة'], [c, t[2], 'ما زاد عن ١٠٠ وجبة']].filter(p => p[0] > 0) };
-  }
-  const pkN = (H, d) => H.pk.type === 'wk' ? H.pk[d === 'we' ? 'we' : 'wd'].n : H.pk.n;
-  function estTotal(H, m, n, d) {
-    let base, baseN;
-    if (H.pk.type === 'wk') { baseN = H.pk[d || 'wd'].n; base = m[d || 'wd']; } else { baseN = H.pk.n; base = m.price + (d === 'we' ? H.pk.fee : 0); }
-    const ex = Math.max(n - baseN, 0);
-    return base + (m.tiers ? tierCost(ex, m.tiers).total : ex * m.extra) + ex * setupFee(H);
-  }
-  const itemCount = m => (m.c || []).reduce((x, s) => x + s.o.filter(o => o[0] === 'i').length, 0);
-  const secItems = (m, re) => (m.c || []).filter(s => re.test(s.h)).flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1]));
-  const WED = ['lotus', 'isis', 'akhenaten'];
-  const fitWed = (h, n) => n >= K.halls[h].min && n <= K.halls[h].max || (h === 'lotus' && n < 100);
-  const katbMax = h => K.katb[h].max || (h === 'lotus' ? K.halls.lotus.max : 150);
-
-  // halls offered for an event and a count: [{id, name, cap, ok, why}]
-  function hallsFor(ev, n) {
-    if (ev === 'wedding' || ev === 'engagement') return WED.map(h => { const H = K.halls[h], ok = fitWed(h, n); return { id: h, name: HN[h], cap: `السعة ${AD(H.min)} – ${AD(H.max)} فرد`, ok, why: ok ? '' : n > H.max ? 'أكبر من السعة' : `الباكدج على ${AD(pkN(H, 'wd'))} فرد` }; });
-    if (ev === 'katb') return ['mawadda', 'lotus'].map(h => { const ok = n <= katbMax(h); return { id: h, name: HN[h], cap: `الباكدج لـ ${AD(K.katb[h].n)} فرد – لحد ${AD(katbMax(h))}`, ok, why: ok ? '' : 'أكبر من السعة' }; });
-    if (ev === 'birthday') return K.birthday.map(b => { const ok = n <= b.max; return { id: b.id, name: HN[b.id] || b.name, cap: AD(b.cap), ok, why: ok ? '' : 'أكبر من السعة' }; });
-    if (ev === 'aqiqa') return [{ id: 'lotus', name: HN.lotus, cap: 'العقيقة بقاعة اللوتس', ok: true }];
-    return K.special.halls.map(h => ({ id: h.id, name: HN[h.id] || h.name, cap: `الحجز لـ ${AD(h.n)} فرد`, ok: true }));
-  }
-  // packages for the chosen hall: [{id, name, lines:[[label, amount]], total, base, sub}]
-  function packagesFor(ev, hall, n, d) {
-    const P = [];
-    if (ev === 'wedding' || ev === 'engagement') {
-      const H = K.halls[hall]; if (!H) return P;
-      const bn = pkN(H, d), ex = Math.max(n - bn, 0);
-      H.menus.forEach(m => {
-        const L = [];
-        if (H.pk.type === 'wk') L.push([`${m.name} – باكدج ${AD(bn)} فرد (${d === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'})`, m[d]]);
-        else { L.push([`${m.name} – باكدج ${AD(bn)} فرد`, m.price]); if (d === 'we') L.push(['رسوم نهاية الأسبوع / العطلات الرسمية', H.pk.fee]); }
-        if (ex) { if (m.tiers) tierCost(ex, m.tiers).parts.forEach(p => L.push([`${AD(p[0])} وجبة إضافية × ${money(p[1])} (${p[2]})`, p[0] * p[1]])); else L.push([`${AD(ex)} وجبة إضافية × ${money(m.extra)}`, ex * m.extra]); const sf = setupFee(H); if (sf) L.push([`${AD(ex)} فرد إضافي × ${money(sf)} (تجهيزات)`, ex * sf]); }
-        P.push({ id: m.id, name: m.name, lines: L, total: L.reduce((x, l) => x + l[1], 0), base: L[0][1], sub: `${AD(itemCount(m))} صنف`, m });
-      });
-    } else if (ev === 'katb') {
-      const k = K.katb[hall]; if (!k) return P; const ex = Math.max(n - k.n, 0);
-      const L = [[`باكدج عقد القران – ${k.name} (${AD(k.n)} فرد)`, k.price]]; if (ex) L.push([`${AD(ex)} فرد إضافي × ${money(k.extra)}`, ex * k.extra]);
-      P.push({ id: 'k', name: `باكدج عقد القران – ${k.name}`, lines: L, total: L.reduce((x, l) => x + l[1], 0), base: k.price, sub: `مدة الحفل ${k.dur}` });
-    } else if (ev === 'birthday') {
-      const b = K.birthday.find(x => x.id === hall); if (!b) return P;
-      P.push({ id: 'b', name: `باكدج عيد الميلاد – ${HN[b.id] || b.name}`, lines: [[`باكدج عيد الميلاد – ${HN[b.id] || b.name}`, b.price]], total: b.price, base: b.price, sub: 'حجز القاعة + كراسي وترابيزات + ساوند سيستم' });
-    } else if (ev === 'aqiqa') {
-      K.aqiqa.forEach(a => { const ex = Math.max(n - a.n, 0); const L = [[`عقيقة – ${a.name} (${AD(a.n)} فرد)`, a.price]]; if (ex) L.push([`${AD(ex)} فرد إضافي × ${money(a.extra)}`, ex * a.extra]); P.push({ id: a.id, name: a.name, lines: L, total: L.reduce((x, l) => x + l[1], 0), base: a.price, sub: a.i.slice(2, 6).join('، ') }); });
-    } else if (ev === 'special') {
-      const h = K.special.halls.find(x => x.id === hall); if (!h) return P; const ex = Math.max(n - h.n, 0);
-      const HL = [[`حجز ${HN[h.id] || h.name} (${AD(h.n)} فرد)`, h.price]]; if (ex) HL.push([`${AD(ex)} ترابيزة + كرسي إضافي × ${money(50)}`, ex * 50]);
-      K.special.menus.forEach(m => { const L = [...HL, [`${m.name} – ${money(m.pp)} × ${AD(n)} فرد`, m.pp * n]]; P.push({ id: m.id, name: m.name, lines: L, total: L.reduce((x, l) => x + l[1], 0), base: L[0][1], sub: `${money(m.pp)} للفرد` }); });
-      P.push({ id: 'none', name: 'بدون منيو (حجز القاعة فقط)', lines: HL, total: HL.reduce((x, l) => x + l[1], 0), base: h.price, sub: '' });
-    }
-    return P;
-  }
-  const scopeFor = (ev, hall) => (ev === 'wedding' || ev === 'engagement') ? hall : ev === 'katb' ? (hall === 'lotus' ? 'lotusk' : 'mawadda') : ev;
-  // add-on price: {kind, v, opts, label}
-  function priceOf(a) {
-    const s = String(a.p);
-    if (/%/.test(s)) return { kind: 'pct', label: ar(s) };
-    if (/:/.test(s)) { const o = [...s.matchAll(/([^:–]+?)\s*:\s*([\d,]+)\s*ج/g)].map(x => [x[1].trim(), +x[2].replace(/,/g, '')]); if (o.length) return { kind: 'opts', opts: o, v: o[0][1], label: ar(s) }; }
-    const nums = (s.match(/\d[\d,]*/g) || []).map(x => +x.replace(/,/g, ''));
-    if (!nums.length) return { kind: 'pct', label: ar(s) };
-    const pp = /للفرد|الفرد الواحد/.test(s + ' ' + a.n + ' ' + (a.g || ''));
-    return { kind: pp ? 'pp' : (/من|يبدأ|تبدأ/.test(s) ? 'from' : 'fixed'), v: nums[0], label: ar(s) };
-  }
-  const depositOf = hall => { const r = K.deposit.find(x => x[0] === (HN[hall] || '')) || K.deposit.find(x => x[0].includes((HN[hall] || '###').replace('قاعة ', ''))); return r ? { dep: r[1], ins: r[2] } : { dep: 0, ins: 0 }; };
-
+  const C = window.DMCORE(K);
+  const { AD, fmt, money, esc, ar, norm, toast, r500, DAYS, MON, dateTxt, today0, addDays, EVNAME, HN, PHONES, setupFee, tierCost, pkN, estTotal, itemCount, secItems, WED, fitWed, katbMax, hallsFor, packagesFor, scopeFor, priceOf, depositOf } = C;
   /* ---------- state ---------- */
   const Q = { no: '', ev: 'wedding', n: 200, date: null, day: 'wd', hall: null, pk: null, adds: {}, name: '', phone: '', prio: '', bud: '', src: '', notes: '' };
   let OPTS = [];
@@ -121,22 +34,21 @@
   // copy that also works on plain http
   function copyText(t) { if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t); return new Promise(res => { const a = document.createElement('textarea'); a.value = t; a.style.position = 'fixed'; a.style.opacity = '0'; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); } catch (e) { } a.remove(); res(); }); }
   $('#lgUser').innerHTML = USERS.map(u => `<option value="${u.id}">${u.name} – ${u.role}</option>`).join('');
-  function enter(u) { ME = u; $('#login').hidden = true; $('#app').hidden = false; $('#meName').textContent = u.name; $('#meRole').textContent = u.role; try { sessionStorage.setItem('dm-staff', u.id); } catch (e) { } renderAll(); }
+  function enter(u, pin) { ME = Object.assign({}, u, { pin: pin || (() => { try { return sessionStorage.getItem('dm-pin') || ''; } catch (e) { return ''; } })(), mgr: ['manager', 'sara'].includes(u.id) }); try { if (pin) sessionStorage.setItem('dm-pin', pin); } catch (e) { } u = ME; $('#login').hidden = true; $('#app').hidden = false; $('#meName').textContent = u.name; $('#meRole').textContent = u.role; try { sessionStorage.setItem('dm-staff', u.id); } catch (e) { } renderAll(); }
   $('.lg').addEventListener('submit', async e => {
     e.preventDefault();
     const u = USERS.find(x => x.id === $('#lgUser').value), pin = $('#lgPin').value.trim();
     if (!/^\d{4}$/.test(pin)) { $('#lgErr').textContent = 'اكتب الرقم السري (٤ أرقام).'; return; }
     if (await sha(`dm:${u.id}:${pin}`) !== u.h) { $('#lgErr').textContent = 'الرقم السري غير صحيح.'; $('#lgPin').value = ''; return; }
-    enter(u);
+    enter(u, pin);
   });
   $('#logout').addEventListener('click', () => { try { sessionStorage.removeItem('dm-staff'); } catch (e) { } location.reload(); });
-  try { const id = sessionStorage.getItem('dm-staff'); const u = USERS.find(x => x.id === id); if (u) enter(u); } catch (e) { }
 
   /* ---------- tabs ---------- */
-  $$('#nav button').forEach(b => b.addEventListener('click', () => {
-    $$('#nav button').forEach(x => x.classList.toggle('on', x === b));
+  $$('#nav button[data-t]').forEach(b => b.addEventListener('click', () => {
+    $$('#nav button[data-t]').forEach(x => x.classList.toggle('on', x === b));
     $$('main section').forEach(s => { const on = s.id === 't-' + b.dataset.t; s.hidden = !on; s.classList.toggle('on', on); });
-    ({ home: renderHome, quote: renderQuote, rec: renderRec, budget: renderBudget, obj: renderObj, plan: renderPlan, msgs: renderMsgs, hist: renderHist, rules: renderRules, call: renderCall }[b.dataset.t] || (() => { }))();
+    ({ home: renderHome, meet: renderMeet, leads: renderLeads, quote: renderQuote, rec: renderRec, budget: renderBudget, obj: renderObj, plan: renderPlan, msgs: renderMsgs, hist: renderHist, halls: renderHalls, rules: renderRules, call: renderCall, train: renderTrain, mgr: renderMgr, wait: renderWait }[b.dataset.t] || (() => { }))();
     window.scrollTo(0, 0);
   }));
   const goTab = t => $(`#nav button[data-t="${t}"]`).click();
@@ -150,25 +62,9 @@
   $('#qDate').addEventListener('change', e => { const v = e.target.value; if (v) { const [y, m, d] = v.split('-').map(Number); Q.date = new Date(y, m - 1, d); const w = Q.date.getDay(); Q.day = (w === 4 || w === 5 || w === 6) ? 'we' : 'wd'; } else Q.date = null; renderQuote(); });
   $('#qName').addEventListener('input', e => { Q.name = e.target.value.trim(); renderOut(); });
   $('#qPhone').addEventListener('input', e => { Q.phone = e.target.value.trim(); renderOut(); });
-  [['#qPrio', 'prio'], ['#qBud', 'bud'], ['#qSrc', 'src'], ['#qNotes', 'notes']].forEach(([id, k]) => $(id).addEventListener('input', e => { Q[k] = e.target.value; }));
+  [['#qPrio', 'prio'], ['#qBud', 'bud'], ['#qSrc', 'src'], ['#qNotes', 'notes']].forEach(([id, k]) => $(id).addEventListener('input', e => { Q[k] = e.target.value; if (k === 'prio') renderPrio(); }));
 
-  function computeQuote() {
-    if (!Q.hall) return null;
-    const P = packagesFor(Q.ev, Q.hall, Q.n, Q.day); const pk = P.find(p => p.id === Q.pk) || null;
-    if (!pk) return { P, pk: null };
-    const sc = scopeFor(Q.ev, Q.hall), lines = pk.lines.map(l => ({ t: l[0], v: l[1], g: 'الباكدج' }));
-    const notes = [];
-    Object.entries(Q.adds).forEach(([i, s]) => {
-      const a = K.addons[+i]; if (!a) return; const pr = priceOf(a);
-      if (pr.kind === 'pct') { notes.push(`${a.n}: ${pr.label} (تُحتسب عند التعاقد)`); return; }
-      const q = Math.max(1, s.qty || 1), unit = pr.kind === 'opts' ? (pr.opts[s.opt || 0] || pr.opts[0])[1] : pr.v;
-      const amount = pr.kind === 'pp' ? unit * Q.n : unit * q;
-      const lbl = `${a.n}${pr.kind === 'opts' ? ' – ' + (pr.opts[s.opt || 0] || pr.opts[0])[0] : ''}${pr.kind === 'pp' ? ` (${money(unit)} × ${AD(Q.n)} فرد)` : q > 1 ? ` × ${AD(q)}` : ''}${pr.kind === 'from' ? ' (يبدأ من)' : ''}`;
-      lines.push({ t: lbl, v: amount, g: a.g });
-    });
-    const total = lines.reduce((x, l) => x + l.v, 0), D = depositOf(Q.ev === 'katb' && Q.hall === 'mawadda' ? 'mawadda' : Q.hall);
-    return { P, pk, lines, total, pkTotal: pk.total, notes, dep: D.dep, ins: D.ins, sc };
-  }
+  function computeQuote() { return C.quoteOf(Q); }
 
   function renderQuote() {
     $('#qEv').value = Q.ev; $('#qN').value = Q.n;
@@ -183,7 +79,7 @@
     const P = packagesFor(Q.ev, Q.hall, Q.n, Q.day);
     if (!Q.pk && P.length === 1) Q.pk = P[0].id;
     const minT = Math.min(...P.map(p => p.total));
-    $('#qPk').innerHTML = P.map(p => `<label class="pkr${p.id === Q.pk ? ' on' : ''}" data-p="${p.id}"><input type="radio" name="pk" ${p.id === Q.pk ? 'checked' : ''}><span class="nm"><b>${ar(p.name)}</b><small>${esc(AD(p.sub || ''))}${p.total === minT && P.length > 1 ? ' · الأوفر' : ''}</small></span><span class="pr">${money(p.total)}<span class="pp">${money(Math.round(p.total / Q.n))} للفرد</span></span>${p.m || p.c ? `<button type="button" class="see" data-see="${p.id}">الأصناف</button>` : ''}</label>`).join('');
+    $('#qPk').innerHTML = P.map(p => `<label class="pkr${p.id === Q.pk ? ' on' : ''}" data-p="${p.id}"><input type="radio" name="pk" ${p.id === Q.pk ? 'checked' : ''}><span class="nm"><b>${ar(p.name)}</b><small>${esc(AD(p.sub || ''))}${p.total === minT && P.length > 1 ? ' | الأوفر' : ''}</small></span><span class="pr">${money(p.total)}<span class="pp">${money(Math.round(p.total / Q.n))} للفرد</span></span>${p.m || p.c ? `<button type="button" class="see" data-see="${p.id}">الأصناف</button>` : ''}</label>`).join('');
     $$('#qPk .pkr').forEach(l => l.onclick = e => { if (e.target.closest('.see')) return; Q.pk = l.dataset.p; renderQuote(); });
     $$('#qPk .see').forEach(b => b.onclick = e => { e.preventDefault(); e.stopPropagation(); const p = P.find(x => x.id === b.dataset.see); showMenu(p); });
     // add-ons
@@ -230,11 +126,11 @@
 
   function renderOut() {
     const R = computeQuote(), el = $('#qOut');
-    renderSteps(R); renderBar(R); renderOpts();
+    renderSteps(R); renderBar(R); renderOpts(); renderPrio();
     if (!R || !R.pk) { el.innerHTML = `<h3>عرض السعر</h3><div class="empty">${!Q.hall ? 'اختار القاعة' : 'اختار الباكدج'} عشان يظهر العرض.</div>`; return; }
     const per = Math.round(R.total / Q.n);
     el.innerHTML = `<h3>عرض السعر ${Q.name ? '– ' + esc(Q.name) : ''}</h3>
-<p class="ctx">${EVNAME[Q.ev]} · ${HN[Q.hall] || ''} · ${AD(Q.n)} فرد · ${Q.day === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}${Q.date ? ' · ' + dateTxt(Q.date) : ''}</p>
+<p class="ctx">${EVNAME[Q.ev]} | ${HN[Q.hall] || ''} | ${AD(Q.n)} فرد | ${Q.day === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}${Q.date ? ' | ' + dateTxt(Q.date) : ''}</p>
 <table class="q"><tr><th>البند</th><th style="text-align:left">المبلغ</th></tr>${R.lines.map((l, i) => `${i && R.lines[i - 1].g !== l.g ? `<tr class="sec"><td colspan="2">${esc(l.g)}</td></tr>` : ''}<tr><td>${ar(l.t)}</td><td class="n">${money(l.v)}</td></tr>`).join('')}<tr class="tot"><td>الإجمالي التقديري</td><td class="n">${money(R.total)}</td></tr></table>
 <div class="kpis"><div class="kpi"><small>للفرد</small><b>${money(per)}</b></div><div class="kpi"><small>مقدم الحجز</small><b>${R.dep ? money(R.dep) : '—'}</b></div><div class="kpi"><small>التأمين (مسترد)</small><b>${R.ins ? money(R.ins) : '—'}</b></div></div>
 ${R.notes.length ? `<div class="tip">${R.notes.map(esc).join('<br>')}</div>` : ''}
@@ -255,15 +151,15 @@ ${whatIfHTML()}
       if (img) x.drawImage(img, W / 2 - 75, 46, 150, 150 * (img.height / img.width || 1));
       x.direction = 'rtl'; x.textAlign = 'center'; x.fillStyle = '#E9D3A1'; x.font = '700 44px Cairo, Tajawal, sans-serif'; x.fillText('دار المراسم لضباط الشرطة', W / 2, 262);
       x.font = '600 30px Cairo, Tajawal, sans-serif'; x.fillStyle = '#F1DFB5'; x.fillText(`عرض سعر تقديري${Q.name ? ' – ' + Q.name : ''}`, W / 2, 308);
-      x.font = '500 26px Cairo, Tajawal, sans-serif'; x.fillStyle = '#CFC6B4'; x.fillText(`${EVNAME[Q.ev]} · ${HN[Q.hall] || ''} · ${AD(Q.n)} فرد · ${Q.day === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}`, W / 2, 352);
+      x.font = '500 26px Cairo, Tajawal, sans-serif'; x.fillStyle = '#CFC6B4'; x.fillText(`${EVNAME[Q.ev]} | ${HN[Q.hall] || ''} | ${AD(Q.n)} فرد | ${Q.day === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}`, W / 2, 352);
       let y = 410; x.font = '500 27px Cairo, Tajawal, sans-serif';
       R.lines.forEach(l => { x.fillStyle = '#FCFAF4'; x.textAlign = 'right'; x.fillText(AD(l.t).slice(0, 52), W - 70, y); x.textAlign = 'left'; x.fillText(money(l.v), 70, y); y += 50; });
       x.strokeStyle = '#C8A464'; x.lineWidth = 2; x.beginPath(); x.moveTo(70, y - 26); x.lineTo(W - 70, y - 26); x.stroke();
       x.font = '800 34px Cairo, Tajawal, sans-serif'; x.fillStyle = '#E9D3A1'; x.textAlign = 'right'; x.fillText('الإجمالي التقديري', W - 70, y + 16); x.textAlign = 'left'; x.fillText(money(R.total), 70, y + 16);
       x.textAlign = 'center'; x.font = '500 24px Cairo, Tajawal, sans-serif'; x.fillStyle = '#CFC6B4';
-      if (R.dep) x.fillText(`مقدم الحجز ${money(R.dep)} · التأمين (مسترد) ${money(R.ins)} · حوالي ${money(R.total / Q.n)} للفرد`, W / 2, y + 70);
+      if (R.dep) x.fillText(`مقدم الحجز ${money(R.dep)} | التأمين (مسترد) ${money(R.ins)} | حوالي ${money(R.total / Q.n)} للفرد`, W / 2, y + 70);
       x.fillText(`للحجز: ${PHONES[0]} (واتساب) – ${PHONES[1]} – ${PHONES[2]}`, W / 2, H - 92);
-      x.fillText(`${ME ? ME.name + ' – ' : ''}قسم الحفلات · ${dateTxt(new Date())}`, W / 2, H - 54);
+      x.fillText(`${ME ? ME.name + ' – ' : ''}قسم الحفلات | ${dateTxt(new Date())}`, W / 2, H - 54);
       c.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `عرض-سعر-${Q.name || 'دار-المراسم'}.png`; a.click(); toast('اتحفظت الصورة ✓'); }, 'image/png');
     };
     const img = new Image(); img.onload = () => draw(img); img.onerror = () => draw(null); img.src = '../bot/img/crest.png';
@@ -324,7 +220,7 @@ ${whatIfHTML()}
   ];
   let OSEL = null;
   const rule = n => K.rules.find(r => r.n === n);
-  const ruleRef = (...ns) => ns.map(n => { const r = rule(n); return r ? `مادة (${AD(n)}) ${r.t}` : ''; }).filter(Boolean).join(' · ');
+  const ruleRef = (...ns) => ns.map(n => { const r = rule(n); return r ? `مادة (${AD(n)}) ${r.t}` : ''; }).filter(Boolean).join(' | ');
   function ctxNums() {
     const R = computeQuote(); const c = { R };
     if (R && R.pk && (Q.ev === 'wedding' || Q.ev === 'engagement')) {
@@ -395,7 +291,7 @@ ${whatIfHTML()}
     $$('#oList .obj').forEach(b => b.onclick = () => { OSEL = b.dataset.k; renderObj(); });
     if (!OSEL) { $('#oOut').innerHTML = '<div class="card"><div class="empty">اختار الاعتراض اللي العميل قاله.</div></div>'; return; }
     const o = OBJ.find(x => x[0] === OSEL), r = objScript(OSEL), c = ctxNums();
-    $('#oOut').innerHTML = `<div class="card"><h3>«${o[1]}»</h3>${c.total ? `<p class="ctx">محسوب على: ${EVNAME[Q.ev]} · ${c.hall} · ${AD(Q.n)} فرد · ${money(c.total)}</p>` : ''}<div class="say">${r.S.map(p => `<p>${p}</p>`).join('')}</div>${r.ref ? `<p class="ctx">المرجع: ${r.ref}</p>` : ''}${r.tip ? `<div class="tip">${r.tip}</div>` : ''}<div class="btns"><button class="btn" id="oCopy">نسخ الرد</button>${c.total ? '<button class="btn wa" id="oWa">إرسال للعميل على واتساب</button>' : ''}</div></div>`;
+    $('#oOut').innerHTML = `<div class="card"><h3>«${o[1]}»</h3>${c.total ? `<p class="ctx">محسوب على: ${EVNAME[Q.ev]} | ${c.hall} | ${AD(Q.n)} فرد | ${money(c.total)}</p>` : ''}<div class="say">${r.S.map(p => `<p>${p}</p>`).join('')}</div>${r.ref ? `<p class="ctx">المرجع: ${r.ref}</p>` : ''}${r.tip ? `<div class="tip">${r.tip}</div>` : ''}<div class="btns"><button class="btn" id="oCopy">نسخ الرد</button>${c.total ? '<button class="btn wa" id="oWa">إرسال للعميل على واتساب</button>' : ''}</div></div>`;
     const plain = () => r.S.map(p => p.replace(/<br>/g, '\n').replace(/<[^>]+>/g, '')).join('\n');
     $('#oCopy').onclick = () => copyText(plain()).then(() => toast('اتنسخ الرد ✓'));
     if ($('#oWa')) $('#oWa').onclick = () => window.open(waLink(plain()), '_blank');
@@ -410,7 +306,7 @@ ${whatIfHTML()}
     const t = today0(), pd = Q.date, near = pd && (pd - t) / 864e5 < 31;
     const half = Math.ceil(R.pkTotal / 2 / 50) * 50, all = R.total + R.ins;
     const pay = near ? [['عند التعاقد', 'الحفلة بعد أقل من شهر: كامل القيمة + التأمين دفعة واحدة', all]] : [['عند التعاقد', 'مقدم الحجز – بيثبّت التاريخ', R.dep], [`خلال شهر من التعاقد<br><small>قبل ${dateTxt(addDays(t, 30))} لو اتعاقد النهارده</small>`, 'اختيار الباكدج والخدمات + ٥٠٪ على الأقل من قيمة الباكدج', half], [`قبل الحفلة بشهر${pd ? `<br><small>قبل ${dateTxt(addDays(pd, -30))}</small>` : ''}`, 'استكمال كامل القيمة بالإضافات + التأمين (الإجمالي المطلوب قبلها)', all]];
-    let html = `<div class="card"><h3>خطة الدفع – ${EVNAME[Q.ev]} · ${HN[Q.hall]} · ${AD(Q.n)} فرد</h3><p class="ctx">الإجمالي التقديري ${money(R.total)} · قيمة الباكدج ${money(R.pkTotal)} · التأمين ${money(R.ins)}</p><table class="q"><tr><th>الميعاد</th><th>المطلوب</th><th style="text-align:left">المبلغ</th></tr>${pay.map(p => `<tr><td>${p[0]}</td><td>${p[1]}</td><td class="n"><b>${money(p[2])}</b></td></tr>`).join('')}</table><div class="tip g">✦ قول للعميل: لو سدّد قيمة الباكدج كاملة خلال <b>٣٠ يوم</b> من المقدم، <b>السعر بيتثبّت</b> ومش هيتأثر بأي زيادة.</div><p class="ctx">المرجع: ${ruleRef(33, 34, 39)} · التأخير في السداد عليه غرامة ٥٠ ج عن كل يوم.</p></div>`;
+    let html = `<div class="card"><h3>خطة الدفع – ${EVNAME[Q.ev]} | ${HN[Q.hall]} | ${AD(Q.n)} فرد</h3><p class="ctx">الإجمالي التقديري ${money(R.total)} | قيمة الباكدج ${money(R.pkTotal)} | التأمين ${money(R.ins)}</p><table class="q"><tr><th>الميعاد</th><th>المطلوب</th><th style="text-align:left">المبلغ</th></tr>${pay.map(p => `<tr><td>${p[0]}</td><td>${p[1]}</td><td class="n"><b>${money(p[2])}</b></td></tr>`).join('')}</table><div class="tip g">✦ قول للعميل: لو سدّد قيمة الباكدج كاملة خلال <b>٣٠ يوم</b> من المقدم، <b>السعر بيتثبّت</b> ومش هيتأثر بأي زيادة.</div><p class="ctx">المرجع: ${ruleRef(33, 34, 39)} | التأخير في السداد عليه غرامة ٥٠ ج عن كل يوم.</p></div>`;
     if (pd) {
       const left = Math.round((pd - t) / 864e5);
       const items = [[t, 'عند التعاقد', 'سداد المقدم وتوقيع الاستمارة'], [addDays(t, 30), 'خلال شهر من التعاقد', 'اختيار الباكدج والخدمات وسداد ٥٠٪ على الأقل'], [addDays(pd, -30), 'قبل الحفلة بشهر', 'استكمال كامل القيمة والتأمين'], [addDays(pd, -7), 'قبل الحفلة بأسبوع', 'تأكيد العدد النهائي كتابةً، وآخر ميعاد لتعديل المنيو'], [addDays(pd, -2), 'قبل الحفلة بـ ٤٨ ساعة', 'آخر ميعاد لإلغاء أو تعديل أو إضافة أي بند كتابةً'], [pd, 'يوم الحفلة', 'مدة الحفل ٤ ساعات من الميعاد المكتوب في العقد']].filter(x => !near || x[0] >= t);
@@ -476,11 +372,12 @@ ${whatIfHTML()}
     R = R || computeQuote(); if (!R || !R.pk) return;
     if (!Q.no) Q.no = newNo();
     const H = lsGet(HK(), []), i = H.findIndex(x => x.no === Q.no);
-    const e = { no: Q.no, at: Date.now(), total: R.total, name: Q.name, phone: Q.phone, label: `${EVNAME[Q.ev]} · ${HN[Q.hall] || ''} · ${Q.n} فرد · ${R.pk.name}`, snap: snap() };
-    if (i >= 0) H.splice(i, 1); H.unshift(e); lsSet(HK(), H.slice(0, 80));
+    const old = i >= 0 ? H[i] : {};
+    const e = { no: Q.no, at: old.at || Date.now(), up: Date.now(), total: R.total, name: Q.name, phone: Q.phone, label: `${EVNAME[Q.ev]} | ${HN[Q.hall] || ''} | ${Q.n} فرد | ${R.pk.name}`, snap: snap(), status: old.status || 'اتبعت', reason: old.reason || '', followAt: old.followAt || Date.now() + 2 * 864e5, ref: Q.ref || old.ref || '', ev: EVNAME[Q.ev], hall: HN[Q.hall] || '', n: Q.n, pk: R.pk.name, emp: ME ? ME.name : '' };
+    if (i >= 0) H.splice(i, 1); H.unshift(e); lsSet(HK(), H.slice(0, 200)); pushQuote(e);
     logStat(why || 'save', R.total); $('#qNo').textContent = 'رقم العرض: ' + Q.no;
   }
-  function resetQuote() { Object.assign(Q, { no: '', ev: 'wedding', n: 200, date: null, day: 'wd', hall: null, pk: null, adds: {}, name: '', phone: '', prio: '', bud: '', src: '', notes: '' }); OPTS = []; fillForm(); $('#qNo').textContent = ''; }
+  function resetQuote() { Object.assign(Q, { ref: '', no: '', ev: 'wedding', n: 200, date: null, day: 'wd', hall: null, pk: null, adds: {}, name: '', phone: '', prio: '', bud: '', src: '', notes: '' }); OPTS = []; fillForm(); $('#qNo').textContent = ''; }
 
   /* ---------- steps bar & bottom bar ---------- */
   function renderSteps(R) {
@@ -491,12 +388,14 @@ ${whatIfHTML()}
   }
   function renderBar(R) {
     const ok = R && R.pk;
-    $('#qBar').innerHTML = `<div class="t">الإجمالي التقديري<b>${ok ? money(R.total) : '—'}</b>${ok ? ` <small>(${money(Math.round(R.total / Q.n))} للفرد)</small>` : ''}</div><div class="sp"><button class="btn" id="bbNew">عرض جديد</button><button class="btn" id="bbSave" ${ok ? '' : 'disabled'}>حفظ</button><button class="btn wa" id="bbWa" ${ok ? '' : 'disabled'}>واتساب للعميل</button><button class="btn pri" id="bbDoc" ${ok ? '' : 'disabled'}>العرض الرسمي (A4)</button></div>`;
+    $('#qBar').innerHTML = `<div class="t">الإجمالي التقديري<b>${ok ? money(R.total) : '—'}</b>${ok ? ` <small>(${money(Math.round(R.total / Q.n))} للفرد)</small>` : ''}</div><div class="sp"><button class="btn" id="bbNew">عرض جديد</button><button class="btn" id="bbSave" ${ok ? '' : 'disabled'}>حفظ</button><button class="btn wa" id="bbWa" ${ok ? '' : 'disabled'}>واتساب للعميل</button><button class="btn" id="bbCust" ${ok ? '' : 'disabled'}>وضع العميل</button><button class="btn pri" id="bbDoc" ${ok ? '' : 'disabled'}>العرض الرسمي (A4)</button><button class="btn wa" id="bbClose" ${ok ? '' : 'disabled'} style="background:#5E1B2C;border-color:#5E1B2C">اقفل البيعة</button></div>`;
     $('#bbNew').onclick = () => { resetQuote(); renderQuote(); window.scrollTo(0, 0); };
     if (!ok) return;
     $('#bbSave').onclick = () => { saveHist(R, 'save'); toast('اتحفظ العرض ✓ ' + Q.no); };
     $('#bbWa').onclick = () => { saveHist(R, 'wa'); window.open(waLink(quoteText(R)), '_blank'); };
     $('#bbDoc').onclick = () => { saveHist(R, 'doc'); openDoc([optFrom(R)]); };
+    $('#bbCust').onclick = () => openCust();
+    $('#bbClose').onclick = () => { saveHist(R, 'save'); openClose(); };
   }
 
   /* ---------- what-if (count) ---------- */
@@ -513,7 +412,7 @@ ${whatIfHTML()}
     const m = p.m, sec = m ? m.c : null;
     const body = sec ? sec.map(s => `<h4>${ar(s.h || 'الأصناف')}</h4><ul>${s.o.map(o => o[0] === 'i' ? `<li>${ar(o[1])}</li>` : `<li><small>${ar(o[1])}</small></li>`).join('')}</ul>`).join('') : '<p>مفيش أصناف مسجّلة للباكدج ده.</p>';
     const inc = Q.ev === 'wedding' || Q.ev === 'engagement' ? (K.halls[Q.hall].inc || []).map(s => `<h4>${ar(s.h || 'ما يشمله الباكدج')}</h4><ul>${s.o.filter(o => o[0] === 'i').map(o => `<li>${ar(o[1])}</li>`).join('')}</ul>`).join('') : '';
-    modal(`<h3>${ar(p.name)} – ${HN[Q.hall] || ''}</h3><p class="ctx">${AD(itemCount(m || { c: [] }))} صنف · ${money(p.total)} لعدد ${AD(Q.n)} فرد</p><div class="mc">${body}${inc ? `<hr style="border:0;border-top:1px dashed #E2D7BD;margin:14px 0"><h3 style="font-size:16px">ما يشمله الباكدج غير الأكل</h3>${inc}` : ''}</div>`);
+    modal(`<h3>${ar(p.name)} – ${HN[Q.hall] || ''}</h3><p class="ctx">${AD(itemCount(m || { c: [] }))} صنف | ${money(p.total)} لعدد ${AD(Q.n)} فرد</p><div class="mc">${body}${inc ? `<hr style="border:0;border-top:1px dashed #E2D7BD;margin:14px 0"><h3 style="font-size:16px">ما يشمله الباكدج غير الأكل</h3>${inc}` : ''}</div>`);
   }
   function modal(html) { $('#modalBody').innerHTML = html; $('#modal').hidden = false; }
   $('#modalX').onclick = () => { $('#modal').hidden = true; };
@@ -572,7 +471,7 @@ ${whatIfHTML()}
 <tr class="tot"><td>الإجمالي التقديري</td>${opts.map(x => `<td class="n${x.total === lo ? ' best' : ''}">${money(x.total)}</td>`).join('')}</tr></table>`;
     }
     const terms = `<ol class="terms"><li>الأسعار تقديرية وفق قوائم أسعار الدار السارية في تاريخ العرض، ويُعتمد السعر النهائي عند التعاقد.</li><li>لا يُعدّ الحجز مؤكداً إلا بعد سداد مقدم الحجز كاملاً وتوقيع استمارة التعاقد، وتُخصَّص المواعيد بأسبقية الاستيفاء.</li><li>تُثبَّت الأسعار باختيار الباكدج وسداد كامل قيمته خلال ثلاثين يوماً من تاريخ سداد المقدم.</li><li>يُؤكَّد العدد النهائي للمدعوين كتابةً قبل الحفل بسبعة أيام على الأقل، وتُحتسب الزيادة بسعر الوجبة الإضافية.</li></ol>`;
-    const html = `<div class="tb"><button class="btn pri" id="dPrint">طباعة / حفظ PDF</button>${Q.phone ? '<button class="btn wa" id="dWa">إرسال النص واتساب</button>' : ''}<button class="btn" id="dClose">إغلاق</button></div><div class="a4">${head}<h1>${multi ? 'عرض سعر – مقارنة اختيارات' : 'عرض سعر تقديري'}</h1>${meta}${body}${terms}<div class="sign"><div>مسؤول الحجز<i>${esc(ME ? ME.name : '')}</i></div><div>رئيس قسم الحفلات<i>أ. سارة سيد</i></div></div><div class="ft">للحجز والاستفسار: ${PHONES[0]} (واتساب) – ${PHONES[1]} – ${PHONES[2]} · المعاينة يومياً من ١٠ صباحاً حتى ١٠ مساءً</div></div>`;
+    const html = `<div class="tb"><button class="btn pri" id="dPrint">طباعة / حفظ PDF</button>${Q.phone ? '<button class="btn wa" id="dWa">إرسال النص واتساب</button>' : ''}<button class="btn" id="dClose">إغلاق</button></div><div class="a4">${head}<h1>${multi ? 'عرض سعر – مقارنة اختيارات' : 'عرض سعر تقديري'}</h1>${meta}${body}${multi ? terms : `<div class="tq">${terms}${qrDocBox()}</div>`}<div class="sign"><div>مسؤول الحجز<i>${esc(ME ? ME.name : '')}</i></div><div>رئيس قسم الحفلات<i>أ. سارة سيد</i></div></div><div class="ft">للحجز والاستفسار: ${PHONES[0]} (واتساب) – ${PHONES[1]} – ${PHONES[2]} | المعاينة يومياً من ١٠ صباحاً حتى ١٠ مساءً</div></div>`;
     $('#doc').innerHTML = html; $('#doc').hidden = false; document.body.style.overflow = 'hidden';
     $('#dClose').onclick = closeDoc;
     $('#dPrint').onclick = () => { document.body.classList.add('doc-print'); window.print(); setTimeout(() => document.body.classList.remove('doc-print'), 500); };
@@ -586,21 +485,23 @@ ${whatIfHTML()}
     const S = lsGet(SK(), []), t0 = today0().getTime(), m0 = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
     const cnt = (from, ty) => S.filter(x => x.at >= from && (!ty || ty.includes(x.type))).length;
     const H = lsGet(HK(), []), sumM = H.filter(x => x.at >= m0).reduce((a, x) => a + x.total, 0);
-    $('#homeOut').innerHTML = `<div class="hello"><img src="../bot/img/crest.png" alt="" style="height:64px"><div><h2>${greet} يا ${esc(ME.name)}</h2><p>${esc(ME.role)} · قسم الحفلات</p></div><div class="dt">${dateTxt(new Date())}<br><small>مواعيد القسم ١٠ ص – ١١ م</small></div></div>
-<div class="acts"><button class="act" data-go="new"><i>🧾</i><b>عرض سعر جديد</b><small>احسب وابعت في دقيقة</small></button><button class="act" data-go="rec"><i>🏛️</i><b>ترشيح قاعة</b><small>حسب العدد والفرق بينهم</small></button><button class="act" data-go="obj"><i>💬</i><b>رد على اعتراض</b><small>غالي، هفكر، خصم…</small></button><button class="act" data-go="budget"><i>💰</i><b>الأنسب للميزانية</b><small>أحسن اختيار في حدودها</small></button></div>
+    $('#homeOut').innerHTML = `<div class="hello"><img src="../bot/img/crest.png" alt="" style="height:64px"><div><h2>${greet} يا ${esc(ME.name)}</h2><p>${esc(ME.role)} | قسم الحفلات</p></div><div class="dt">${dateTxt(new Date())}<br><small>مواعيد القسم ١٠ ص – ١١ م</small></div></div>
+<div class="card" id="walkHome" hidden></div><div class="acts"><button class="act main" data-go="meet"><i>🤝</i><b>مقابلة عميل في المكتب</b><small>استقبال ← فهم الاحتياج ← شرح القاعة والباكدج ← المعاينة ← الأسعار ← العرض ← القفل</small></button><button class="act" data-go="new"><i>🧾</i><b>عرض سعر جديد</b><small>احسب وابعت في دقيقة</small></button><button class="act" data-go="rec"><i>🏛️</i><b>ترشيح قاعة</b><small>حسب العدد والفرق بينهم</small></button><button class="act" data-go="obj"><i>💬</i><b>رد على اعتراض</b><small>غالي، هفكر، خصم…</small></button><button class="act" data-go="budget"><i>💰</i><b>الأنسب للميزانية</b><small>أحسن اختيار في حدودها</small></button></div>
 <div class="stats"><div class="stat"><small>عروض النهارده</small><b>${AD(cnt(t0, ['save', 'wa', 'doc', 'img']))}</b></div><div class="stat"><small>اتبعتت واتساب النهارده</small><b>${AD(cnt(t0, ['wa']))}</b></div><div class="stat"><small>عروض الشهر</small><b>${AD(H.filter(x => x.at >= m0).length)}</b></div><div class="stat"><small>قيمة عروض الشهر</small><b>${money(sumM)}</b></div></div>
-<div class="card"><h3>آخر عروضي</h3>${histTable(H.slice(0, 6))}</div>`;
-    $$('#homeOut .act').forEach(b => b.onclick = () => { const g = b.dataset.go; if (g === 'new') { resetQuote(); goTab('quote'); } else goTab(g); });
-    bindHist('#homeOut');
+${waitHomeHTML()}${followHTML()}<div class="card"><h3>آخر عروضي</h3>${histTable(H.slice(0, 6))}</div>`;
+    $$('#homeOut .act').forEach(b => b.onclick = () => { const g = b.dataset.go; if (g === 'new') { resetQuote(); goTab('quote'); } else if (g === 'meet') { newMeet(); MEET.step = 0; goTab('meet'); } else goTab(g); });
+    bindHist('#homeOut'); bindFollow(); drawWalkHome();
+    $$('#homeOut [data-hwa]').forEach(b => b.onclick = () => { const x = WAIT.find(w => w.id === b.dataset.hwa); window.open(waLinkTo(x.phone, waitMsg(x)), '_blank'); x.status = 'اتبلّغ'; api('staff_wait_set', { id: x.id, status: 'اتبلّغ' }); waitBadge(); renderHome(); });
   }
   function histTable(H) {
     if (!H.length) return '<div class="empty">لسه معملتش عروض. ابدأ بـ «عرض سعر جديد».</div>';
-    return `<table class="q hist"><tr><th>رقم العرض</th><th>العميل</th><th>التفاصيل</th><th>التاريخ</th><th style="text-align:left">الإجمالي</th><th></th></tr>${H.map(x => { const d = new Date(x.at); return `<tr><td><b dir="ltr">${esc(x.no)}</b></td><td>${esc(x.name || '—')}<br><small class="ctx" dir="ltr">${esc(x.phone || '')}</small></td><td><small>${ar(x.label)}</small></td><td><small>${dateTxt(d)}</small></td><td class="n">${money(x.total)}</td><td style="white-space:nowrap"><button class="btn" data-open="${x.no}">فتح</button> <button class="btn" data-dup="${x.no}">نسخة</button> <button class="btn" data-del="${x.no}" title="حذف">✕</button></td></tr>`; }).join('')}</table>`;
+    return `<table class="q hist"><tr><th>رقم العرض</th><th>العميل</th><th>التفاصيل</th><th>التاريخ</th><th style="text-align:left">الإجمالي</th><th>الحالة</th><th></th></tr>${H.map(x => { const d = new Date(x.at); return `<tr><td><b dir="ltr">${esc(x.no)}</b></td><td>${esc(x.name || '—')}<br><small class="ctx" dir="ltr">${esc(x.phone || '')}</small></td><td><small>${ar(x.label)}</small></td><td><small>${dateTxt(d)}</small></td><td class="n">${money(x.total)}</td><td>${stSelect(x)}</td><td style="white-space:nowrap"><button class="btn" data-open="${x.no}">فتح</button> <button class="btn" data-dup="${x.no}">نسخة</button> <button class="btn" data-del="${x.no}" title="حذف">✕</button></td></tr>`; }).join('')}</table>`;
   }
   function bindHist(root) {
     const H = () => lsGet(HK(), []);
     $$(root + ' [data-open]').forEach(b => b.onclick = () => { const x = H().find(e => e.no === b.dataset.open); if (!x) return; loadSnap(x.snap); Q.no = x.no; $('#qNo').textContent = 'رقم العرض: ' + Q.no; goTab('quote'); });
     $$(root + ' [data-dup]').forEach(b => b.onclick = () => { const x = H().find(e => e.no === b.dataset.dup); if (!x) return; loadSnap(x.snap); Object.assign(Q, { no: '', name: '', phone: '', notes: '' }); fillForm(); $('#qNo').textContent = 'نسخة جديدة'; goTab('quote'); toast('اتعملت نسخة – اكتب بيانات العميل الجديد'); });
+    bindStatus(root);
     $$(root + ' [data-del]').forEach(b => b.onclick = () => { if (!confirm('حذف العرض ' + b.dataset.del + '؟')) return; lsSet(HK(), H().filter(e => e.no !== b.dataset.del)); root === '#homeOut' ? renderHome() : renderHist(); });
   }
   $('#hQ').addEventListener('input', () => renderHist());
@@ -616,7 +517,7 @@ ${whatIfHTML()}
     const all = []; fits.forEach(h => days.forEach(d => K.halls[h].menus.forEach(m => all.push({ h, d, m, v: estTotal(K.halls[h], m, n, d) }))));
     if (!all.length) { $('#bOut').innerHTML = '<div class="card"><div class="tip">العدد ده أكبر من سعة القاعات.</div></div>'; return; }
     const inB = all.filter(x => x.v <= B).sort((a, b) => b.v - a.v), cheap = all.slice().sort((a, b) => a.v - b.v)[0];
-    const row = (x, tag) => `<tr${tag ? ' class="best"' : ''}><td><b>${HN[x.h]}</b> – ${ar(x.m.name)}<br><small class="ctx">${x.d === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'} · ${AD(itemCount(x.m))} صنف</small></td><td class="n">${money(x.v)}</td><td class="n">${money(Math.round(x.v / n))}</td><td class="n">${B - x.v >= 0 ? money(B - x.v) : '<span style="color:#9B1C1C">−' + money(x.v - B) + '</span>'}</td><td><button class="btn" data-use="${x.h}|${x.d}|${x.m.id}">استخدم</button></td></tr>`;
+    const row = (x, tag) => `<tr${tag ? ' class="best"' : ''}><td><b>${HN[x.h]}</b> – ${ar(x.m.name)}<br><small class="ctx">${x.d === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'} | ${AD(itemCount(x.m))} صنف</small></td><td class="n">${money(x.v)}</td><td class="n">${money(Math.round(x.v / n))}</td><td class="n">${B - x.v >= 0 ? money(B - x.v) : '<span style="color:#9B1C1C">−' + money(x.v - B) + '</span>'}</td><td><button class="btn" data-use="${x.h}|${x.d}|${x.m.id}">استخدم</button></td></tr>`;
     let html = '';
     if (inB.length) {
       const best = inB[0], left = B - best.v, sc = best.h;
@@ -659,9 +560,10 @@ ${whatIfHTML()}
   $('#navMini').onclick = () => { const on = $('.wrap').classList.toggle('mini'); try { localStorage.setItem('dmst-mini', on ? '1' : '0'); } catch (e) { } };
   document.addEventListener('keydown', e => {
     if (!ME || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key === 'Escape') { if (!$('#doc').hidden) closeDoc(); $('#modal').hidden = true; return; }
+    if (e.key === 'Escape') { if (!$('#doc').hidden) closeDoc(); if (!$('#cust').hidden) closeCust(); $('#modal').hidden = true; return; }
     if (/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName)) return;
     const k = e.key.toLowerCase();
+    if (k === 'm' || k === 'ة') { e.preventDefault(); newMeet(); MEET.step = 0; goTab('meet'); return; }
     if (k === 'n' || k === 'ى') { e.preventDefault(); resetQuote(); goTab('quote'); }
     else if (k === 'h' || k === 'ا') { goTab('home'); }
     else if (k === '/') { e.preventDefault(); goTab('rules'); $('#sQ').focus(); }
@@ -671,5 +573,633 @@ ${whatIfHTML()}
   $('#upBtn').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
   $('#downBtn').onclick = () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
 
-  function renderAll() { $('#arrows').hidden = false; renderHome(); renderQuote(); renderRules(); renderCall(); }
+  /* =========================================================
+     v3: shared records (Google Sheet), statuses, follow-ups, closing, customer mode,
+         priority suggestions, hall sheets, website leads, manager board, training
+     ========================================================= */
+  const API = window.DMS_API || 'https://script.google.com/macros/s/AKfycbyLhYKrvKr6kzHtjMg-x6bkk-dHDMRFWwKXLxffVFIPd6FyReQCvHzOFcJXTCVnv0qCuA/exec';
+  let ONLINE = null;
+  function setSync(on, txt) { ONLINE = on; const e = $('#syncSt'); if (!e) return; e.className = 'sync ' + (on ? 'on' : 'off'); e.textContent = txt || (on ? '● متصل بسجل الدار' : '● غير متصل – بيحفظ على الجهاز'); }
+  async function api(kind, data) {
+    if (!API || !ME) return null;
+    try {
+      const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 15000);
+      const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ kind, u: ME.id, pin: ME.pin }, data || {})), signal: ctl.signal });
+      clearTimeout(tm); const j = await r.json();
+      if (j && j.ok === false && j.err === 'auth') { setSync(false, '● الرقم السري مش متسجل في الشيت'); return null; }
+      setSync(true); return j;
+    } catch (e) { setSync(false); return null; }
+  }
+  function pushQuote(e) { api('staff_save', { q: { no: e.no, at: e.at, name: e.name, phone: e.phone, ev: e.ev, hall: e.hall, n: e.n, pk: e.pk, total: e.total, status: e.status, reason: e.reason, followAt: e.followAt, prio: Q.prio, bud: Q.bud, src: Q.src, notes: Q.notes, ref: e.ref, snap: e.snap } }); }
+  async function syncHist() {
+    const j = await api('staff_list'); if (!j || !j.rows) return false;
+    const H = lsGet(HK(), []), byNo = {}; H.forEach(x => byNo[x.no] = x);
+    j.rows.forEach(r => { const l = byNo[r.no]; if (!l || (r.up || 0) > (l.up || l.at || 0)) byNo[r.no] = { no: r.no, at: r.at, up: r.up, total: r.total, name: r.name, phone: r.phone, label: `${r.ev} | ${r.hall} | ${r.n} فرد | ${r.pk}`, snap: r.snap, status: r.status, reason: r.reason, followAt: r.followAt, ref: r.ref, ev: r.ev, hall: r.hall, n: r.n, pk: r.pk, emp: r.emp }; });
+    lsSet(HK(), Object.values(byNo).sort((a, b) => (b.up || b.at) - (a.up || a.at)).slice(0, 300)); return true;
+  }
+
+  /* ---------- statuses ---------- */
+  const STATUSES = ['اتبعت', 'متابعة لاحقة', 'اتعاين', 'دفع المقدم', 'اتحجز', 'خسرناه'];
+  const LOST = ['السعر', 'التاريخ مش متاح', 'اختار مكان تاني', 'العدد اتغير', 'أجّل المناسبة', 'مبيردّش', 'سبب تاني'];
+  const stCls = s => s === 'اتحجز' ? 's-booked' : s === 'خسرناه' ? 's-lost' : s === 'دفع المقدم' ? 's-dep' : '';
+  function stSelect(x) { return `<select class="st ${stCls(x.status)}" data-st="${esc(x.no)}">${STATUSES.map(s => `<option${(x.status || 'اتبعت') === s ? ' selected' : ''}>${s}</option>`).join('')}</select>${x.status === 'خسرناه' ? `<br><select class="st" data-rs="${esc(x.no)}" style="margin-top:4px"><option value="">السبب؟</option>${LOST.map(s => `<option${x.reason === s ? ' selected' : ''}>${s}</option>`).join('')}</select>` : ''}`; }
+  function setStatus(no, st, reason) {
+    const H = lsGet(HK(), []), e = H.find(x => x.no === no); if (!e) return;
+    if (st) { e.status = st; if (st !== 'خسرناه') e.reason = ''; logStat('st:' + st, e.total); }
+    if (reason !== undefined) e.reason = reason;
+    e.up = Date.now(); if (['اتحجز', 'خسرناه'].includes(e.status)) e.followAt = 0; else if (st === 'اتعاين') e.followAt = Date.now() + 2 * 864e5;
+    lsSet(HK(), H); api('staff_save', { q: Object.assign({}, e, { snap: e.snap }) });
+  }
+  function bindStatus(root) {
+    $$(root + ' [data-st]').forEach(s => s.onchange = () => { setStatus(s.dataset.st, s.value); toast('اتحدثت الحالة ✓'); (root === '#homeOut' ? renderHome : renderHist)(); });
+    $$(root + ' [data-rs]').forEach(s => s.onchange = () => { setStatus(s.dataset.rs, null, s.value); toast('اتسجل السبب ✓'); });
+  }
+
+  /* ---------- follow-ups due today ---------- */
+  function dueList() { const now = Date.now(); return lsGet(HK(), []).filter(x => !['اتحجز', 'خسرناه'].includes(x.status) && (x.followAt || x.at + 2 * 864e5) <= now && (x.phone || x.name)).sort((a, b) => (a.followAt || a.at) - (b.followAt || b.at)); }
+  function followHTML() {
+    const L = dueList();
+    return `<div class="card"><h3>متابعات النهارده ${L.length ? `<span class="pill r">${AD(L.length)}</span>` : '<span class="pill g">مفيش</span>'}</h3>${L.length ? L.slice(0, 12).map(x => { const d = Math.max(0, Math.round((Date.now() - (x.up || x.at)) / 864e5)); return `<div class="fu"><b>${esc(x.name || '—')} <small dir="ltr">${esc(x.phone || '')}</small><br><small>${ar(x.label)} | ${money(x.total)} | آخر تواصل من ${AD(d)} يوم | <span class="pill">${esc(x.status || 'اتبعت')}</span></small></b><button class="btn wa" data-fu="${esc(x.no)}">تابع واتساب</button><button class="btn" data-snooze="${esc(x.no)}">بعد يومين</button><button class="btn" data-open="${esc(x.no)}">فتح</button></div>`; }).join('') : '<p class="ctx">كل عملائك متابَعين ✓</p>'}</div>`;
+  }
+  function bindFollow() {
+    $$('#homeOut [data-fu]').forEach(b => b.onclick = () => {
+      const H = lsGet(HK(), []), x = H.find(e => e.no === b.dataset.fu); if (!x) return;
+      const txt = [`أهلاً${x.name ? ' ' + x.name : ''} 🌷`, `معاك ${ME.name} من قسم الحفلات بدار المراسم لضباط الشرطة.`, `حبيت أطمّن على حضرتك بخصوص عرض السعر (${x.hall} – ${AD(x.n)} فرد – حوالي ${fmt(x.total)} ج).`, 'لو فيه أي استفسار أو حابب نعدّل في الاختيارات أنا تحت أمرك، ويسعدنا نستقبلك تعاين القاعة يومياً من ١٠ الصبح لـ ١٠ بالليل.', 'وللأمانة، المواعيد بتتحجز بأسبقية سداد المقدم، فلو التاريخ مناسب لحضرتك متتأخرش.'].join('\n');
+      const ph = Q.phone; Q.phone = x.phone; const l = waLink(txt); Q.phone = ph; window.open(l, '_blank');
+      x.followAt = Date.now() + 3 * 864e5; x.up = Date.now(); if (!x.status || x.status === 'اتبعت') x.status = 'متابعة لاحقة'; lsSet(HK(), H); api('staff_save', { q: x }); logStat('wa', 0); renderHome();
+    });
+    $$('#homeOut [data-snooze]').forEach(b => b.onclick = () => { const H = lsGet(HK(), []), x = H.find(e => e.no === b.dataset.snooze); if (!x) return; x.followAt = Date.now() + 2 * 864e5; x.up = Date.now(); lsSet(HK(), H); api('staff_save', { q: x }); renderHome(); });
+  }
+
+  /* ---------- close the sale ---------- */
+  function openClose() {
+    const R = computeQuote(); if (!R || !R.pk) return;
+    const pd = Q.date, near = pd && (pd - today0()) / 864e5 < 31, half = Math.ceil(R.pkTotal / 2 / 50) * 50;
+    modal(`<h3>اقفل البيعة – ${esc(Q.name || 'العميل')} <small class="ctx">${esc(Q.no || '')}</small></h3><p class="ctx">${EVNAME[Q.ev]} | ${HN[Q.hall]} | ${AD(Q.n)} فرد | ${R.pk.name} | ${money(R.total)}</p>
+<ul class="chk">
+<li><input type="checkbox"><div><b>تأكيد توافر التاريخ</b> ${pd ? `(${dateTxt(pd)})` : '<span class="pill r">التاريخ لسه مش محدد</span>'} من جدول الحجوزات قبل أي سداد.</div></li>
+<li><input type="checkbox"><div><b>بيانات المتعاقد:</b> الاسم الرباعي – الرقم القومي – وسيلة الاتصال المعتمدة.</div></li>
+<li><input type="checkbox"><div><b>سداد مقدم الحجز:</b> ${money(R.dep)}${near ? ' – <b>والحفلة بعد أقل من شهر: كامل القيمة والتأمين دفعة واحدة (' + money(R.total + R.ins) + ')</b>' : ''}.</div></li>
+<li><input type="checkbox"><div><b>توقيع استمارة التعاقد</b> – ده اللي بيثبّت التاريخ.</div></li>
+<li><input type="checkbox"><div><b>وضّح للعميل الخطوة الجاية:</b> ${near ? 'مفيش دفعات تانية.' : `اختيار الباكدج وسداد ٥٠٪ على الأقل (حوالي ${money(half)}) خلال شهر، والباقي والتأمين (${money(R.ins)}) قبل الحفلة بشهر. ولو سدّد الباكدج كامل خلال ٣٠ يوم السعر بيتثبّت.`}</div></li>
+<li><input type="checkbox"><div><b>تسليم ملخص طلب الحجز</b> لمراجع حسابات الحفلات لتسجيله في كومسيس.</div></li>
+</ul>
+<div class="btns"><button class="btn pri" id="clDoc">ملخص طلب الحجز (للحسابات)</button><button class="btn" id="clDep">علّمه: دفع المقدم</button><button class="btn wa" id="clBook" style="background:#1B6B3A;border-color:#1B6B3A">علّمه: اتحجز ✓</button><button class="btn wa" id="clMsg">رسالة الترحيب</button></div>`);
+    $('#clDoc').onclick = () => { $('#modal').hidden = true; openBookingDoc(R); };
+    $('#clDep').onclick = () => { setStatus(Q.no, 'دفع المقدم'); toast('اتسجل: دفع المقدم ✓'); };
+    $('#clBook').onclick = () => { setStatus(Q.no, 'اتحجز'); toast('ألف مبروك 🎉 اتسجل الحجز'); };
+    $('#clMsg').onclick = () => { $('#modal').hidden = true; goTab('msgs'); $('#mT').value = 'welcome'; $('#mName').value = Q.name || ''; $('#mPhone').value = Q.phone || ''; buildMsg(); };
+  }
+  function openBookingDoc(R) {
+    openDoc([optFrom(R)]);
+    const a4 = $('#doc .a4'); if (!a4) return;
+    a4.querySelector('h1').textContent = 'ملخص طلب حجز – لقسم الحسابات';
+    const extra = document.createElement('div');
+    extra.innerHTML = `<table><tr><th>بيانات المتعاقد</th><th>القيمة</th></tr><tr><td>الاسم الرباعي</td><td style="height:30px"></td></tr><tr><td>الرقم القومي</td><td style="height:30px"></td></tr><tr><td>وسيلة الاتصال المعتمدة</td><td>${esc(Q.phone || '')}</td></tr><tr><td>تاريخ الحفل المؤكد</td><td>${Q.date ? dateTxt(Q.date) : ''}</td></tr><tr><td>رقم إيصال المقدم</td><td style="height:30px"></td></tr></table>${Q.notes ? `<p><b>ملاحظات:</b> ${esc(Q.notes)}</p>` : ''}`;
+    a4.querySelector('.terms').before(extra);
+    const sign = a4.querySelector('.sign'); sign.innerHTML = `<div>مسؤول الحجز<i>${esc(ME.name)}</i></div><div>العميل<i>&nbsp;</i></div><div>مراجع حسابات الحفلات<i>&nbsp;</i></div>`; sign.querySelectorAll('div').forEach(d => d.style.width = '30%');
+  }
+
+  /* ---------- suggestions by the client's priority ---------- */
+  const PRIO = {
+    'الأكل والمنيو': { keys: ['ركن', 'حلويات', 'عصير فريش', 'مشروبات'], line: 'بما إن الأكل أهم حاجة عندك، رشّحت لك المنيو الأغنى بالأصناف، ودي إضافات بتفرق في تجربة الضيوف.', menu: 'rich' },
+    'الديكور والكوشة': { keys: ['ترقيه الكوشه', 'ديكور سويت', 'welcome board', 'ديكور كريدور', 'ديكور جيست بوك', 'ديكور انترانس'], line: 'بما إن الديكور يهمك، الكوشة الاسبيشيال وديكور السويت والمدخل بيعملوا فرق كبير في الصور وأول انطباع.', menu: '' },
+    'التصوير': { keys: ['تصوير فوتوغرافي full day', 'برومو فيديو', 'كاميرا واير', 'media coverage', 'البوم 30×80', 'تصوير فيديو 4k'], line: 'بما إن التصوير أهم حاجة عندك، الباكدج فيه فيديو بكرين، وتقدر تكمّلها بالفوتوغرافي الكامل والبرومو والكاميرا الواير.', menu: '' },
+    'التوفير والسعر': { keys: [], line: 'بما إن التوفير يهمك: منتصف الأسبوع أوفر، وأوفر منيو في القاعة دي، والباكدج نفسه شامل خدمات كتير بتتحسب منفصلة برا.', menu: 'cheap' },
+    'الفخامة والمساحة': { keys: ['شو فاير اسبيشيال', 'لاونج vip', 'كرسي كابوتنيه vip', 'فرش vip', 'ترقيه الكوشه'], line: 'بما إن الفخامة والمساحة أهم حاجة، القاعة الأوسع والمنيو الأعلى والإضافات الـ VIP بيدّوا الطابع الملكي اللي بتدوّر عليه.', menu: 'top' }
+  };
+  function renderPrio() {
+    const el = $('#qPrioCard'); if (!el) return;
+    const P = PRIO[Q.prio]; if (!P || !Q.hall) { el.hidden = true; return; }
+    const sc = scopeFor(Q.ev, Q.hall), ids = [];
+    P.keys.forEach(k => K.addons.forEach((a, i) => { if (a.s === sc && norm(a.n + ' ' + a.g).includes(norm(k).trim()) && !ids.includes(i) && ids.length < 6) ids.push(i); }));
+    let menuTip = '';
+    if ((Q.ev === 'wedding' || Q.ev === 'engagement') && P.menu) {
+      const H = K.halls[Q.hall], ms = H.menus.slice(), d = Q.day;
+      const m = P.menu === 'cheap' ? ms.sort((a, b) => estTotal(H, a, Q.n, d) - estTotal(H, b, Q.n, d))[0] : P.menu === 'top' ? ms.sort((a, b) => estTotal(H, b, Q.n, d) - estTotal(H, a, Q.n, d))[0] : ms.sort((a, b) => itemCount(b) - itemCount(a))[0];
+      menuTip = `<p>المنيو المقترح: <b>${ar(m.name)}</b> (${AD(itemCount(m))} صنف – ${money(estTotal(H, m, Q.n, d))}) ${Q.pk === m.id ? '<span class="pill g">مختار</span>' : `<button class="btn" id="prMenu" data-m="${m.id}" style="padding:3px 12px">اختاره</button>`}</p>`;
+      if (P.menu === 'cheap' && Q.day === 'we') { const s2 = estTotal(H, m, Q.n, 'we') - estTotal(H, m, Q.n, 'wd'); if (s2 > 0) menuTip += `<p>ولو منتصف الأسبوع: يوفّر <b>${money(s2)}</b>.</p>`; }
+      if (P.menu === 'top' && Q.hall !== 'akhenaten' && fitWed('akhenaten', Q.n)) menuTip += `<p>ولو المساحة أهم: <b>قاعة أخناتون</b> تساع عددك وأوسع.</p>`;
+    }
+    el.hidden = false;
+    el.innerHTML = `<h3>مقترحات حسب أولوية العميل: ${esc(Q.prio)}</h3><div class="say"><p>${P.line}</p></div>${menuTip}${ids.length ? `<div class="sugs">${ids.map(i => `<button type="button" data-sg="${i}" class="${Q.adds[i] ? 'on' : ''}">${Q.adds[i] ? '✓ ' : '＋ '}${ar(K.addons[i].n)} <small>(${priceOf(K.addons[i]).label})</small></button>`).join('')}</div>` : ''}`;
+    $$('#qPrioCard [data-sg]').forEach(b => b.onclick = () => { const i = b.dataset.sg; if (Q.adds[i]) delete Q.adds[i]; else Q.adds[i] = { qty: 1, opt: 0 }; renderQuote(); });
+    if ($('#prMenu')) $('#prMenu').onclick = () => { Q.pk = $('#prMenu').dataset.m; renderQuote(); };
+  }
+
+  /* ---------- customer mode (screen turned to the client) ---------- */
+  function openCust() {
+    if (!Q.hall) return;
+    const isW = Q.ev === 'wedding' || Q.ev === 'engagement', H = K.halls[Q.hall], P = packagesFor(Q.ev, Q.hall, Q.n, Q.day);
+    let pick = P;
+    if (isW) { const by = P.slice().sort((a, b) => a.total - b.total), sm = by.filter(p => /^sm/.test(p.id)), ob = by.filter(p => /^ob/.test(p.id)), rich = sm.slice().sort((a, b) => itemCount(b.m) - itemCount(a.m))[0]; pick = [by[0], rich, ob[0] || by[by.length - 1]].filter((x, i, a) => x && a.indexOf(x) === i); const cur = P.find(p => p.id === Q.pk); if (cur && !pick.includes(cur)) pick[pick.length - 1] = cur; }
+    pick = pick.slice(0, 3);
+    const desc = isW && K.desc[Q.hall] ? K.desc[Q.hall].desc : '';
+    const inc = isW ? (H.inc || []).flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1])).slice(0, 12) : [];
+    const main = p => p.m ? secItems(p.m, /الرئيسي|الساخن/).slice(0, 4) : [];
+    $('#cust').innerHTML = `<div class="top"><img src="../bot/img/crest.png" alt=""><div><h1>${HN[Q.hall]}</h1><p>${EVNAME[Q.ev]} | ${AD(Q.n)} فرد | ${Q.day === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}${Q.date ? ' | ' + dateTxt(Q.date) : ''}</p></div><button class="x" id="cuX">رجوع للموظف ✕</button></div>
+${desc ? `<p class="lead">${esc(desc)}${K.p2 && K.p2[Q.hall] ? ' ' + esc(K.p2[Q.hall]) : ''}</p>` : ''}
+<h2>اختار الباكدج اللي يناسبك</h2><div class="cards">${pick.map((p, i) => `<div class="cc${p.id === Q.pk ? ' on' : ''}" data-cp="${p.id}"><small>${['الأوفر', 'الأغنى بالأصناف', /^ob/.test(p.id) ? 'بوفيه مفتوح' : 'الأعلى'][i] || ''}</small><h3>${ar(p.name)}</h3><div class="tt">${money(p.total)}</div><div class="pp">حوالي ${money(Math.round(p.total / Q.n))} للفرد${p.m ? ' | ' + AD(itemCount(p.m)) + ' صنف' : ''}</div>${main(p).length ? `<ul>${main(p).map(x => `<li>${ar(x)}</li>`).join('')}</ul>` : ''}</div>`).join('')}</div>
+${inc.length ? `<h2>الباكدج شامل كمان</h2><div class="inc">${inc.map(x => `<div>✦ ${ar(x)}</div>`).join('')}</div>` : ''}
+${pick.length > 1 ? '<div class="snav"><button id="cuPrev" title="السابق">›</button><button id="cuNext" title="التالي">‹</button></div>' : ''}${Q.pk ? `<div class="cqr">${qrSvg(quoteLink())}<span>صوّر الكود وخد العرض على موبايلك</span></div>` : ''}<p class="foot">الأسعار تقديرية حسب قوائم الدار الحالية | المعاينة يومياً من ١٠ صباحاً حتى ١٠ مساءً | ${PHONES[0]}</p>`;
+    $('#cust').hidden = false; document.body.style.overflow = 'hidden';
+    $('#cuX').onclick = closeCust; SHOW.list = [];
+    const mv = k => { const C = $$('#cust [data-cp]'); let i = C.findIndex(c => c.classList.contains('on')); i = (i + k + C.length) % C.length; C[i].click(); };
+    if ($('#cuPrev')) { $('#cuPrev').onclick = () => mv(-1); $('#cuNext').onclick = () => mv(1); }
+    $$('#cust [data-cp]').forEach(c => c.onclick = () => { Q.pk = c.dataset.cp; $$('#cust .cc').forEach(x => x.classList.toggle('on', x === c)); renderQuote(); if ($('#cust .cqr')) $('#cust .cqr').innerHTML = qrSvg(quoteLink()) + '<span>صوّر الكود وخد العرض على موبايلك</span>'; });
+    try { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); } catch (e) { }
+  }
+  function closeCust() { $('#cust').hidden = true; document.body.style.overflow = ''; if (!$('#t-meet').hidden) renderMeet(); try { document.fullscreenElement && document.exitFullscreen(); } catch (e) { } }
+
+  /* ---------- hall sheets ---------- */
+  let HLS = 'isis';
+  function renderHalls() {
+    const L = [['akhenaten', 'أخناتون'], ['isis', 'إيزيس'], ['lotus', 'اللوتس'], ['mawadda', 'المودة والرحمة']];
+    $('#hlSel').innerHTML = L.map(([h, n]) => `<button data-d="${h}" class="${h === HLS ? 'on' : ''}">${n}</button>`).join('');
+    $$('#hlSel button').forEach(b => b.onclick = () => { HLS = b.dataset.d; renderHalls(); });
+    const h = HLS, D = depositOf(h), exh = id => { const x = K.addons.find(o => o.s === id && norm(o.n) === norm('ساعة إضافية')); return x ? ar(x.p) : '—'; };
+    if (h === 'mawadda') {
+      const k = K.katb.mawadda, l = K.katb.lotus;
+      $('#hlOut').innerHTML = `<div class="hs"><div class="card"><h3>قاعة المودة والرحمة – عقد القران</h3><ul><li>السعة: ${AD(k.min || 100)} – ${AD(k.max)} فرد</li><li>الباكدج: ${money(k.price)} لـ ${AD(k.n)} فرد، والفرد الإضافي ${money(k.extra)}</li><li>مدة الحفل: ${esc(k.dur)}</li><li>المواعيد: ${(k.slots || []).map(esc).join(' | ')}</li><li>المقدم ${money(D.dep)} | التأمين ${money(D.ins)}</li></ul></div><div class="card"><h3>نقط تقولها للعميل</h3><ol class="tp"><li>قاعة مخصصة لعقد القران، فالأجواء كلها مجهزة للمناسبة دي.</li><li>الباكدج شامل: ${(k.c && k.c[0] ? k.c[0].o.filter(o => o[0] === 'i').map(o => o[1]).slice(0, 6).map(ar).join('، ') : '')}.</li><li>لو العدد أكبر من ${AD(k.max)} فرد: كتب الكتاب في اللوتس لحد ${AD(katbMax('lotus'))} فرد بـ ${money(l.price)} لـ ${AD(l.n)} فرد.</li><li>مدة الحفل ${esc(k.dur)}، فالتنظيم سريع ومريح للأهل.</li></ol></div></div>`;
+      return;
+    }
+    const H = K.halls[h], d = K.desc[h] || {}, inc = (H.inc || []).flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1]));
+    const nb = { akhenaten: 'isis', isis: h === 'isis' ? 'lotus' : 'akhenaten', lotus: 'isis' }[h], N = K.halls[nb];
+    const low = (X, n, dd) => Math.min(...X.menus.map(m => estTotal(X, m, n, dd)));
+    const pts = [d.desc, `سعتها من ${AD(H.min)} لـ ${AD(H.max)} فرد، والباكدج محسوب على ${AD(pkN(H, 'wd'))} فرد${H.pk.type === 'wk' ? ` في منتصف الأسبوع و${AD(pkN(H, 'we'))} في نهايته` : ''}.`, `الباكدج مش أكل بس: ${inc.slice(0, 7).map(ar).join('، ')}.`, H.menus.some(m => /^ob/.test(m.id)) ? 'فيها اختيار أوبن بوفيه بركن كارفن غير الست منيو.' : 'المنيوهات هاي تي وست منيو، ومناسبة للأعداد الأصغر.', d.kosha ? 'الكوشة: ' + d.kosha + '.' : ''].filter(Boolean);
+    $('#hlOut').innerHTML = `<div class="hs"><div class="card"><h3>${HN[h]} – البيانات</h3><table class="q"><tr><td>السعة</td><td>${AD(H.min)} – ${AD(H.max)} فرد</td></tr><tr><td>الباكدج محسوب على</td><td>${H.pk.type === 'wk' ? `${AD(H.pk.wd.n)} فرد منتصف الأسبوع / ${AD(H.pk.we.n)} نهاية الأسبوع` : `${AD(H.pk.n)} فرد`}</td></tr><tr><td>يبدأ من</td><td><b>${money(H.pk.type === 'wk' ? H.menus[0].wd : H.menus[0].price)}</b></td></tr><tr><td>نهاية الأسبوع</td><td>${H.pk.type === 'wk' ? 'باكدج مستقل' : '+ ' + money(H.pk.fee)}</td></tr><tr><td>المنيوهات</td><td>${H.menus.map(m => ar(m.name)).join('، ')}</td></tr><tr><td>المقدم / التأمين</td><td>${money(D.dep)} / ${money(D.ins)}</td></tr><tr><td>الساعة الإضافية</td><td>${exh(h)}</td></tr><tr><td>الفرد الإضافي</td><td>سعر الوجبة الإضافية + ${money(setupFee(H))} تجهيزات</td></tr></table></div>
+<div class="card"><h3>أهم النقط تقولها للعميل</h3><ol class="tp">${pts.map(x => `<li>${ar(x)}</li>`).join('')}</ol></div>
+<div class="card"><h3>كل اللي بيشمله الباكدج</h3><ul>${inc.map(x => `<li>${ar(x)}</li>`).join('')}</ul></div>
+<div class="card"><h3>مقارنة سريعة مع ${HN[nb]}</h3><table class="q"><tr><th></th><th>${HN[h]}</th><th>${HN[nb]}</th></tr><tr><td>السعة</td><td>${AD(H.min)} – ${AD(H.max)}</td><td>${AD(N.min)} – ${AD(N.max)}</td></tr><tr><td>يبدأ من</td><td>${money(H.pk.type === 'wk' ? H.menus[0].wd : H.menus[0].price)}</td><td>${money(N.pk.type === 'wk' ? N.menus[0].wd : N.menus[0].price)}</td></tr>${[150, 200, 250, 300].filter(n => fitWed(h, n) && fitWed(nb, n)).map(n => `<tr><td>لعدد ${AD(n)} فرد</td><td>${money(low(H, n, 'wd'))}</td><td>${money(low(N, n, 'wd'))}</td></tr>`).join('')}</table><p class="ctx">الأرقام لأقل منيو في منتصف الأسبوع.</p></div></div>`;
+  }
+
+  /* ---------- website leads ---------- */
+  let LEADS = null, LF = 'all';
+  $('#lQ').addEventListener('input', () => drawLeads());
+  $('#lRef').onclick = () => { LEADS = null; renderLeads(); };
+  async function renderLeads() {
+    seg('#lF', LF, d => { LF = d; drawLeads(); });
+    if (!LEADS) { $('#lOut').innerHTML = '<div class="empty">جاري التحميل…</div>'; const j = await api('staff_leads'); LEADS = j && j.rows ? j.rows : null; }
+    drawLeads();
+  }
+  function drawLeads() {
+    if (!LEADS) { $('#lOut').innerHTML = '<div class="tip">مش قادر أوصل لسجل الدار دلوقتي. اتأكد إن الإنترنت شغال وإن كود جوجل شيت الجديد اتنشر.</div>'; return; }
+    const q = norm($('#lQ').value).trim();
+    const L = LEADS.filter(x => (LF === 'all' || (LF === 'free' ? !x.owner : x.owner === ME.name)) && (!q || norm([x.name, x.phone, x.ref, x.hall, x.event].join(' ')).includes(q)));
+    const free = LEADS.filter(x => !x.owner).length; const bd = $('#leadsBadge'); if (bd) { bd.hidden = !free; bd.textContent = AD(free); }
+    $('#lOut').innerHTML = L.length ? `<table class="q"><tr><th>آخر تحديث</th><th>العميل</th><th>الحفلة</th><th>آخر خطوة</th><th style="text-align:left">عرض الموقع</th><th>المسؤول</th><th></th></tr>${L.slice(0, 120).map(x => `<tr><td><small>${x.last ? dateTxt(new Date(x.last)) : ''}</small></td><td><b>${esc(x.name || '—')}</b><br><small dir="ltr">${esc(x.phone || '')}</small>${x.ref ? `<br><small class="ctx" dir="ltr">${esc(x.ref)}</small>` : ''}</td><td><small>${esc([x.event, x.hall, x.count ? AD(x.count) + ' فرد' : '', x.pkg, x.date].filter(Boolean).join(' | '))}</small></td><td><span class="pill">${esc(x.cls || x.stage || '')}</span>${x.src ? `<br><small class="ctx">${esc(x.src)}</small>` : ''}</td><td class="n">${x.total ? money(x.total) : '—'}</td><td>${x.owner ? `<span class="pill ${x.owner === ME.name ? 'g' : 'b'}">${esc(x.owner)}</span>` : '<span class="pill r">مش مستلَم</span>'}</td><td style="white-space:nowrap">${!x.owner ? `<button class="btn pri" data-claim="${esc(x.id)}">استلمه</button> ` : ''}<button class="btn" data-lopen="${esc(x.id)}">افتح كعرض</button> ${x.phone ? `<button class="btn wa" data-lwa="${esc(x.id)}">واتساب</button>` : ''}</td></tr>`).join('')}</table>` : '<div class="empty">مفيش عملاء بالفلتر ده.</div>';
+    $$('#lOut [data-claim]').forEach(b => b.onclick = async () => { b.disabled = true; const j = await api('staff_claim', { id: b.dataset.claim }); if (j && j.ok) { toast('اتسجل العميل باسمك ✓'); LEADS.find(x => x.id === b.dataset.claim).owner = ME.name; } else toast(j && j.owner ? 'العميل ده مستلَم مع ' + j.owner : 'معرفتش أسجّله، جرّب تاني'); drawLeads(); });
+    $$('#lOut [data-lopen]').forEach(b => b.onclick = () => openLead(LEADS.find(x => x.id === b.dataset.lopen)));
+    $$('#lOut [data-lwa]').forEach(b => b.onclick = () => { const x = LEADS.find(e => e.id === b.dataset.lwa); const ph = Q.phone; Q.phone = x.phone; const l = waLink(`أهلاً${x.name ? ' أ. ' + x.name.split(' ')[0] : ''} 🌷\nمعاك ${ME.name} من قسم الحفلات بدار المراسم لضباط الشرطة.\nشكراً لاهتمام حضرتك${x.hall ? ' بـ' + x.hall : ''}${x.count ? ' لعدد ' + AD(x.count) + ' فرد' : ''}، وحابب أساعدك في كل التفاصيل وأحسب لك العرض النهائي.\nإمتى يناسبك نتكلم أو تشرّفنا تعاين القاعة؟`); Q.phone = ph; window.open(l, '_blank'); });
+  }
+  function openLead(x) {
+    if (!x) return;
+    resetQuote();
+    const ev = Object.keys(EVNAME).find(k => EVNAME[k] === x.event || (x.event || '').includes(EVNAME[k].replace('حفل ', ''))) || 'wedding';
+    const hall = Object.keys(HN).find(k => HN[k] === x.hall || (x.hall || '').includes(HN[k].replace('قاعة ', ''))) || null;
+    Object.assign(Q, { ev, n: +x.count || 200, hall, name: x.name || '', phone: x.phone || '', ref: x.ref || '', src: 'المساعد الذكي على الموقع', notes: [x.job ? 'الوظيفة: ' + x.job : '', x.date ? 'التاريخ المطلوب: ' + x.date : '', x.pkg ? 'الباكدج من الموقع: ' + x.pkg : '', x.total ? 'إجمالي الموقع: ' + fmt(x.total) + ' ج' : ''].filter(Boolean).join(' – ') });
+    const m = (x.pkg || '').match(/(ست منيو|أوبن بوفيه|هاي تي)\s*\(?(\d)?/); if (m && hall && K.halls[hall]) { const id = (m[1] === 'ست منيو' ? 'sm' : m[1] === 'أوبن بوفيه' ? 'ob' : 'ht') + (m[2] || ''); if (K.halls[hall].menus.some(mm => mm.id === id)) Q.pk = id; }
+    fillForm(); goTab('quote'); toast('اتفتح العميل كعرض سعر – راجع البيانات');
+  }
+
+  /* ---------- manager board ---------- */
+  let MP = 'month', MROWS = null;
+  $('#mgRef').onclick = () => { MROWS = null; renderMgr(); };
+  async function renderMgr() {
+    if (!ME.mgr) return;
+    seg('#mgP', MP, d => { MP = d; renderMgr(); });
+    if (!MROWS) { $('#mgOut').innerHTML = '<div class="empty">جاري التحميل…</div>'; const j = await api('staff_list', { all: true }); MROWS = j && j.rows ? j.rows : null; }
+    if (!MROWS) { $('#mgOut').innerHTML = '<div class="tip">لوحة المدير محتاجة الاتصال بسجل الدار (جوجل شيت). اتأكد إن كود الشيت الجديد اتنشر.</div>'; return; }
+    const now = new Date(), m0 = new Date(now.getFullYear(), now.getMonth(), 1).getTime(), p0 = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+    const R = MROWS.filter(x => MP === 'all' || (MP === 'month' ? x.at >= m0 : x.at >= p0 && x.at < m0));
+    const by = {}; R.forEach(x => { const e = by[x.emp] = by[x.emp] || { q: 0, v: 0, dep: 0, b: 0, lost: 0, bv: 0 }; e.q++; e.v += x.total; if (x.status === 'اتعاين') e.v2 = (e.v2 || 0) + 1; if (x.status === 'دفع المقدم') e.dep++; if (x.status === 'اتحجز') { e.b++; e.bv += x.total; } if (x.status === 'خسرناه') e.lost++; });
+    const cnt = f => { const o = {}; R.forEach(x => { const k = f(x); if (k) o[k] = (o[k] || 0) + 1; }); return Object.entries(o).sort((a, b) => b[1] - a[1]); };
+    const tot = R.length, booked = R.filter(x => x.status === 'اتحجز'), bv = booked.reduce((a, x) => a + x.total, 0);
+    const bars = (L, max) => L.slice(0, 6).map(([k, v]) => `<div style="margin:6px 0"><div class="r" style="display:flex;justify-content:space-between"><span>${esc(k)}</span><b>${AD(v)}</b></div><div class="bar"><i style="width:${Math.round(v / (max || 1) * 100)}%"></i></div></div>`).join('') || '<p class="ctx">مفيش بيانات.</p>';
+    const halls = cnt(x => x.hall), pks = cnt(x => x.pk), lost = cnt(x => x.status === 'خسرناه' ? (x.reason || 'بدون سبب') : '');
+    $('#mgOut').innerHTML = `<div class="stats"><div class="stat"><small>عروض أسعار</small><b>${AD(tot)}</b></div><div class="stat"><small>حجوزات مؤكدة</small><b>${AD(booked.length)}</b></div><div class="stat"><small>نسبة التحويل</small><b>${tot ? AD(Math.round(booked.length / tot * 100)) + '٪' : '—'}</b></div><div class="stat"><small>قيمة الحجوزات</small><b>${money(bv)}</b></div></div>
+<div class="card"><h3>أداء الفريق</h3><table class="q"><tr><th>الموظف</th><th>العروض</th><th>دفع المقدم</th><th>اتحجز</th><th>خسرناه</th><th>التحويل</th><th style="text-align:left">قيمة الحجوزات</th></tr>${Object.entries(by).sort((a, b) => b[1].b - a[1].b || b[1].q - a[1].q).map(([n, e]) => `<tr><td><b>${esc(n)}</b></td><td>${AD(e.q)}</td><td>${AD(e.dep)}</td><td>${AD(e.b)}</td><td>${AD(e.lost)}</td><td>${AD(Math.round(e.b / e.q * 100))}٪</td><td class="n">${money(e.bv)}</td></tr>`).join('') || '<tr><td colspan="7" class="ctx">مفيش عروض في الفترة دي.</td></tr>'}</table></div>
+<div class="hs"><div class="card"><h3>أكتر القاعات طلباً</h3>${bars(halls, halls[0] && halls[0][1])}</div><div class="card"><h3>أكتر الباكدجات</h3>${bars(pks, pks[0] && pks[0][1])}</div><div class="card"><h3>أسباب خسارة العملاء</h3>${bars(lost, lost[0] && lost[0][1])}</div><div class="card"><h3>آخر العروض</h3><table class="q">${R.slice(-10).reverse().map(x => `<tr><td><small>${esc(x.emp)}</small></td><td><small>${esc(x.name || '—')} | ${esc(x.hall)}</small></td><td><span class="pill ${x.status === 'اتحجز' ? 'g' : x.status === 'خسرناه' ? 'r' : ''}">${esc(x.status || '')}</span></td><td class="n">${money(x.total)}</td></tr>`).join('')}</table></div></div>`;
+  }
+
+  /* ---------- training ---------- */
+  let TR = 'facts', TQ = null, TS = { ok: 0, all: 0 };
+  const shuffle = a => a.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(x => x[1]);
+  function factQ() {
+    const hs = ['akhenaten', 'isis', 'lotus'], h = hs[Math.floor(Math.random() * 3)], H = K.halls[h], D = depositOf(h);
+    const opts = (good, pool) => shuffle([good, ...shuffle(pool.filter(x => x !== good)).slice(0, 3)]);
+    const G = [
+      () => ({ q: `باكدج ${HN[h]} محسوب على كام فرد (منتصف الأسبوع)؟`, a: AD(pkN(H, 'wd')) + ' فرد', o: opts(AD(pkN(H, 'wd')) + ' فرد', ['١٠٠ فرد', '١٥٠ فرد', '٢٠٠ فرد', '٢٥٠ فرد', '٣٠٠ فرد']) }),
+      () => ({ q: `مقدم الحجز في ${HN[h]} كام؟`, a: money(D.dep), o: opts(money(D.dep), [money(20000), money(30000), money(50000), money(25000), money(40000)]) }),
+      () => ({ q: `أقصى سعة لـ${HN[h]}؟`, a: AD(H.max) + ' فرد', o: opts(AD(H.max) + ' فرد', ['٢٠٠ فرد', '٣٠٠ فرد', '٦٠٠ فرد', '٤٠٠ فرد', '٥٠٠ فرد']) }),
+      () => ({ q: 'العدد النهائي للمدعوين بيتأكد كتابةً قبل الحفلة بكام يوم على الأقل؟', a: '٧ أيام', o: opts('٧ أيام', ['٣ أيام', '١٠ أيام', '١٤ يوم', '٤٨ ساعة']) }),
+      () => ({ q: 'الأسعار بتتثبّت إمتى؟', a: 'لو الباكدج اتسدد كامل خلال ٣٠ يوم من المقدم', o: opts('لو الباكدج اتسدد كامل خلال ٣٠ يوم من المقدم', ['بمجرد دفع المقدم', 'بعد المعاينة', 'قبل الحفلة بشهر']) }),
+      () => ({ q: 'غرامة التأخير في السداد كام؟', a: '٥٠ ج عن كل يوم', o: opts('٥٠ ج عن كل يوم', ['١٠٠ ج عن كل يوم', '٥٪ من القيمة', 'مفيش غرامة']) }),
+      () => ({ q: 'المقدم بيرجع إمتى؟', a: 'لو القاعة اتحجزت في نفس التاريخ لعميل تاني', o: opts('لو القاعة اتحجزت في نفس التاريخ لعميل تاني', ['دايماً بيرجع', 'لو الإلغاء قبل شهر', 'نص المقدم بس']) }),
+      () => ({ q: 'لو الحفلة بعد أقل من شهر من التعاقد، السداد بيكون إزاي؟', a: 'كامل القيمة والتأمين دفعة واحدة', o: opts('كامل القيمة والتأمين دفعة واحدة', ['المقدم بس', '٥٠٪ والباقي يوم الحفلة', 'زي أي حجز عادي']) }),
+      () => { const n = [150, 200, 250, 300][Math.floor(Math.random() * 4)], f = hs.filter(x => fitWed(x, n)).map(x => HN[x]).join(' و'); return { q: `لعدد ${AD(n)} فرد، أنهي قاعات مناسبة؟`, a: f, o: opts(f, ['قاعة اللوتس', 'قاعة إيزيس', 'قاعة أخناتون', 'قاعة اللوتس وقاعة إيزيس', 'قاعة إيزيس وقاعة أخناتون', 'كل القاعات']) }; },
+      () => ({ q: `رسوم نهاية الأسبوع في ${HN.isis}؟`, a: '+ ' + money(K.halls.isis.pk.fee), o: opts('+ ' + money(K.halls.isis.pk.fee), ['+ ' + money(2500), '+ ' + money(10000), 'مفيش رسوم', 'باكدج مستقل']) })
+    ];
+    return G[Math.floor(Math.random() * G.length)]();
+  }
+  function objQ() {
+    const k = OBJ[Math.floor(Math.random() * OBJ.length)], good = objScript(k[0]).S.map(p => p.replace(/<[^>]+>/g, '')).slice(0, 2).join(' ');
+    const bad = ['ده السعر ومفيش غيره، لو مش مناسب براحتك.', 'ماشي، هعملك خصم صغير بس متقولش لحد.', 'طيب لما تقرر ابقى كلمنا.', 'كل الأماكن غالية دلوقتي، مش إحنا بس.', 'أنا مليش دعوة بالموضوع ده، كلم الإدارة.'];
+    return { q: `العميل قال: «${k[1]}». إيه أحسن رد؟`, a: good, o: shuffle([good, ...shuffle(bad).slice(0, 2)]) };
+  }
+  function renderTrain() {
+    seg('#trSel', TR, d => { TR = d; TQ = null; renderTrain(); });
+    if (!TQ) TQ = TR === 'facts' ? factQ() : objQ();
+    const pct = TS.all ? Math.round(TS.ok / TS.all * 100) : 0;
+    $('#trOut').innerHTML = `<div class="card"><div class="score"><span>إجابات صح: ${AD(TS.ok)} من ${AD(TS.all)}</span><span>${AD(pct)}٪</span></div><div class="qz">${esc(TQ.q)}</div><div class="ans">${TQ.o.map((x, i) => `<button data-a="${i}">${esc(x)}</button>`).join('')}</div><div id="trFb"></div></div>`;
+    $$('#trOut [data-a]').forEach(b => b.onclick = () => {
+      if (TQ.done) return; TQ.done = true; TS.all++;
+      const ok = TQ.o[+b.dataset.a] === TQ.a; if (ok) TS.ok++;
+      $$('#trOut [data-a]').forEach(x => { if (TQ.o[+x.dataset.a] === TQ.a) x.classList.add('ok'); });
+      if (!ok) b.classList.add('no');
+      const sc = $('#trOut .score'); if (sc) sc.innerHTML = `<span>إجابات صح: ${AD(TS.ok)} من ${AD(TS.all)}</span><span>${AD(Math.round(TS.ok / TS.all * 100))}٪</span>`;
+      $('#trFb').innerHTML = `<div class="tip ${ok ? 'g' : ''}" style="margin-top:12px">${ok ? 'برافو ✓' : 'الإجابة الصح متعلّمة بالأخضر.'}</div><div class="btns"><button class="btn pri" id="trNext">السؤال اللي بعده</button></div>`;
+      $('#trNext').onclick = () => { TQ = null; renderTrain(); };
+    });
+  }
+
+  /* =========================================================
+     v4: walk-in client interview — explain first, prices later
+     ========================================================= */
+  const QURL = window.DMS_QURL || 'https://darelmarasem.github.io/events-menu/q.html';
+  const b64u = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const isoD = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const isW = () => Q.ev === 'wedding' || Q.ev === 'engagement';
+  // link to the client's own quote page (all data stays in the link, nothing is stored online)
+  function quoteLink(R) {
+    R = R || computeQuote(); if (!R || !R.pk) return '';
+    if (!Q.no) Q.no = newNo();
+    const o = { v: 1, no: Q.no, e: Q.ev, h: Q.hall, n: Q.n, d: Q.day, p: Q.pk, t: R.total, at: isoD(new Date()), s: ME ? ME.id : '' };
+    if (Q.date) o.dt = isoD(Q.date);
+    if (Q.name) o.nm = Q.name;
+    const a = Object.entries(Q.adds).map(([i, s]) => [+i, s.qty || 1, s.opt || 0]); if (a.length) o.a = a;
+    return QURL + '#' + b64u(JSON.stringify(o));
+  }
+  function qrSvg(text) { if (!text || typeof qrcode !== 'function') return ''; try { const q = qrcode(0, 'L'); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); } catch (e) { return ''; } }
+  function qrDocBox() { const u = quoteLink(); if (!u) return ''; return `<div class="qrbox">${qrSvg(u)}<b>عرضك على موبايلك</b><small>صوّر الكود بكاميرا الموبايل</small></div>`; }
+
+  const MSTEPS = [['welcome', 'الاستقبال'], ['needs', 'فهم الاحتياج'], ['halls', 'شرح القاعات'], ['pkg', 'الباكدج والمنيو'], ['view', 'المعاينة'], ['price', 'الأسعار'], ['offer', 'العرض الرسمي'], ['close', 'القفل والمتابعة']];
+  const MEET = { step: 0, viewed: false, viewAt: '', who: '', active: false };
+  const WHO = ['العريس', 'العروسة', 'العريس والعروسة', 'الأهل', 'صاحب المناسبة'];
+  const PRIOS = ['الأكل والمنيو', 'الديكور والكوشة', 'التصوير', 'التوفير والسعر', 'الفخامة والمساحة'];
+  const HSTYLE = { akhenaten: 'ملكي فخم – أكبر قاعات الدار', isis: 'فرعوني وعصري مع بعض', lotus: 'خاص وهادي – أجواء حديقة' };
+  function newMeet() { resetQuote(); Object.assign(MEET, { step: 0, viewed: false, viewAt: '', who: '', active: true }); Q.src = 'زيارة مباشرة للدار'; fillForm(); }
+  const incOf = h => K.halls[h] ? (K.halls[h].inc || []).flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1])) : [];
+  const incHas = (h, re) => incOf(h).filter(x => re.test(x));
+  const mType = m => /^ob/.test(m.id) ? 'أوبن بوفيه' : /^sm/.test(m.id) ? 'ست منيو على الترابيزة' : 'هاي تي';
+  const fitOk = () => hallsFor(Q.ev, Q.n).filter(h => h.ok);
+  const sayBox = (L, title) => `<div class="card"><h3>${title || 'قول للعميل'}</h3><div class="say">${L.map(p => `<p>${p}</p>`).join('')}</div></div>`;
+  function meetCtx() { return [Q.name, EVNAME[Q.ev], Q.n ? AD(Q.n) + ' فرد' : '', HN[Q.hall], (computeQuote() || {}).pk ? ar(computeQuote().pk.name) : ''].filter(Boolean).map(esc).join(' | '); }
+
+  function goMeet(i) { MEET.step = Math.max(0, Math.min(MSTEPS.length - 1, i)); renderMeet(); window.scrollTo(0, 0); }
+  function renderMeet() {
+    if (!MEET.active) newMeet();
+    const st = MSTEPS[MEET.step][0];
+    $('#mtSteps').innerHTML = MSTEPS.map((s, i) => `<button type="button" data-i="${i}" class="${i < MEET.step ? 'done' : i === MEET.step ? 'cur' : ''}"><span>${i < MEET.step ? '✓' : AD(i + 1)}</span>${s[1]}</button>`).join('');
+    $$('#mtSteps button').forEach(b => b.onclick = () => goMeet(+b.dataset.i));
+    $('#mtOut').innerHTML = MV[st]();
+    (MB[st] || (() => { }))();
+    meetBar();
+  }
+  function meetBar() {
+    const last = MEET.step === MSTEPS.length - 1, R = computeQuote(), priced = MEET.step >= 5 && R && R.pk;
+    $('#mtBar').innerHTML = `<div class="t">${meetCtx() || 'مقابلة عميل جديدة'}${priced ? `<b>${money(R.total)}</b>` : ''}</div><div class="sp">${MEET.step ? '<button class="btn" id="mbPrev">→ السابق</button>' : ''}<button class="btn" id="mbShow" ${Q.hall || MEET.step === 2 ? '' : 'disabled'}>لف الشاشة للعميل</button>${last ? '<button class="btn pri" id="mbNew">مقابلة جديدة</button>' : `<button class="btn pri" id="mbNext">التالي: ${MSTEPS[MEET.step + 1][1]} ←</button>`}</div>`;
+    if ($('#mbPrev')) $('#mbPrev').onclick = () => goMeet(MEET.step - 1);
+    if ($('#mbNext')) $('#mbNext').onclick = () => goMeet(MEET.step + 1);
+    if ($('#mbNew')) $('#mbNew').onclick = () => { newMeet(); goMeet(0); };
+    $('#mbShow').onclick = () => { if (MEET.step >= 5 && Q.hall) openCust(); else openShow(MEET.step <= 2 ? 'halls' : 'pkg'); };
+  }
+
+  /* ---------- step views ---------- */
+  const MV = {
+    welcome: () => `<div class="card" id="walkMeet" hidden></div><div class="grid2">${sayBox([`أهلاً وسهلاً بحضرتك في دار المراسم لضباط الشرطة، نوّرتنا.`, `أنا ${esc(ME.name)} من قسم الحفلات. اتفضل استريح… تحب تشرب إيه؟`, 'أتشرف باسم حضرتك؟'])}
+<div class="card"><h3>بيانات أولية (اختيارية)</h3><div class="f"><label>اسم العميل</label><input id="mName" value="${esc(Q.name)}" placeholder="مثلاً: أ. أحمد"></div>
+<div class="f" style="margin-top:12px"><label>مين اللي جاي</label><div class="seg" id="mWho">${WHO.map(x => `<button data-d="${x}" class="${MEET.who === x ? 'on' : ''}">${x}</button>`).join('')}</div></div>
+<div class="f" style="margin-top:12px"><label>عرف الدار منين</label><select id="mSrc">${$('#qSrc').innerHTML}</select></div><p class="ctx">الموبايل بناخده في الآخر مع العرض الرسمي.</p></div></div>
+<div class="tip"><b>ترتيب المقابلة:</b> افهم احتياجه، واشرح القاعة والباكدج، وخده يعاين، وبعد ما يقتنع اعرض الأسعار. العميل اللي فهم المكان وحبّه مش هيحكم على الرقم لوحده.</div>`,
+
+    needs: () => `<div class="grid2">${sayBox(['المناسبة إيه بإذن الله؟ ألف مبروك مقدماً.', 'عدد المعازيم المتوقع كام تقريباً؟ العدد هو اللي بيحدد القاعة المناسبة.', 'حددتوا التاريخ؟ ولو لسه: منتصف الأسبوع ولا نهايته؟', 'إيه أكتر حاجة تفرق معاك في اليوم ده: الأكل، الديكور والكوشة، التصوير، ولا المساحة والفخامة؟', 'وفي ذهن حضرتك ميزانية تقريبية؟ عشان أرشّح لك الأنسب من الأول.'], 'اسأل العميل')}
+<div class="card"><h3>احتياج العميل</h3>
+<div class="f"><label>المناسبة</label><div class="seg" id="mEv">${Object.entries(EVNAME).map(([k, v]) => `<button data-d="${k}" class="${Q.ev === k ? 'on' : ''}">${v}</button>`).join('')}</div></div>
+<div class="row" style="margin-top:12px"><div class="f"><label>عدد المعازيم</label><input id="mN" type="number" min="1" max="1000" value="${Q.n}"></div><div class="f"><label>التاريخ (لو محدد)</label><input id="mDate" type="date" value="${Q.date ? isoD(Q.date) : ''}"></div></div>
+<div class="f" style="margin-top:12px"><label>اليوم</label><div class="seg" id="mDay"><button data-d="wd" class="${Q.day === 'wd' ? 'on' : ''}">منتصف الأسبوع</button><button data-d="we" class="${Q.day === 'we' ? 'on' : ''}">نهاية الأسبوع / عطلة</button></div></div>
+<div class="f" style="margin-top:12px"><label>أهم حاجة عنده</label><div class="seg" id="mPrio">${PRIOS.map(x => `<button data-d="${x}" class="${Q.prio === x ? 'on' : ''}">${x}</button>`).join('')}</div></div>
+<div class="row" style="margin-top:12px"><div class="f"><label>الميزانية التقريبية (لو قالها)</label><input id="mBud" type="number" value="${esc(Q.bud)}" placeholder="مثلاً 200000"></div><div class="f"><label>ملاحظات (للموظف)</label><input id="mNotes" value="${esc(Q.notes)}" placeholder="مثلاً: العروسة عايزة كوشة اسبيشيال"></div></div>
+<div id="mFit" style="margin-top:12px"></div><div class="btns"><button class="btn" id="mWait">التاريخ محجوز؟ سجّله على قائمة الانتظار</button></div></div></div>
+<div class="tip">لو قال ميزانية، متقولش أسعار دلوقتي. خليها في دماغك واستخدمها في الترشيح.</div>`,
+
+    halls: () => {
+      const ok = fitOk(); if (Q.prio === 'الفخامة والمساحة' && isW()) ok.sort((a, b) => K.halls[b.id].max - K.halls[a.id].max);
+      if (!ok.length) return `<div class="card"><div class="tip">العدد ده (${AD(Q.n)} فرد) مش مناسب للقاعات المتاحة للمناسبة دي. ارجع لـ «فهم الاحتياج» واتأكد من العدد، أو نسّق مع رئيس القسم.</div></div>`;
+      if (!Q.hall && ok.length === 1) Q.hall = ok[0].id;
+      const two = isW() && ok.length > 1;
+      const intro = two ? [`لعدد ${AD(Q.n)} فرد عندنا ${AD(ok.length)} قاعات مناسبين، خليني أوريك الفرق بينهم عشان تختار اللي على ذوقك.`] : [`لعدد ${AD(Q.n)} فرد أنسب قاعة عندنا هي ${HN[ok[0].id] || ok[0].name}، وخليني أحكيلك عنها.`];
+      if (two && Q.prio === 'الفخامة والمساحة') intro.push('وبما إن المساحة والفخامة يهموك، هبدأ بالقاعة الأكبر.');
+      if (two && Q.prio === 'التوفير والسعر') intro.push('وبما إن التوفير يهمك، القاعة الأصغر بتبقى الأوفر لنفس العدد.');
+      const cards = ok.map(h => {
+        const id = h.id, d = K.desc[id] || {}, H = K.halls[id];
+        const pts = isW() && H ? [d.desc, K.p2 && K.p2[id], `سعتها من ${AD(H.min)} لـ ${AD(H.max)} فرد${Q.n >= H.min && Q.n <= H.max ? `، وعددك ${AD(Q.n)} فرد مريح فيها` : ''}.`, d.kosha ? 'الكوشة: ' + d.kosha + '.' : '', H.menus.some(m => /^ob/.test(m.id)) ? 'فيها اختيار ست منيو على الترابيزة أو أوبن بوفيه بركن كارفن.' : 'المنيوهات ست منيو على الترابيزة.', incHas(id, /LED|ليزر|كرين|سويت|كات ووك/).length ? 'من غير ما تدفع زيادة: ' + incHas(id, /LED|ليزر|كرين|سويت|كات ووك/).map(ar).join('، ') + '.' : ''].filter(Boolean)
+          : Q.ev === 'katb' && K.katb[id] ? [`${h.cap}.`, `مدة الحفل ${K.katb[id].dur}.`, (K.katb[id].slots || []).length ? 'المواعيد: ' + K.katb[id].slots.join(' | ') : ''].filter(Boolean) : [h.cap];
+        const img = ['akhenaten', 'isis', 'lotus'].includes(id) ? `<img src="../bot/img/${id}.jpg" alt="">` : '';
+        return `<div class="card mh${Q.hall === id ? ' on' : ''}">${img}<div><h3>${HN[id] || h.name}${Q.hall === id ? ' <span class="pill g">اختيار العميل</span>' : ''}</h3><ol class="tp">${pts.map(x => `<li>${ar(x)}</li>`).join('')}</ol><div class="btns"><button class="btn${Q.hall === id ? '' : ' pri'}" data-mh="${id}">${Q.hall === id ? '✓ العميل اختارها' : 'العميل اختار القاعة دي'}</button></div></div></div>`;
+      }).join('');
+      let cmp = '';
+      if (two) {
+        const A = ok.map(h => h.id), row = (t, f) => `<tr><td><b>${t}</b></td>${A.map(id => `<td>${f(id)}</td>`).join('')}</tr>`;
+        cmp = `<div class="card"><h3>الفرق بينهم (من غير أسعار)</h3><table class="q cmp"><tr><th></th>${A.map(id => `<th>${HN[id]}</th>`).join('')}</tr>${row('السعة', id => `${AD(K.halls[id].min)} – ${AD(K.halls[id].max)} فرد`)}${row('الطابع', id => HSTYLE[id] || '')}${row('الباكدج محسوب على', id => `${AD(pkN(K.halls[id], Q.day))} فرد`)}${row('الأكل', id => K.halls[id].menus.some(m => /^ob/.test(m.id)) ? 'ست منيو أو أوبن بوفيه' : 'ست منيو')}${row('عدد المنيوهات', id => AD(K.halls[id].menus.length))}${row('الشاشات', id => incHas(id, /LED/).map(ar).join('') || '—')}</table></div>`;
+      }
+      return `<div class="grid2">${sayBox(intro)}${cmp || '<div></div>'}</div>${cards}`;
+    },
+
+    pkg: () => {
+      if (!Q.hall) return `<div class="card"><div class="tip">اختار القاعة الأول من «شرح القاعات».</div></div>`;
+      if (isW()) {
+        const H = K.halls[Q.hall], rich = H.menus.slice().sort((a, b) => itemCount(b) - itemCount(a))[0];
+        const say = [`الباكدج عندنا مش أكل بس يا فندم. ده شامل القاعة بتجهيزاتها، والديكور والكوشة، والإضاءة والشاشات، والدي جي، والتصوير، وكمان سويت للعروسة.`, `والأكل ليك فيه اختيارات: ${H.menus.some(m => /^ob/.test(m.id)) ? 'ست منيو على الترابيزة أو أوبن بوفيه' : 'ست منيو على الترابيزة'}، وهوريك أصناف كل منيو.`];
+        if (Q.prio === 'الأكل والمنيو') say.push(`وبما إن الأكل أهم حاجة عندك: «${ar(rich.name)}» فيه ${AD(itemCount(rich))} صنف، وده أغنى منيو في القاعة.`);
+        const inc = (H.inc || []).map(s => `<div><h4>${ar(s.h)}</h4><ul>${s.o.filter(o => o[0] === 'i').map(o => `<li>${ar(o[1])}</li>`).join('')}</ul></div>`).join('');
+        const menus = H.menus.map(m => `<div class="mm${Q.pk === m.id ? ' on' : ''}"><b>${ar(m.name)}</b><small>${mType(m)} | ${AD(itemCount(m))} صنف</small><p>${secItems(m, /الرئيسي|الساخن/).slice(0, 4).map(ar).join('، ')}</p><div class="btns"><button class="btn" data-mv="${m.id}">المنيو كامل</button><button class="btn${Q.pk === m.id ? '' : ' pri'}" data-mp="${m.id}">${Q.pk === m.id ? '✓ عاجبه' : 'ده اللي عاجبه'}</button></div></div>`).join('');
+        return `<div class="grid2">${sayBox(say)}<div class="card"><h3>الباكدج شامل إيه – ${HN[Q.hall]}</h3><div class="incg">${inc}</div></div></div><div class="card"><h3>المنيوهات (من غير أسعار)</h3><div class="mms">${menus}</div></div>`;
+      }
+      const P = packagesFor(Q.ev, Q.hall, Q.n, Q.day);
+      const extra = Q.ev === 'katb' && K.katb[Q.hall] ? (K.katb[Q.hall].c || []).map(s => `<div><h4>${ar(s.h)}</h4><ul>${s.o.filter(o => o[0] === 'i').map(o => `<li>${ar(o[1])}</li>`).join('')}</ul></div>`).join('') : '';
+      return `<div class="grid2">${sayBox(['خليني أوضح لحضرتك الباكدج شامل إيه بالظبط، وبعدها نشوف الأرقام.'])}<div class="card"><h3>الاختيارات</h3>${P.map(p => `<div class="mm${Q.pk === p.id ? ' on' : ''}"><b>${ar(p.name)}</b><small>${ar(p.sub || '')}</small><div class="btns"><button class="btn${Q.pk === p.id ? '' : ' pri'}" data-mp="${p.id}">${Q.pk === p.id ? '✓ عاجبه' : 'ده اللي عاجبه'}</button></div></div>`).join('')}${extra ? `<div class="incg">${extra}</div>` : ''}</div></div>`;
+    },
+
+    view: () => {
+      if (!Q.hall) return `<div class="card"><div class="tip">اختار القاعة الأول من «شرح القاعات».</div></div>`;
+      const id = Q.hall, d = K.desc[id] || {}, w = isW();
+      const stops = [['المدخل والاستقبال', 'ده مدخل المعازيم. هنا بيبقى الاستقبال، ولو حبيتوا ممكن نضيف ويلكم بورد باسم العرسان.'], ['القاعة من جوه', `${d.desc ? ar(d.desc) + ' ' : ''}تخيّل ${AD(Q.n)} فرد هنا: الترابيزات بتتوزع حوالين الدانس فلور، والكل شايف الكوشة.`]];
+      if (w) {
+        const st = incHas(id, /استيدج|دانس|كات ووك|سيلينج/), lt = incHas(id, /ليزر|دخان|LED|شاشات/), av = incHas(id, /دي جي|تصوير|فيديو|كرين/), su = incHas(id, /سويت|جناح/);
+        stops.push(['الكوشة والاستيدج', `${d.kosha ? ar(d.kosha) + '. ' : ''}${st.length ? 'وشامل: ' + st.map(ar).join('، ') + '.' : ''}`]);
+        if (lt.length) stops.push(['الإضاءة والشاشات', lt.map(ar).join('، ') + ' – كله ضمن الباكدج.']);
+        if (av.length) stops.push(['الصوت والتصوير', av.map(ar).join('، ') + '.']);
+        stops.push(['سويت العروسة', su.length ? su.map(ar).join('، ') + '. العروسة بتجهز هنا براحتها لحد الدخلة.' : 'مكان تجهيز العروسة قبل الدخلة.']);
+      }
+      const qs = ['تتخيلوا الكوشة فين؟ وحابين الدخلة تبقى إزاي؟', 'عايزين الترابيزات قريبة من الدانس فلور ولا فيه مساحة أكبر للرقص؟', 'المعازيم أغلبهم كبار ولا شباب؟ ده بيفرق في الدي جي والتنظيم.', 'فيه حد من الأهل محتاج يشوف القاعة قبل القرار؟'];
+      return `<div class="grid2">${sayBox(['الكلام حاجة، والقاعة على الطبيعة حاجة تانية خالص.', 'تحب نتفرج عليها دلوقتي؟ مش هتاخد من وقت حضرتك أكتر من عشر دقايق.'])}
+<div class="card"><h3>حالة المعاينة</h3>${MEET.viewed ? '<p><span class="pill g">✓ العميل عاين القاعة</span></p>' : MEET.viewAt ? `<p><span class="pill b">معاينة متفق عليها: ${esc(MEET.viewAt.replace('T', ' – '))}</span></p>` : '<p class="ctx">لسه معاينش.</p>'}
+<div class="btns"><button class="btn pri" id="mVd">✓ عاين القاعة</button><button class="btn" id="mVl">يعاين في ميعاد تاني</button></div><div id="mVlBox" hidden class="row" style="margin-top:10px;align-items:flex-end"><div class="f"><label>ميعاد المعاينة</label><input id="mVat" type="datetime-local" value="${esc(MEET.viewAt)}"></div><button class="btn" id="mVsave">تسجيل الميعاد</button></div><p class="ctx">المعاينة متاحة يومياً من ١٠ صباحاً حتى ١٠ مساءً.</p></div></div>
+<div class="grid2"><div class="card"><h3>جولة المعاينة – ${HN[id] || ''}</h3><ol class="steps">${stops.map(s => `<li><b>${s[0]}</b><q>${s[1]}</q></li>`).join('')}</ol></div><div class="card"><h3>اسأله وإنتوا ماشيين</h3><ul class="tp">${qs.map(x => `<li>${x}</li>`).join('')}</ul><div class="tip">الأسئلة دي بتخلي العميل يتخيل يومه في القاعة، وده أهم من أي سعر. سجّل اللي يقوله في الملاحظات.</div></div></div>`;
+    },
+
+    price: () => {
+      if (!Q.hall) return `<div class="card"><div class="tip">اختار القاعة الأول من «شرح القاعات».</div></div>`;
+      const P = packagesFor(Q.ev, Q.hall, Q.n, Q.day).slice().sort((a, b) => a.total - b.total); if (!P.length) return '<div class="card"><div class="empty">مفيش باكدجات.</div></div>';
+      const bud = +Q.bud || 0, PP = P.filter(p => p.id !== 'none').length ? P.filter(p => p.id !== 'none') : P, inB = bud ? PP.filter(p => p.total <= bud) : PP;
+      let rec = Q.prio === 'الأكل والمنيو' && P[0].m ? (inB.length ? inB : P).slice().sort((a, b) => itemCount(b.m) - itemCount(a.m))[0] : Q.prio === 'الفخامة والمساحة' ? (inB.length ? inB : PP)[(inB.length ? inB : PP).length - 1] : bud && inB.length ? inB[inB.length - 1] : PP[0];
+      if (!Q.pk) Q.pk = rec.id;
+      const R = computeQuote(), sel = R.pk;
+      const say = [`بعد ما شفنا القاعة والباكدج، الاختيار اللي بيناسب اللي حضرتك قلته هو <b>${ar(sel.name)}</b>.`, `إجماليه <b>${money(R.total)}</b> لعدد ${AD(Q.n)} فرد، يعني حوالي <b>${money(Math.round(R.total / Q.n))}</b> للفرد، وده شامل القاعة والتجهيزات والديكور والأكل والدي جي والتصوير.`, R.dep ? `ولتثبيت التاريخ مقدم حجز ${money(R.dep)} بس، والباقي على مراحل.` : ''].filter(Boolean);
+      const alt = [];
+      if (bud && R.total > bud) {
+        alt.push(`الإجمالي أعلى من ميزانيته (${money(bud)}) بـ ${money(R.total - bud)}.`);
+        if (P[0].total <= bud && P[0].id !== sel.id) alt.push(`في نفس القاعة: ${ar(P[0].name)} بـ ${money(P[0].total)}.`);
+        if (Q.day === 'we' && isW()) { const H = K.halls[Q.hall], m = H.menus.find(x => x.id === sel.id); if (m) { const s = estTotal(H, m, Q.n, 'we') - estTotal(H, m, Q.n, 'wd'); if (s > 0) alt.push(`نفس الباكدج منتصف الأسبوع بيوفّر ${money(s)}.`); } }
+        if (isW()) fitOk().filter(h => h.id !== Q.hall).forEach(h => { const X = K.halls[h.id], lo = Math.min(...X.menus.map(m => estTotal(X, m, Q.n, Q.day))); if (lo < R.total) alt.push(`${HN[h.id]} تبدأ لنفس العدد من ${money(lo)}.`); });
+      }
+      const P2 = PRIO[Q.prio], sc = scopeFor(Q.ev, Q.hall), ids = [];
+      if (P2) P2.keys.forEach(k => K.addons.forEach((a, i) => { if (a.s === sc && norm(a.n + ' ' + a.g).includes(norm(k).trim()) && !ids.includes(i) && ids.length < 6) ids.push(i); }));
+      return `<div class="grid2">${sayBox(say)}<div class="card"><h3>الاختيارات لعدد ${AD(Q.n)} فرد – ${Q.day === 'we' ? 'نهاية الأسبوع' : 'منتصف الأسبوع'}</h3><table class="q"><tr><th>الباكدج</th><th>الأصناف</th><th style="text-align:left">الإجمالي</th><th style="text-align:left">للفرد</th><th></th></tr>${P.map(p => `<tr${p.id === sel.id ? ' class="best"' : ''}><td><b>${ar(p.name)}</b>${p.id === rec.id ? ' <span class="pill g">الأنسب ليه</span>' : ''}${bud && p.total > bud ? ' <span class="pill r">فوق الميزانية</span>' : ''}</td><td>${p.m ? AD(itemCount(p.m)) : ''}</td><td class="n">${money(p.total)}</td><td class="n">${money(Math.round(p.total / Q.n))}</td><td>${p.id === sel.id ? '✓' : `<button class="btn" data-mp="${p.id}" style="padding:3px 12px">اختار</button>`}</td></tr>`).join('')}</table>${R.lines.length > sel.lines.length ? `<p class="ctx">الإجمالي شامل الإضافات: ${money(R.total - sel.total)}.</p>` : ''}</div></div>
+${alt.length ? `<div class="card"><h3>لو الميزانية مش مكفية</h3><ul class="tp">${alt.map(x => `<li>${x}</li>`).join('')}</ul></div>` : ''}
+${ids.length ? `<div class="card prio"><h3>إضافات تناسب أولويته: ${esc(Q.prio)}</h3><div class="say"><p>${P2.line}</p></div><div class="sugs">${ids.map(i => `<button type="button" data-sg="${i}" class="${Q.adds[i] ? 'on' : ''}">${Q.adds[i] ? '✓ ' : '＋ '}${ar(K.addons[i].n)} <small>(${priceOf(K.addons[i]).label})</small></button>`).join('')}</div></div>` : ''}
+<div class="card"><h3>لو العميل اعترض</h3><div class="chips">${['price', 'discount', 'competitor', 'two'].map(k => `<button data-ob="${k}">${OBJ.find(o => o[0] === k)[1]}</button>`).join('')}</div><div id="mObOut"></div></div>`;
+    },
+
+    offer: () => {
+      const R = computeQuote(); if (!R || !R.pk) return `<div class="card"><div class="tip">اختار الباكدج الأول من «الأسعار».</div></div>`;
+      saveMeet(R);
+      return `<div class="grid2"><div>${sayBox(['أجهّز لحضرتك العرض مكتوب ورسمي باسمك.', 'ومحتاج رقم موبايل حضرتك عشان أبعته لك واتساب كمان، وأتابع معاك.'])}
+<div class="card"><h3>بيانات العميل</h3><div class="row"><div class="f"><label>اسم العميل</label><input id="oName" value="${esc(Q.name)}"></div><div class="f"><label>الموبايل</label><input id="oPhone" value="${esc(Q.phone)}" inputmode="tel" dir="ltr" placeholder="01xxxxxxxxx"></div></div>
+<div class="btns"><button class="btn pri" id="oDocB">اطبع العرض الرسمي (A4)</button><button class="btn wa" id="oWaB">ابعته واتساب</button></div><p class="ctx">رقم العرض: ${esc(Q.no)}</p></div></div>
+<div class="card mqr"><h3>العرض على موبايل العميل</h3>${qrSvg(quoteLink(R))}<p>خلّي العميل يصوّر الكود بكاميرا موبايله، وهيفتح له العرض بتفاصيله وأرقام الدار، من غير ما ياخد رقمه لو مش عايز.</p><b>${money(R.total)}</b></div></div>`;
+    },
+
+    close: () => {
+      const R = computeQuote(), ok = R && R.pk;
+      const sum = [['العميل', Q.name || '—'], ['اللي جه', MEET.who || '—'], ['المناسبة', EVNAME[Q.ev]], ['العدد', AD(Q.n) + ' فرد'], ['التاريخ', Q.date ? dateTxt(Q.date) : 'لسه'], ['أهم حاجة عنده', Q.prio || '—'], ['الميزانية', Q.bud ? money(+Q.bud) : '—'], ['القاعة', HN[Q.hall] || '—'], ['الباكدج', ok ? ar(R.pk.name) : '—'], ['الإجمالي', ok ? money(R.total) : '—'], ['المعاينة', MEET.viewed ? 'عاين ✓' : MEET.viewAt ? 'ميعاد: ' + esc(MEET.viewAt.replace('T', ' – ')) : 'لسه']];
+      return `<div class="grid2">${sayBox(['إيه رأي حضرتك؟', ok && R.dep ? `لو مرتاح للقاعة والباكدج، نثبّت التاريخ النهارده بمقدم حجز ${money(R.dep)}، والباقي على مراحل.` : 'لو مرتاح، نثبّت التاريخ النهارده بالمقدم.', 'التاريخ مش بيتحجز غير بالمقدم وتوقيع الاستمارة، والتواريخ في المواسم بتخلص بسرعة.'])}
+<div class="card"><h3>ملخص المقابلة</h3><table class="q">${sum.map(r => `<tr><td>${r[0]}</td><td><b>${r[1]}</b></td></tr>`).join('')}</table><div class="btns"><button class="btn" id="cSumCopy">نسخ الملخص</button></div></div></div>
+<div class="grid2"><div class="card"><h3>العميل موافق</h3><p>كمّل خطوات الحجز بالترتيب: تأكيد التاريخ، بيانات المتعاقد، المقدم، الاستمارة، وملخص طلب الحجز للحسابات.</p><div class="btns"><button class="btn pri" id="cCloseB" ${ok ? '' : 'disabled'}>اقفل البيعة</button></div></div>
+<div class="card"><h3>محتاج يفكر أو يستشير</h3><div class="chips">${['think', 'family', 'price', 'discount', 'date', 'deposit'].map(k => `<button data-ob="${k}">${OBJ.find(o => o[0] === k)[1]}</button>`).join('')}</div><div id="mObOut"></div>
+<div class="row" style="margin-top:12px;align-items:flex-end"><div class="f"><label>نتابع معاه</label><select id="cFu"><option value="1">بكره</option><option value="2" selected>بعد يومين</option><option value="3">بعد ٣ أيام</option><option value="7">بعد أسبوع</option></select></div><button class="btn" id="cFuB" ${ok ? '' : 'disabled'}>سجّل المتابعة</button></div><div class="btns"><button class="btn" id="cWait">التاريخ محجوز – قائمة الانتظار</button></div></div></div>`;
+    }
+  };
+
+  /* ---------- step bindings ---------- */
+  function mFit() {
+    const el = $('#mFit'); if (!el) return; const hs = hallsFor(Q.ev, Q.n), ok = hs.filter(h => h.ok);
+    el.innerHTML = ok.length ? `<div class="tip g">لعدد ${AD(Q.n)} فرد: ${ok.map(h => `<b>${HN[h.id] || h.name}</b>`).join(' و')}${ok.length > 1 ? '، وهتشرح الفرق بينهم في الخطوة الجاية.' : '.'}</div>` : `<div class="tip">مفيش قاعة مناسبة لعدد ${AD(Q.n)} فرد في المناسبة دي.</div>`;
+    if (Q.hall && !ok.find(h => h.id === Q.hall)) { Q.hall = null; Q.pk = null; Q.adds = {}; }
+    meetBar();
+  }
+  function bindObs() { $$('#mtOut [data-ob]').forEach(b => b.onclick = () => { const r = objScript(b.dataset.ob); $$('#mtOut [data-ob]').forEach(x => x.classList.toggle('on', x === b)); $('#mObOut').innerHTML = `<div class="say" style="margin-top:10px">${r.S.map(p => `<p>${p}</p>`).join('')}</div>${r.tip ? `<div class="tip">${r.tip}</div>` : ''}`; }); }
+  function bindPick() { $$('#mtOut [data-mp]').forEach(b => b.onclick = () => { Q.pk = b.dataset.mp; renderMeet(); }); }
+  const MB = {
+    welcome: () => {
+      $('#mName').oninput = e => { Q.name = e.target.value.trim(); meetBar(); };
+      $('#mSrc').value = Q.src || ''; $('#mSrc').onchange = e => { Q.src = e.target.value; };
+      drawWalkMeet();
+      seg('#mWho', MEET.who, d => { MEET.who = MEET.who === d ? '' : d; $$('#mWho button').forEach(b => b.classList.toggle('on', b.dataset.d === MEET.who)); });
+    },
+    needs: () => {
+      seg('#mEv', Q.ev, d => { Q.ev = d; Q.hall = null; Q.pk = null; Q.adds = {}; $$('#mEv button').forEach(b => b.classList.toggle('on', b.dataset.d === d)); mFit(); });
+      $('#mN').oninput = e => { Q.n = Math.max(1, +e.target.value || 0); mFit(); };
+      $('#mDate').onchange = e => { const v = e.target.value; if (v) { const [y, m, d] = v.split('-').map(Number); Q.date = new Date(y, m - 1, d); const w = Q.date.getDay(); Q.day = (w === 4 || w === 5 || w === 6) ? 'we' : 'wd'; $$('#mDay button').forEach(b => b.classList.toggle('on', b.dataset.d === Q.day)); } else Q.date = null; };
+      seg('#mDay', Q.day, d => { Q.day = d; $$('#mDay button').forEach(b => b.classList.toggle('on', b.dataset.d === d)); });
+      seg('#mPrio', Q.prio, d => { Q.prio = Q.prio === d ? '' : d; $$('#mPrio button').forEach(b => b.classList.toggle('on', b.dataset.d === Q.prio)); });
+      $('#mBud').oninput = e => { Q.bud = e.target.value; };
+      $('#mNotes').oninput = e => { Q.notes = e.target.value; };
+      $('#mWait').onclick = openWaitForm;
+      mFit();
+    },
+    halls: () => { $$('#mtOut [data-mh]').forEach(b => b.onclick = () => { if (Q.hall !== b.dataset.mh) { Q.hall = b.dataset.mh; Q.pk = null; Q.adds = {}; } renderMeet(); }); },
+    pkg: () => { bindPick(); $$('#mtOut [data-mv]').forEach(b => b.onclick = () => { const m = K.halls[Q.hall].menus.find(x => x.id === b.dataset.mv); modal(`<h3>${ar(m.name)} – ${HN[Q.hall]}</h3><p class="ctx">${mType(m)} | ${AD(itemCount(m))} صنف</p><div class="mc">${(m.c || []).map(s => `<h4>${ar(s.h || 'الأصناف')}</h4><ul>${s.o.map(o => o[0] === 'i' ? `<li>${ar(o[1])}</li>` : `<li><small>${ar(o[1])}</small></li>`).join('')}</ul>`).join('')}</div>`); }); },
+    view: () => {
+      if (!$('#mVd')) return;
+      $('#mVd').onclick = () => { MEET.viewed = true; if (Q.no && lsGet(HK(), []).find(x => x.no === Q.no)) setStatus(Q.no, 'اتعاين'); toast('اتسجل: العميل عاين ✓'); renderMeet(); };
+      $('#mVl').onclick = () => { $('#mVlBox').hidden = false; };
+      $('#mVsave').onclick = () => { MEET.viewAt = $('#mVat').value; if (MEET.viewAt && !/معاينة:/.test(Q.notes)) Q.notes = (Q.notes ? Q.notes + ' – ' : '') + 'معاينة: ' + MEET.viewAt.replace('T', ' '); toast('اتسجل ميعاد المعاينة'); renderMeet(); };
+    },
+    price: () => { bindPick(); bindObs(); $$('#mtOut [data-sg]').forEach(b => b.onclick = () => { const i = b.dataset.sg; if (Q.adds[i]) delete Q.adds[i]; else Q.adds[i] = { qty: 1, opt: 0 }; renderMeet(); }); },
+    offer: () => {
+      if (!$('#oName')) return;
+      const upd = () => { Q.name = $('#oName').value.trim(); Q.phone = $('#oPhone').value.trim(); fillForm(); };
+      $('#oName').oninput = () => { upd(); meetBar(); }; $('#oPhone').oninput = upd;
+      $('#oName').onchange = $('#oPhone').onchange = () => saveMeet();
+      $('#oDocB').onclick = () => { upd(); const R = computeQuote(); saveMeet(R, 'doc'); openDoc([optFrom(R)]); };
+      $('#oWaB').onclick = () => { upd(); if (!Q.phone) { toast('اكتب موبايل العميل الأول'); $('#oPhone').focus(); return; } const R = computeQuote(); saveMeet(R, 'wa'); window.open(waLink(quoteText(R) + '\n\nعرضك بالتفاصيل:\n' + quoteLink(R)), '_blank'); };
+    },
+    close: () => {
+      bindObs();
+      $('#cSumCopy').onclick = () => copyText([...$$('#mtOut table.q tr')].map(r => r.innerText.replace(/\t/g, ': ')).join('\n')).then(() => toast('اتنسخ الملخص ✓'));
+      $('#cWait').onclick = openWaitForm;
+      if ($('#cCloseB')) $('#cCloseB').onclick = () => { saveMeet(); openClose(); };
+      $('#cFuB').onclick = () => { saveMeet(); const H = lsGet(HK(), []), e = H.find(x => x.no === Q.no); if (!e) return; e.status = 'متابعة لاحقة'; e.followAt = Date.now() + (+$('#cFu').value) * 864e5; e.up = Date.now(); lsSet(HK(), H); api('staff_save', { q: e }); toast('اتسجلت المتابعة ✓ هتظهرلك في الرئيسية'); };
+    }
+  };
+  // save the interview as a quote (keeps the viewing status)
+  function saveMeet(R, why) {
+    R = R || computeQuote(); if (!R || !R.pk) return;
+    const tag = MEET.who ? 'جه بنفسه: ' + MEET.who : 'زيارة للدار';
+    if (!String(Q.notes || '').includes(tag)) Q.notes = (Q.notes ? Q.notes + ' – ' : '') + tag;
+    fillForm(); saveHist(R, why || 'save');
+    if (MEET.viewed) { const e = lsGet(HK(), []).find(x => x.no === Q.no); if (e && (!e.status || e.status === 'اتبعت')) setStatus(Q.no, 'اتعاين'); }
+  }
+
+  /* ---------- presentation screen without prices (halls & menus) ---------- */
+  const SHOW = { list: [], i: 0 };
+  function showSlide(it) {
+    if (it.kind === 'hall') {
+      const id = it.id, d = K.desc[id] || {}, H = K.halls[id];
+      const img = ['akhenaten', 'isis', 'lotus'].includes(id) ? `<img src="../bot/img/${id}.jpg" alt="">` : '';
+      const inc = H ? incOf(id).slice(0, 14) : [];
+      return `<div class="slide${img ? '' : ' one'}">${img}<div><h2 style="margin-top:0">${HN[id] || it.name}</h2>${d.desc ? `<p class="lead">${esc(d.desc)}${K.p2 && K.p2[id] ? ' ' + esc(K.p2[id]) : ''}</p>` : ''}<p class="lead">${H ? `السعة من ${AD(H.min)} إلى ${AD(H.max)} فرد` : esc(it.cap || '')}</p>${inc.length ? `<div class="inc">${inc.map(x => `<div>✦ ${ar(x)}</div>`).join('')}</div>` : ''}</div></div>`;
+    }
+    if (it.kind === 'inc') return `<h2>الباكدج شامل إيه</h2><div class="mcols">${(K.halls[Q.hall].inc || []).map(s => `<div><h4>${ar(s.h)}</h4><ul>${s.o.filter(o => o[0] === 'i').map(o => `<li>${ar(o[1])}</li>`).join('')}</ul></div>`).join('')}</div>`;
+    if (it.kind === 'menu') { const m = it.m; return `<h2>${ar(m.name)} <small style="color:#CFC6B4;font-size:18px">${mType(m)} | ${AD(itemCount(m))} صنف</small></h2><div class="mcols">${(m.c || []).map(s => `<div><h4>${ar(s.h || 'الأصناف')}</h4><ul>${s.o.filter(o => o[0] === 'i').map(o => `<li>${ar(o[1])}</li>`).join('')}</ul></div>`).join('')}</div>`; }
+    return `<h2>${ar(it.name)}</h2><p class="lead">${ar(it.sub || '')}</p>`;
+  }
+  function openShow(mode) {
+    let L = [];
+    if (mode === 'halls') L = hallsFor(Q.ev, Q.n).filter(h => h.ok).map(h => ({ kind: 'hall', id: h.id, name: h.name, cap: h.cap }));
+    else if (Q.hall && isW()) L = [{ kind: 'inc' }].concat(K.halls[Q.hall].menus.map(m => ({ kind: 'menu', m })));
+    else if (Q.hall) L = packagesFor(Q.ev, Q.hall, Q.n, Q.day).map(p => ({ kind: 'pk', name: p.name, sub: p.sub }));
+    if (!L.length) { toast('حدد العدد والقاعة الأول'); return; }
+    SHOW.list = L; SHOW.i = mode === 'halls' ? Math.max(0, L.findIndex(x => x.id === Q.hall)) : 0;
+    drawShow(); $('#cust').hidden = false; document.body.style.overflow = 'hidden';
+    try { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); } catch (e) { }
+  }
+  function drawShow() {
+    const L = SHOW.list, it = L[SHOW.i];
+    $('#cust').innerHTML = `<div class="top"><img src="../bot/img/crest.png" alt=""><div><h1>دار المراسم لضباط الشرطة</h1><p>${EVNAME[Q.ev]} | ${AD(Q.n)} فرد${Q.name ? ' | ' + esc(Q.name) : ''}</p></div><button class="x" id="cuX">رجوع للموظف ✕</button></div>${showSlide(it)}
+${L.length > 1 ? `<div class="snav"><button id="shPrev" title="السابق">›</button><div class="dots">${L.map((x, i) => `<i class="${i === SHOW.i ? 'on' : ''}"></i>`).join('')}</div><button id="shNext" title="التالي">‹</button></div>` : ''}<p class="foot">المعاينة يومياً من ١٠ صباحاً حتى ١٠ مساءً | ${PHONES[0]}</p>`;
+    $('#cuX').onclick = closeCust;
+    if ($('#shPrev')) { $('#shPrev').onclick = () => moveShow(-1); $('#shNext').onclick = () => moveShow(1); }
+  }
+  function moveShow(k) { if (!SHOW.list.length) return; SHOW.i = (SHOW.i + k + SHOW.list.length) % SHOW.list.length; drawShow(); }
+  // arrows in both customer screens: ← next, → previous (right-to-left)
+  document.addEventListener('keydown', e => {
+    if ($('#cust').hidden || !/^Arrow(Left|Right)$/.test(e.key)) return;
+    e.preventDefault(); const k = e.key === 'ArrowLeft' ? 1 : -1;
+    if ($('#shNext') || $('#shPrev')) return moveShow(k);
+    const C = $$('#cust [data-cp]'); if (!C.length) return; let i = C.findIndex(c => c.classList.contains('on')); i = (i + k + C.length) % C.length; C[i].click();
+  });
+
+  /* =========================================================
+     v5: reception tablet forms + waiting list
+     ========================================================= */
+  const HALLS_ALL = ['akhenaten', 'isis', 'lotus', 'mawadda', 'glass', 'roof', 'lulu', 'marasem'];
+  const BUDN = { 'أقل من ١٥٠ ألف': 150000, '١٥٠ – ٢٥٠ ألف': 250000, '٢٥٠ – ٣٥٠ ألف': 350000 };
+  const evKey = t => (Object.entries(EVNAME).find(([k, v]) => v === t || k === t) || ['wedding'])[0];
+  const isoTxt = s => { if (!s) return ''; const [y, m, d] = String(s).slice(0, 10).split('-').map(Number); return y ? dateTxt(new Date(y, m - 1, d)) : esc(s); };
+  const ago = t => { const m = Math.round((Date.now() - t) / 6e4); return m < 1 ? 'دلوقتي' : m < 60 ? `من ${AD(m)} دقيقة` : `من ${AD(Math.round(m / 60))} ساعة`; };
+
+  /* ---------- reception forms ---------- */
+  let WALK = [], WALK_SEEN = null;
+  async function pollWalk() {
+    const j = await api('staff_walkins'); if (!j || !j.rows) return;
+    WALK = j.rows; const free = WALK.filter(x => !x.taker);
+    const bd = $('#meetBadge'); if (bd) { bd.hidden = !free.length; bd.textContent = AD(free.length); }
+    if (WALK_SEEN) free.filter(x => !WALK_SEEN.has(x.id)).forEach(x => toast(`عميل جديد في الاستقبال: ${x.name || ''}`));
+    WALK_SEEN = new Set(WALK.map(x => x.id));
+    if (!$('#t-home').hidden) drawWalkHome();
+    if (!$('#t-meet').hidden && MEET.step === 0) drawWalkMeet();
+  }
+  function walkCard(x, big) {
+    return `<div class="fu wk"><div><b>${esc(x.name || 'عميل')}</b>${x.who ? ` <small>(${esc(x.who)})</small>` : ''} <span class="pill ${x.taker ? 'b' : 'g'}">${x.taker ? 'مع ' + esc(x.taker) : 'مستني في الاستقبال'}</span><br><small>${[x.ev, x.n ? AD(x.n) + ' فرد' : '', x.date ? isoTxt(x.date) : x.day, x.prio ? 'أهم حاجة: ' + x.prio : '', x.bud ? 'الميزانية: ' + x.bud : ''].filter(Boolean).map(esc).join(' | ')} | ${ago(x.at)}</small>${x.notes ? `<br><small>ملاحظته: ${esc(x.notes)}</small>` : ''}</div><div class="btns" style="margin:0">${!x.taker || x.taker === ME.name ? `<button class="btn pri" data-wk="${esc(x.id)}">${x.taker === ME.name ? 'كمّل المقابلة' : 'استلمه وابدأ المقابلة'}</button>` : ''}</div></div>`;
+  }
+  function walkListHTML() { const L = WALK.filter(x => !x.taker || x.taker === ME.name).slice(0, 6); return L.length ? L.map(x => walkCard(x)).join('') : ''; }
+  function drawWalkHome() { const el = $('#walkHome'); if (!el) return; const h = walkListHTML(); el.hidden = !h; el.innerHTML = h ? `<h3>في الاستقبال دلوقتي <span class="pill g">${AD(WALK.filter(x => !x.taker).length)}</span></h3>${h}` : ''; bindWalk(el); }
+  function drawWalkMeet() { const el = $('#walkMeet'); if (!el) return; const h = walkListHTML(); el.hidden = !h; el.innerHTML = h ? `<h3>عملاء سجّلوا على تابلت الاستقبال</h3>${h}` : ''; bindWalk(el); }
+  function bindWalk(el) { el.querySelectorAll('[data-wk]').forEach(b => b.onclick = () => takeWalk(b.dataset.wk)); }
+  async function takeWalk(id) {
+    const x = WALK.find(w => w.id === id); if (!x) return;
+    if (x.taker !== ME.name) { const j = await api('staff_walkin_take', { id }); if (j && j.ok === false && j.err === 'taken') { toast('العميل ده مع ' + j.owner); pollWalk(); return; } x.taker = ME.name; }
+    newMeet();
+    Q.name = x.name || ''; MEET.who = x.who || ''; Q.ev = evKey(x.ev); if (+x.n) Q.n = +x.n; Q.prio = x.prio || ''; Q.bud = BUDN[x.bud] ? String(BUDN[x.bud]) : ''; Q.src = x.src || 'زيارة مباشرة للدار'; Q.phone = x.phone || '';
+    if (x.date && /^\d{4}-\d{2}-\d{2}/.test(x.date)) { const [y, m, d] = x.date.slice(0, 10).split('-').map(Number); Q.date = new Date(y, m - 1, d); const w = Q.date.getDay(); Q.day = (w === 4 || w === 5 || w === 6) ? 'we' : 'wd'; } else if (/نهاية/.test(x.day || '')) Q.day = 'we';
+    const nt = [x.bud && !BUDN[x.bud] && !/مش محدد/.test(x.bud) ? 'الميزانية: ' + x.bud : '', x.notes ? 'كتب في الاستقبال: ' + x.notes : ''].filter(Boolean).join(' – '); if (nt) Q.notes = nt;
+    fillForm(); MEET.step = 1; goTab('meet'); toast('بيانات الاستقبال اتملت ✓ كمّل من «فهم الاحتياج»');
+  }
+
+  /* ---------- waiting list ---------- */
+  let WAIT = null, WF = 'open';
+  const WST = ['منتظر', 'التاريخ فضي – بلّغ العميل', 'اتبلّغ', 'اتحجز', 'اتلغى'];
+  const wCls = s => s === 'التاريخ فضي – بلّغ العميل' ? 's-dep' : s === 'اتحجز' ? 's-booked' : s === 'اتلغى' ? 's-lost' : '';
+  async function loadWait() { const j = await api('staff_wait_list'); WAIT = j && j.rows ? j.rows : null; waitBadge(); return WAIT; }
+  function waitBadge() { const n = (WAIT || []).filter(x => x.status === 'التاريخ فضي – بلّغ العميل' && x.emp === ME.name).length, bd = $('#waitBadge'); if (bd) { bd.hidden = !n; bd.textContent = AD(n); } }
+  function waitMsg(x) { return `أهلاً ${x.name || 'بحضرتك'}،\nمعاك ${ME.name} من قسم الحفلات – دار المراسم لضباط الشرطة.\nبشرى سارة: ${x.free && x.free !== x.date ? `فيه تاريخ قريب من اللي حضرتك طلبته بقى متاح في ${x.hall}: ${isoTxt(x.free)}` : `تاريخ ${isoTxt(x.date)} في ${x.hall} اللي حضرتك كنت مستنيه بقى متاح`}.\nتحب نثبّته لحضرتك؟ التاريخ بيتحجز بسداد المقدم وتوقيع الاستمارة، فياريت نتواصل في أقرب وقت.`; }
+  function waLinkTo(phone, text) { let p = String(phone || '').replace(/[^\d+]/g, ''); if (/^0\d{10}$/.test(p)) p = '20' + p.slice(1); p = p.replace(/^\+|^00/, ''); return 'https://wa.me/' + (p.length >= 10 ? p : '') + '?text=' + encodeURIComponent(text); }
+  function waitFormHTML(w) {
+    w = w || {};
+    return `<div class="row"><div class="f"><label>اسم العميل</label><input id="wName" value="${esc(w.name || '')}"></div><div class="f"><label>الموبايل</label><input id="wPhone" dir="ltr" inputmode="tel" value="${esc(w.phone || '')}" placeholder="01xxxxxxxxx"></div><div class="f"><label>المناسبة</label><select id="wEv">${Object.values(EVNAME).map(v => `<option${w.ev === v ? ' selected' : ''}>${v}</option>`).join('')}</select></div></div>
+<div class="row" style="margin-top:10px"><div class="f"><label>القاعة</label><select id="wHall">${HALLS_ALL.map(h => `<option value="${HN[h]}"${w.hall === HN[h] ? ' selected' : ''}>${HN[h]}</option>`).join('')}</select></div><div class="f"><label>التاريخ المطلوب</label><input id="wDate" type="date" value="${esc(w.date || '')}"></div><div class="f"><label>العدد</label><input id="wN" type="number" value="${esc(w.n || '')}"></div></div>
+<div class="row" style="margin-top:10px;align-items:center"><label class="ck"><input type="checkbox" id="wFlex" ${w.flex ? 'checked' : ''}> يقبل تاريخ قريب (لحد أسبوعين)</label><div class="f"><input id="wNotes" placeholder="ملاحظات (مثلاً: يفضّل الخميس)" value="${esc(w.notes || '')}"></div></div>
+<div class="btns"><button class="btn pri" id="wAdd">سجّله على قائمة الانتظار</button></div>`;
+  }
+  function bindWaitForm(done) {
+    $('#wAdd').onclick = async () => {
+      const w = { name: $('#wName').value.trim(), phone: $('#wPhone').value.trim(), ev: $('#wEv').value, hall: $('#wHall').value, date: $('#wDate').value, n: $('#wN').value, flex: $('#wFlex').checked, notes: $('#wNotes').value.trim() };
+      if (!w.date) { toast('اختار التاريخ المطلوب'); return; } if (!w.name && !w.phone) { toast('اكتب اسم العميل أو موبايله'); return; }
+      const j = await api('staff_wait_add', { w }); if (!j || !j.ok) { toast('مقدرتش أسجّل – اتأكد من الاتصال بسجل الدار'); return; }
+      toast('اتسجل على قائمة الانتظار ✓'); WAIT = null; (done || (() => { }))();
+    };
+  }
+  function openWaitForm() {
+    modal(`<h3>تسجيل على قائمة الانتظار</h3><p class="ctx">لو التاريخ اللي العميل عايزه محجوز، سجّله هنا، ولو الحجز اتلغى هيتبلّغ الموظف بتاعه.</p>${waitFormHTML({ name: Q.name, phone: Q.phone, ev: EVNAME[Q.ev], hall: HN[Q.hall] || '', date: Q.date ? isoD(Q.date) : '', n: Q.n })}`);
+    bindWaitForm(() => { $('#modal').hidden = true; });
+  }
+  async function renderWait() {
+    seg('#wF', WF, d => { WF = d; drawWait(); });
+    $('#wFormBox').innerHTML = waitFormHTML(Q.hall || Q.name ? { name: Q.name, phone: Q.phone, ev: EVNAME[Q.ev], hall: HN[Q.hall] || '', date: Q.date ? isoD(Q.date) : '', n: Q.n } : {});
+    bindWaitForm(() => renderWait());
+    $('#wFreeHall').innerHTML = HALLS_ALL.map(h => `<option value="${HN[h]}">${HN[h]}</option>`).join('');
+    $('#wFreeB').onclick = freeDate;
+    $('#wOut').innerHTML = '<div class="empty">جاري التحميل…</div>';
+    await loadWait(); drawWait();
+  }
+  function drawWait() {
+    if (!WAIT) { $('#wOut').innerHTML = '<div class="tip">قائمة الانتظار محتاجة الاتصال بسجل الدار (جوجل شيت). اتأكد إن كود الشيت الجديد اتنشر.</div>'; return; }
+    const L = WAIT.filter(x => WF === 'all' || (WF === 'mine' ? x.emp === ME.name : ['منتظر', 'التاريخ فضي – بلّغ العميل'].includes(x.status))).sort((a, b) => (a.date > b.date ? 1 : -1));
+    if (!L.length) { $('#wOut').innerHTML = '<div class="empty">مفيش حد على قائمة الانتظار.</div>'; return; }
+    $('#wOut').innerHTML = `<table class="q hist"><tr><th>التاريخ المطلوب</th><th>القاعة</th><th>العميل</th><th>المناسبة</th><th>سجّله</th><th>الحالة</th><th></th></tr>${L.map(x => `<tr><td><b>${isoTxt(x.date)}</b>${x.flex ? '<br><small>يقبل تاريخ قريب</small>' : ''}</td><td>${esc(x.hall)}</td><td>${esc(x.name)}<br><small dir="ltr">${esc(x.phone)}</small>${x.notes ? `<br><small>${esc(x.notes)}</small>` : ''}</td><td>${esc(x.ev)}${x.n ? `<br><small>${AD(x.n)} فرد</small>` : ''}</td><td>${esc(x.emp)}<br><small>${new Date(x.at).toLocaleDateString('ar-EG')}</small></td><td><select class="st ${wCls(x.status)}" data-ws="${esc(x.id)}">${WST.map(s => `<option${x.status === s ? ' selected' : ''}>${s}</option>`).join('')}</select></td><td>${x.phone ? `<button class="btn wa" data-wwa="${esc(x.id)}" style="padding:4px 12px">واتساب</button>` : ''}</td></tr>`).join('')}</table>`;
+    $$('#wOut [data-ws]').forEach(s => s.onchange = async () => { const x = WAIT.find(w => w.id === s.dataset.ws); x.status = s.value; s.className = 'st ' + wCls(s.value); await api('staff_wait_set', { id: x.id, status: s.value }); waitBadge(); toast('اتحدثت الحالة ✓'); });
+    $$('#wOut [data-wwa]').forEach(b => b.onclick = () => { const x = WAIT.find(w => w.id === b.dataset.wwa); window.open(waLinkTo(x.phone, waitMsg(x)), '_blank'); });
+  }
+  async function freeDate() {
+    const hall = $('#wFreeHall').value, date = $('#wFreeDate').value; if (!date) { toast('اختار التاريخ اللي فضي'); return; }
+    const j = await api('staff_wait_free', { hall, date }); if (!j || !j.ok) { toast('مقدرتش أوصل لسجل الدار'); return; }
+    const R = j.rows || [];
+    modal(`<h3>${esc(hall)} – ${isoTxt(date)} بقى فاضي</h3>${R.length ? `<p class="ctx">دول اللي كانوا مستنيين، بالترتيب (نفس التاريخ الأول، وبعدين الأقدم تسجيلاً). كل موظف هيلاقي عملاءه متعلّمين عنده.</p><table class="q">${R.map((x, i) => `<tr><td>${AD(i + 1)}</td><td><b>${esc(x.name)}</b><br><small>${x.exact ? 'نفس التاريخ' : 'كان طالب ' + isoTxt(x.date)} | ${esc(x.emp)}</small></td><td>${x.phone ? `<button class="btn wa" data-fwa="${i}" style="padding:4px 12px">بلّغه واتساب</button>` : ''}</td></tr>`).join('')}</table>` : '<div class="empty">مفيش حد مستني التاريخ ده.</div>'}`);
+    $$('#modalBody [data-fwa]').forEach(b => b.onclick = () => { const x = R[+b.dataset.fwa]; window.open(waLinkTo(x.phone, waitMsg(x)), '_blank'); api('staff_wait_set', { id: x.id, status: 'اتبلّغ' }); b.textContent = 'اتبلّغ ✓'; });
+    WAIT = null; if (!$('#t-wait').hidden) { await loadWait(); drawWait(); }
+  }
+  function waitHomeHTML() {
+    const L = (WAIT || []).filter(x => x.status === 'التاريخ فضي – بلّغ العميل' && x.emp === ME.name);
+    return L.length ? `<div class="card"><h3>قائمة الانتظار: تواريخ فضيت <span class="pill r">${AD(L.length)}</span></h3>${L.map(x => `<div class="fu"><div><b>${esc(x.name)}</b> – ${esc(x.hall)} | ${isoTxt(x.free || x.date)}<br><small>بلّغه بسرعة قبل ما حد تاني ياخد التاريخ.</small></div><div class="btns" style="margin:0"><button class="btn wa" data-hwa="${esc(x.id)}">بلّغه واتساب</button></div></div>`).join('')}</div>` : '';
+  }
+  setInterval(() => { if (ME) pollWalk(); }, 30000);
+
+  /* ---------- telegram link ---------- */
+  async function tgLink() {
+    modal('<div class="empty">جاري التجهيز…</div>');
+    const j = await api('staff_tg_code');
+    if (!j || !j.ok) { $('#modalBody').innerHTML = `<h3>ربط تليجرام</h3><div class="tip">${j && j.err === 'off' ? 'تنبيهات تليجرام لسه متفعّلتش. المدير يفعّلها مرة واحدة من إعدادات الشيت.' : 'مقدرتش أوصل لسجل الدار. اتأكد من النت وإن كود الشيت الجديد اتنشر.'}</div>`; return; }
+    $('#modalBody').innerHTML = `<h3>ربط تليجرام ${j.linked ? '<span class="pill g">حسابك مربوط ✓</span>' : ''}</h3><p class="ctx">${j.linked ? 'لو غيّرت الموبايل أو عايز تربط حساب تاني، اعمل نفس الخطوات.' : 'عشان توصلك متابعاتك وتنبيهات عملائك على موبايلك.'}</p>
+<div class="tgl"><div class="mqr">${qrSvg(j.url)}</div><ol class="tp"><li>صوّر الكود بكاميرا موبايلك (أو افتح اللينك من الموبايل).</li><li>هيفتح تليجرام على بوت الدار <b dir="ltr">@${esc(j.bot)}</b>.</li><li>دوس <b>Start / ابدأ</b>.</li><li>خلال ٥ دقايق هتوصلك رسالة «حسابك اتربط».</li></ol></div>
+<div class="btns"><button class="btn" id="tgCopy">نسخ اللينك</button></div><p class="ctx">الكود ده صالح نص ساعة ولمرة واحدة. أرقام موبايلات العملاء مش بتتبعت على تليجرام.</p>`;
+    $('#tgCopy').onclick = () => copyText(j.url).then(() => toast('اتنسخ اللينك ✓'));
+  }
+  $('#tgBtn').onclick = tgLink;
+  function renderAll() { $('#arrows').hidden = false; $('#navMgr').hidden = !ME.mgr; renderHome(); renderQuote(); renderRules(); renderCall(); setSync(false, '● جاري الاتصال بسجل الدار…'); syncHist().then(ok => { if (ok) renderHome(); }); pollWalk(); loadWait().then(() => { if (!$('#t-home').hidden) renderHome(); }); api('staff_leads').then(j => { if (j && j.rows) { LEADS = j.rows; const f = LEADS.filter(x => !x.owner).length, bd = $('#leadsBadge'); bd.hidden = !f; bd.textContent = AD(f); } });  const hs = location.hash.slice(1); if (hs && $(`#nav button[data-t="${hs}"]`) && !$(`#nav button[data-t="${hs}"]`).hidden) goTab(hs); }
+  // stay signed in after a page refresh (runs last, once everything above is defined)
+  let SU = null; try { SU = USERS.find(x => x.id === sessionStorage.getItem('dm-staff')); } catch (e) { }
+  if (SU) enter(SU);
 })();
