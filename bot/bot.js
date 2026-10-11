@@ -3143,7 +3143,13 @@ ${row('مقدم الحجز', h => dep(h))}
   // ---- set menu vs open buffet, and "what is in the set menu" ----
   const secItems = (m, re) => m.c.filter(s => re.test(s.h)).flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1]));
   const itemCount = m => m.c.reduce((x, s) => x + s.o.filter(o => o[0] === 'i').length, 0);
-  function menuTypesAns(focus) {
+  // الباكدج = القاعة + الخدمات المشمولة + المنيو (ست منيو / أوبن بوفيه / هاي تي) لعدد معيّن
+  function pkgBlock(H) {
+    const all = (H.inc || []).flatMap(sec => sec.o.filter(o => o[0] === 'i').map(o => A(o[1]))).filter(x => !/حجز القاع/.test(x)), inc = all.slice(0, 6);
+    const base = H.pk.type === 'wk' ? `${AD(H.pk.wd.n)} فرد في منتصف الأسبوع و${AD(H.pk.we.n)} فرد في نهاية الأسبوع` : `${AD(H.pk.n)} فرد`;
+    return `<div class="dmb-sg"><b>الباكدج</b>هو <strong>السعر الشامل للحفلة</strong>، وبيتكوّن من ٣ حاجات:<ul style="margin:6px 0;padding-inline-start:20px"><li>حجز القاعة</li><li>الخدمات الأساسية المشمولة${inc.length ? `: ${inc.join('، ')}${all.length > inc.length ? '…' : ''}` : ''}</li><li><strong>المنيو</strong> اللي حضرتك بتختاره</li></ul>يعني الست منيو والأوبن بوفيه <strong>مش بديل للباكدج</strong>؛ دول <strong>نوع الأكل جوه الباكدج</strong>، واختيارك بينهم هو اللي بيحدد سعره.<br><small>الباكدج في ${H.name} محسوب على ${base}، وأي عدد زيادة بيتحسب بسعر الوجبة الإضافية.</small></div>`;
+  }
+  function menuTypesAns(focus, withPkg) {
     const hid = K.halls[S.hall] && S.hall !== 'lotus' ? S.hall : 'isis';
     const H = K.halls[hid];
     const sm = H.menus.filter(m => m.id.startsWith('sm')), ob = H.menus.filter(m => m.id.startsWith('ob'));
@@ -3152,7 +3158,7 @@ ${row('مقدم الحجز', h => dep(h))}
     const obRows = ob.map(m => `<tr><td><b>${A(m.name)}</b><br><small>${AD(itemCount(m))} صنفاً، منها ${AD(secItems(m, /الساخن/).length)} أصناف ساخنة وركن ${A(secItems(m, /كارفن/)[0] || 'كارفن')}</small></td><td class="n">${pr(m)}</td></tr>`).join('');
     const diff = ob.length ? ob[0][H.pk.type === 'wk' ? 'wd' : 'price'] - sm[0][H.pk.type === 'wk' ? 'wd' : 'price'] : 0;
     const showSm = focus !== 'ob', showOb = focus !== 'sm';
-    bot(`<p class="dmb-h">${focus === 'sm' ? 'الست منيو' : focus === 'ob' ? 'الأوبن بوفيه' : 'الست منيو والأوبن بوفيه'}</p>
+    bot(`<p class="dmb-h">${withPkg ? 'الباكدج والست منيو والأوبن بوفيه' : focus === 'sm' ? 'الست منيو' : focus === 'ob' ? 'الأوبن بوفيه' : 'الست منيو والأوبن بوفيه'}</p>${withPkg ? pkgBlock(H) : ''}
 ${showSm ? `<div class="dmb-sg"><b>الست منيو (Set Menu)</b>وجبة متكاملة محددة الأصناف تُقدَّم لكل ضيف على ترابيزته: سلطات ومقبلات وطبق رئيسي وحلو ومشروبات. بتدّي ضيوفك خدمة منظمة وراقية، وتتدرج من (١) إلى (٥) بزيادة أصناف المقبلات والطبق الرئيسي.</div>` : ''}
 ${showOb ? `<div class="dmb-sg"><b>الأوبن بوفيه (Open Buffet)</b>بوفيه مفتوح بتشكيلة أوسع يختار منها الضيوف بحرية: سلطات ومقبلات شرقية وفواتح شهية باردة ومخبوزات وبوفيه ساخن وركن كارفن وحلويات ومشروبات. مثالي لمن يفضّل التنوع والأجواء الاحتفالية المفتوحة.</div>` : ''}
 ${showSm ? `<p><b>الطبق الرئيسي في كل ست منيو</b> – ${H.name}:</p><table class="dmb-t">${smRows}</table>` : ''}
@@ -3160,7 +3166,7 @@ ${showOb && ob.length ? `<p><b>الأوبن بوفيه</b> – ${H.name}:</p><ta
 ${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانتقال من ست منيو (١) لأوبن بوفيه (١) فرقه ${money(diff)} على الباكدج في ${H.name}.</p>` : ''}${S.count && S.count >= H.min && S.count <= H.max && ob.length ? (() => { const d = S.day || 'wd', a = Math.min(...sm.map(m => estTotal(H, m, S.count, d))), b = Math.min(...ob.map(m => estTotal(H, m, S.count, d))); return `<div class="dmb-cta">✦ <b>لعدد ${AD(S.count)} فرد في ${H.name}</b>: أقل ست منيو ${money(a)}، وأقل أوبن بوفيه ${money(b)}، يعني الفرق حوالي <b>${money(Math.round((b - a) / 500) * 500)}</b>. ${b - a > 0 ? 'لو الأولوية للخدمة المنظمة على الترابيزة والتوفير، الست منيو أنسب؛ ولو عايز تنوع أكبر وأجواء مفتوحة، الأوبن بوفيه يستاهل الفرق.' : ''}</div>`; })() : ''}
 <p class="dmb-note">الأصناف واحدة في قاعتي أخناتون وإيزيس (عدا اختلافات طفيفة في أوبن بوفيه ٢ و٣)، وقاعة اللوتس تقدّم هاي تي وست منيو (١ – ٣) دون أوبن بوفيه.</p>${src(hid)}`,
       [{ t: 'عرض المنيو كاملاً', go: H.menu }]);
-    chips([{ t: 'أي منيو يناسبني؟', fn: () => bestMenuAns(hid) }, ...H.menus.slice(0, 2).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.slice(0, 2), n: +m.id.slice(2) || 0 }) })), ...(ob.length ? [{ t: 'محتوى أوبن بوفيه (٣)', fn: () => menuDetail({ k: 'ob', n: 3 }) }] : []), { t: 'عرض سعر تفصيلي', fn: () => startQuote(quotePre(hid)) }]);
+    chips([{ t: 'أي منيو يناسبني؟', fn: () => bestMenuAns(hid) }, { t: 'قارن الست منيو', fn: () => { S.hall = hid; menusCompareAns('sm'); } }, ...(ob.length ? [{ t: 'قارن الأوبن بوفيه', fn: () => { S.hall = hid; menusCompareAns('ob'); } }] : []), ...H.menus.slice(0, 1).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.slice(0, 2), n: +m.id.slice(2) || 0 }) })), ...(ob.length ? [{ t: 'محتوى أوبن بوفيه (٣)', fn: () => menuDetail({ k: 'ob', n: 3 }) }] : []), { t: 'عرض سعر تفصيلي', fn: () => startQuote(quotePre(hid)) }]);
   }
 
   // ---- which menu suits me: objective guide built from the data ----
@@ -3354,6 +3360,9 @@ ${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانت
     if (weekW && W('الفرق', 'فرق', 'ليه', 'اختلاف', 'مقارنه', 'قارن', 'يفرق', 'بيفرق')) { weekDiff(hallsK[0]); return true; }
     const difW = W('الفرق', 'فرق', 'قارن', 'قارنلي', 'مقارنه', 'يفرق', 'بيفرق', 'ولا', 'احسن', 'افضل', 'vs');
     const smW = /ست ?منيو|سيت ?منيو|set ?menu/.test(t), obW = /اوبن ?بوفيه|بوفيه مفتوح|open ?buffet/.test(t);
+    const pkW = /باكدج|باكيدج|باكيج|بكدج|باكج|الباكدجات/.test(t);
+    if (pkW && (smW || obW || /منيو|بوفيه/.test(t)) && (difW || W('يعني ايه', 'يعني', 'ايه هو', 'ايه هي')) && !/(منيو|بوفيه) ?\d/.test(t)) { if (hallsK[0]) S.hall = hallsK[0]; menuTypesAns(null, true); return true; }
+    if (pkW && W('يعني ايه الباكدج', 'ايه هو الباكدج', 'الباكدج يعني', 'معني الباكدج', 'الباكدج ايه', 'يعني ايه باكدج')) { if (hallsK[0]) S.hall = hallsK[0]; menuTypesAns(null, true); return true; }
     if (smW && obW && !/(منيو|بوفيه) ?\d/.test(t)) { menuTypesAns(); return true; }
     if (/هاي ?تي(?!ب| ?تابل)/.test(t) && smW && difW) { const lo = K.halls.lotus, n = (t.match(/ست ?منيو ?(\d)/) || [])[1]; S.hall = 'lotus'; cmpMenus(lo.menus.find(m => m.id === 'ht'), lo.menus.find(m => m.id === 'sm' + (n || 1)) || lo.menus[1], 'lotus'); return true; }
     if (menuQ && (menuQ.k === 'sm' || menuQ.k === 'ob') && !menuQ.n && !count && W('ايه', 'ايش', 'فيه', 'فيها', 'مكونات', 'يعني', 'بيتكون', 'عباره', 'اشرح', 'شرح', 'نظام', 'ازاي', 'مكوناته', 'محتوي')) { if (hallsK.length) S.hall = hallsK[0]; menuTypesAns(menuQ.k); return true; }
