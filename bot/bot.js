@@ -1981,6 +1981,79 @@ ${diff > 0 ? `<li><b>${HALLNAME[lo]}</b> أوفر بـ <b>${money(lowSM(Hh, n, d
   /* ---- (4) three packages side by side in the client's hall, for his count ---- */
   /* ---- مكونات المنيو كاملة (قسم قسم) مع تعليم الأصناف الجديدة مقارنة باللي قبله ---- */
   const mKey = x => norm(x).replace(/[0-9٠-٩]+/g, '').replace(/ (مشوي|مشويه|مشوية|مقلي|مقليه)( |$)/g, ' ').replace(/\s+/g, ' ').trim();
+  /* ---- قيمة الترقية: الفرق في الطبق الرئيسي والحلو قبل السلطات والمقبلات، مع توضيح قيمة كل صنف ---- */
+  const PROT = [
+    [/ريش/, 10, 'ريش بتلو، من أفخم قطعيات اللحم'],
+    [/فيليه لحم/, 9, 'فيليه لحم، أطرى وأغلى قطعية في اللحمة'],
+    [/استيك/, 8, 'استيك لحم بقري، قطعة لحم كاملة'],
+    [/روزبيف|بيف مدخن/, 7, 'لحم بقري فاخر'],
+    [/رومي|تركي/, 7, 'لحم رومي، طعمه مميز وقيمته أعلى من الفراخ'],
+    [/كباب/, 6, 'كباب لحم مشوي على الفحم'],
+    [/ستروجانوف|بيكاتا/, 6, 'شرائح لحم بالصوص'], [/بكاريهات/, 2, ''],
+    [/كوردن بلو/, 5, 'صدور فراخ محشية جبن ولحم مدخن'],
+    [/فيليه دجاج|فيليه فراخ|صدور دجاج|رول دجاج/, 4, 'صدور فراخ بدون عظم'],
+    [/ربع فراخ|دجاج مخلي|ربع دجاج/, 3, 'ربع فراخ مخلي مشوي'],
+    [/شيش طاووق/, 3, 'شيش طاووق فراخ'],
+    [/كفته/, 3, 'كفتة مشوية'],
+    [/حواوشي|رقاق/, 2, ''], [/سمبوسك|كبيبه|سبرينج/, 1, '']
+  ];
+  const DESN = [[/تشيز كيك/, 'حلو غربي فاخر'], [/سواريهات .*مكسرات|بالمكسرات/, 'سواريهات بالمكسرات'], [/ام علي/, 'أم علي بالمكسرات'], [/جاتوه فرنسي|تورت فرنسيه/, 'جاتوه فرنسي'], [/كريم كراميل/, 'كريم كراميل']];
+  const protOf = x => { const t = norm(x); const p = PROT.find(r => r[0].test(t)); return p ? { r: p[1], note: p[2] } : { r: 0, note: '' }; };
+  const qOf = x => { const t = String(x).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)); const m = t.match(/^\s*(\d+)/); return m ? +m[1] : /^\s*¼/.test(t) ? 1 : 1; };
+  const nmOf = x => String(x).replace(/^\s*[\d٠-٩¼]+\s*/, '').replace(/^قطعة\s+/, '').trim();
+  const secI = (m, re) => (m.c || []).filter(s => re.test(s.h)).flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1]));
+  const secT = (m, re) => (m.c || []).filter(s => re.test(s.h)).flatMap(s => s.o.filter(o => o[0] === 't').map(o => o[1])).join(' ');
+  const piecesOf = (m, re) => { const t = secT(m, re).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)), k = t.match(/(\d+)\s*قطع/); return k ? +k[1] : secI(m, re).reduce((a, x) => a + qOf(x), 0); };
+  const RE_MAIN = /الطبق الرئيسي|البوفيه الساخن/, RE_DES = /الحلو/, RE_APP = /مقبلات|المقبلات/, RE_SAL = /السلطات/, RE_COLD = /فواتح/, RE_CARV = /كارفن/;
+  function valueDiff(from, to) {
+    const mapOf = L => { const o = {}; L.forEach(x => { const k = mKey(nmOf(x)); o[k] = { q: (o[k] ? o[k].q : 0) + qOf(x), nm: nmOf(x), raw: x }; }); return o; };
+    const A0 = mapOf(secI(from, RE_MAIN)), B0 = mapOf(secI(to, RE_MAIN));
+    const added = Object.keys(B0).filter(k => !A0[k]).map(k => Object.assign({ k }, B0[k], protOf(B0[k].nm))).sort((a, b) => b.r - a.r);
+    const gone = Object.keys(A0).filter(k => !B0[k]).map(k => Object.assign({ k }, A0[k], protOf(A0[k].nm))).sort((a, b) => a.r - b.r);
+    const more = Object.keys(B0).filter(k => A0[k] && B0[k].q > A0[k].q).map(k => ({ nm: B0[k].nm, a: A0[k].q, b: B0[k].q }));
+    const main = [], head = [], kind = /^ob/.test(to.id) ? 'ob' : 'sm';
+    const qtxt = x => (x.q > 1 || /^\s*[\d٠-٩]/.test(x.raw) ? AD(x.q) + ' ' : '') + A(x.nm);
+    if (kind === 'sm') {
+      added.forEach(x => { const g = x.r ? gone.find(y => y.r > 0 && y.r < x.r && !y.used) : null; if (g) g.used = true;
+        main.push(`${g ? '⬆️' : '➕'} <b>${qtxt(x)}</b>${g ? ` بدل ${qtxt(g)}` : ''}${x.note ? `<br><small>${A(x.note)}${g ? ` – أعلى قيمة من ${A(g.nm)}` : ''}</small>` : ''}`);
+        if (x.r >= 4) head.push(`${A(x.nm)}${g ? ' بدل ' + A(g.nm) : ''}`); });
+      more.forEach(x => { main.push(`➕ <b>${A(x.nm)}</b>: ${AD(x.b)} بدل ${AD(x.a)}`); });
+      const less = Object.keys(A0).filter(k => B0[k] && B0[k].q < A0[k].q).map(k => `${A(A0[k].nm)} ${AD(B0[k].q)} بدل ${AD(A0[k].q)}`), left = gone.filter(y => !y.used).map(qtxt);
+      if (left.length || less.length) main.push(`<small>↔️ في المقابل: ${[...left.map(x => 'من غير ' + x), ...less].join('، ')}</small>`);
+    } else {
+      const pr = added.filter(x => x.r >= 3), sides = added.filter(x => x.r < 3);
+      pr.forEach(x => { main.push(`➕ <b>${A(x.nm)}</b>${x.note ? `<br><small>${A(x.note)}</small>` : ''}`); if (x.r >= 5) head.push(A(x.nm)); });
+      if (sides.length) main.push(`➕ أطباق جانبية: ${sides.map(x => A(x.nm)).join('، ')}`);
+      const gp = gone.filter(y => y.r >= 3 && !added.some(x => norm(x.nm).includes(' ' + mKey(y.nm).split(' ')[0] + ' '))); if (gp.length) main.push(`<small>↔️ في المقابل البوفيه مش فيه: ${gp.map(y => A(y.nm)).join('، ')}</small>`);
+    }
+    const pa = Object.values(A0).filter(x => protOf(x.nm).r >= 3).reduce((a, x) => a + x.q, 0), pb = Object.values(B0).filter(x => protOf(x.nm).r >= 3).reduce((a, x) => a + x.q, 0);
+    const prA = Object.values(A0).filter(x => protOf(x.nm).r >= 6).reduce((a, x) => a + x.q, 0), prB = Object.values(B0).filter(x => protOf(x.nm).r >= 6).reduce((a, x) => a + x.q, 0);
+    if (kind === 'sm' && pb > pa) main.push(`🍖 قطع البروتين في الطبق الرئيسي: <b>${AD(pb)} بدل ${AD(pa)}</b> للفرد`);
+    if (prB > prA) main.push(kind === 'sm' ? `🥩 منها لحوم فاخرة (لحم/رومي): <b>${AD(prB)} بدل ${AD(prA)}</b> للفرد` : `🥩 أطباق لحوم فاخرة في البوفيه: <b>${AD(prB)} بدل ${AD(prA)}</b>`);
+    const sa = secT(from, RE_MAIN), sb = secT(to, RE_MAIN); if (sb && sa && norm(sa) !== norm(sb)) main.push(`🍚 ${A(sb.replace(/^يُقدَّم/, 'بيتقدّم'))}`);
+    const ca = secT(from, RE_CARV), cb = secT(to, RE_CARV); if (cb && norm(ca) !== norm(cb)) main.push(`🔪 ركن الكارفن: <b>${A(cb)}</b>`);
+    // desserts
+    const des = [], da = piecesOf(from, RE_DES), db = piecesOf(to, RE_DES);
+    const dA = secI(from, RE_DES).map(x => mKey(nmOf(x))), dAdd = secI(to, RE_DES).filter(x => !dA.includes(mKey(nmOf(x))));
+    if (db > da && kind === 'sm') des.push(`🍰 قطع الحلو: <b>${AD(db)} بدل ${AD(da)}</b> للفرد`);
+    dAdd.forEach(x => { const n2 = DESN.find(r => r[0].test(norm(x))); des.push(`➕ <b>${A(x)}</b>${n2 ? `<br><small>${A(n2[1])}</small>` : ''}`); if (n2) head.push(A(nmOf(x))); });
+    { const ta = secT(from, RE_DES), tb = secT(to, RE_DES); if (tb && norm(ta) !== norm(tb) && /سواريه|تشكيله/.test(norm(tb))) { des.push(`➕ <b>${A(tb.replace(/[()]/g, ''))}</b>`); head.push('تشكيلة سواريهات بالمكسرات'); } }
+    // the rest, short
+    const plus = (re) => { const a = secI(from, re).map(x => mKey(nmOf(x))); return secI(to, re).filter(x => !a.includes(mKey(nmOf(x)))).map(x => A(nmOf(x))); };
+    const rest = [];
+    const cold = plus(RE_COLD); if (cold.length) rest.push(`🥩 فواتح باردة: ${cold.join('، ')}`);
+    const app = plus(RE_APP); if (app.length) rest.push(`🥟 مقبلات: ${app.join('، ')}`);
+    const sal = plus(RE_SAL); if (sal.length) rest.push(`🥗 سلطات: ${sal.join('، ')}`);
+    if (!main.length && !des.length && !rest.length) return null;
+    return { main, des, rest, head: head.slice(0, 3) };
+  }
+  function valueDiffHTML(from, to, opt) {
+    const v = valueDiff(from, to); if (!v) return '';
+    opt = opt || {};
+    const blk = (t, L) => L.length ? `<div style="margin:6px 0"><b style="color:var(--goldD)">${t}</b><ul style="margin:4px 0;padding-inline-start:18px">${L.map(x => `<li style="margin:3px 0">${x}</li>`).join('')}</ul></div>` : '';
+    return `<div class="dmb-sec" style="font-size:14px;line-height:1.8">${opt.title ? `<b>${opt.title}</b>` : ''}${blk('الطبق الرئيسي', v.main)}${blk('الحلو', v.des)}${v.rest.length ? `<div style="margin:6px 0"><b style="color:var(--goldD)">وكمان</b><br><small>${v.rest.join('<br>')}</small></div>` : ''}</div>`;
+  }
+  const valueHead = (from, to) => { const v = valueDiff(from, to); return v && v.head.length ? v.head.join('، ') : ''; };
   function menuFullHTML(m, prev, open, label) {
     const pk = prev ? (prev.c || []).flatMap(sec => sec.o.filter(o => o[0] === 'i').map(o => mKey(o[1]))) : null;
     const secs = (m.c || []).map(sec => { const its = sec.o.filter(o => o[0] === 'i').map(o => o[1]); if (!its.length) return ''; return `<div style="margin:6px 0"><b style="color:var(--goldD)">${A(sec.h || 'الأصناف')}</b> <small>(${AD(its.length)})</small><br>${its.map(x => pk && !pk.includes(mKey(x)) ? `<span style="font-weight:800;color:#2C6A4E">✦ ${A(x)}</span>` : A(x)).join('، ')}</div>`; }).join('');
@@ -2016,7 +2089,7 @@ ${diff > 0 ? `<li><b>${HALLNAME[lo]}</b> أوفر بـ <b>${money(lowSM(Hh, n, d
       const add = p ? its.filter((x, j) => !pk.includes(ik[j])) : [], gone = p ? pits.filter((x, j) => !ik.includes(pk[j])) : [];
       const diff = p ? T(m) - T(p) : 0;
       const top = L.reduce((a, x) => T(x) > T(a) ? x : a), sv1 = T(top) - T(m);
-      return `<tr><td><b>${A(m.name)}</b><br><small>${AD(itemCount(m))} صنف</small>${sv1 > 0 ? `<br><small style="color:#1E5A3C;font-weight:700">✦ توفّر ${money(sv1)} بدل ${A(top.name)}</small>` : ''}</td><td class="n"><b>${money(T(m))}</b><br><small>${money(Math.round(T(m) / n))} للفرد</small></td></tr>${p ? `<tr><td colspan="2" style="padding-top:0"><small>${diff > 0 ? `<b>+${money(diff)}</b> عن ${A(p.name)} (حوالي ${money(Math.round(diff / n))} للفرد)` : diff < 0 ? `أوفر من ${A(p.name)} بـ <b>${money(-diff)}</b>` : `نفس سعر ${A(p.name)}`}${add.length ? ` · <b>بيزيد:</b> ${add.slice(0, 6).map(A).join('، ')}${add.length > 6 ? '…' : ''}` : ''}${gone.length ? ` · <b>بدل:</b> ${gone.slice(0, 4).map(A).join('، ')}` : ''}</small></td></tr>` : ''}`;
+      return `<tr><td><b>${A(m.name)}</b><br><small>${AD(itemCount(m))} صنف</small>${sv1 > 0 ? `<br><small style="color:#1E5A3C;font-weight:700">✦ توفّر ${money(sv1)} بدل ${A(top.name)}</small>` : ''}</td><td class="n"><b>${money(T(m))}</b><br><small>${money(Math.round(T(m) / n))} للفرد</small></td></tr>${p ? `<tr><td colspan="2" style="padding-top:0"><small>${diff > 0 ? `<b>+${money(diff)}</b> عن ${A(p.name)} (حوالي ${money(Math.round(diff / n))} للفرد)` : diff < 0 ? `أوفر من ${A(p.name)} بـ <b>${money(-diff)}</b>` : `نفس سعر ${A(p.name)}`}${(() => { const vh = valueHead(p, m); return vh ? ` · <b>⬆️ بيزيد:</b> ${vh}` : !valueDiff(p, m) ? ' · <b>نفس الأصناف</b>' : ''; })()}</small>${(() => { const vd = valueDiffHTML(p, m); return vd ? `<details class="dmb-law"><summary>إيه اللي بيزيد في ${A(m.name)} عن ${A(p.name)}؟</summary>${vd}</details>` : ''; })()}</td></tr>` : ''}`;
     }).join('');
     const lo = L.reduce((a, m) => T(m) < T(a) ? m : a), hi = L.reduce((a, m) => T(m) > T(a) ? m : a), sv = T(hi) - T(lo);
     const saveRow = sv > 0 ? `<tr><td colspan="2" style="background:#EAF4EE;color:#1E5A3C;border-radius:8px;font-weight:700">✦ التوفير في الإجمالي لو اخترت ${A(lo.name)} بدل ${A(hi.name)}: <b>${money(sv)}</b> <small>(${money(Math.round(sv / n))} للفرد)</small></td></tr>` : '';
@@ -3080,7 +3153,8 @@ ${(() => { const n = S.count; if (!n) return ''; const ok = H.every(h => n <= K.
   function upTier(hid, m, n, day) {
     const H = K.halls[hid]; if (!H || !m) return '';
     const typ = m.id.replace(/\d+$/, ''), num = +m.id.slice(typ.length) || 0;
-    const nx = H.menus.find(x => x.id === typ + (num + 1)) || (m.id === 'ht' ? H.menus.find(x => x.id === 'sm1') : null);
+    let nx = null; for (let k = num + 1; k <= 9 && !nx; k++) { const c = H.menus.find(x => x.id === typ + k); if (!c) break; if (valueDiff(m, c)) nx = c; }
+    if (!nx && m.id === 'ht') nx = H.menus.find(x => x.id === 'sm1');
     if (!nx) return '';
     const items = mm => mm.c.flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1]));
     const have = new Set(items(m).map(x => norm(x))), add = items(nx).filter(x => !have.has(norm(x))).slice(0, 4);
@@ -3089,7 +3163,8 @@ ${(() => { const n = S.count; if (!n) return ''; const ok = H.every(h => n <= K.
     const gap = estTotal(H, nx, cnt, d) - estTotal(H, m, cnt, d);
     if (gap <= 0) return '';
     if (EN()) return `<div class="dmb-cta">✦ <b>Suggested upgrade:</b> for ${money(gap)} more${n ? ` for ${n} guests (about ${money(Math.round(gap / n / 5) * 5)} per guest)` : ' on the package'} you move up to <b>${A(nx.name)}</b>${add.length ? `, which adds: ${add.map(A).join(', ')}` : ''}.</div>`;
-    return n ? `<div class="dmb-cta">✦ <b>بزيادة ${money(Math.round(gap / n / 5) * 5)} بس للفرد</b> تنقل لـ <b>${A(nx.name)}</b>${add.length ? `، وتاخد زيادة: ${add.map(A).join('، ')}` : ''}. <small>(الفرق الإجمالي ${money(gap)} لعدد ${AD(n)} فرد)</small></div>` : `<div class="dmb-cta">✦ <b>ترقية مقترحة:</b> بفارق ${money(gap)} على الباكدج تنقل لـ <b>${A(nx.name)}</b>${add.length ? `، ويضيف: ${add.map(A).join('، ')}` : ''}.</div>`;
+    const vh = valueHead(m, nx), vd = valueDiffHTML(m, nx, { title: `${A(nx.name)} بيضيف لك إيه بدل ${A(m.name)}؟` });
+    return (n ? `<div class="dmb-cta">✦ <b>بزيادة ${money(Math.round(gap / n / 5) * 5)} بس للفرد</b> تنقل لـ <b>${A(nx.name)}</b>${vh ? `: <b>${vh}</b>` : ''}. <small>(الفرق الإجمالي ${money(gap)} لعدد ${AD(n)} فرد)</small></div>` : `<div class="dmb-cta">✦ <b>ترقية مقترحة:</b> بفارق ${money(gap)} على الباكدج تنقل لـ <b>${A(nx.name)}</b>${vh ? `: ${vh}` : ''}.</div>`) + (vd ? `<details class="dmb-law" open><summary>ليه الترقية دي تستاهل؟</summary>${vd}</details>` : '');
   }
   // best fit pick under a recommendation table
   function recPick(fits, n) {
@@ -3461,7 +3536,7 @@ ${(() => { const n = S.count; if (!n) return ''; const ok = H.every(h => n <= K.
   /* ---------- اقتراحات ترفع قيمة الحجز بعد اختيار القاعة (اختيارية تماماً، من غير ضغط) ---------- */
   const UPS = {};
   function upMenuPick(H, n, d, cur) {
-    const L = okMenus(H).filter(m => menuKind(m) === menuKind(cur) || (cur.id === 'ht' && /^sm/.test(m.id)));
+    const L = okMenus(H).filter(m => (menuKind(m) === menuKind(cur) || (cur.id === 'ht' && /^sm/.test(m.id))) && (m === cur || valueDiff(cur, m)));
     const T = m => estTotal(H, m, n, d), base = T(cur), pp = base / n;
     const cand = L.filter(m => T(m) > base && (T(m) - base) / n <= Math.max(120, pp * 0.15));
     if (!cand.length) { const i = L.indexOf(cur); return L[i + 1] || null; }
@@ -3478,10 +3553,10 @@ ${(() => { const n = S.count; if (!n) return ''; const ok = H.every(h => n <= K.
     const adds = topPick(hid).map(a => ({ a, p: addonPrice(a, n) })).filter(x => x.p && x.p > 0).slice(0, 4);
     if (!up && !adds.length) return false;
     const items = [];
-    if (up) items.push({ k: 'menu', t: `ترقية لـ <b>${A(up.name)}</b>`, sub: addI.length ? `بيزيد: ${addI.map(A).join('، ')}` : `${AD(itemCount(up))} صنف بدل ${AD(itemCount(cur))}`, v: T(up) - base, m: up });
+    if (up) { const vh = valueHead(cur, up); items.push({ k: 'menu', t: `ترقية لـ <b>${A(up.name)}</b>`, sub: vh ? `⬆️ ${vh}` : addI.length ? `بيزيد: ${addI.map(A).join('، ')}` : `${AD(itemCount(up))} صنف بدل ${AD(itemCount(cur))}`, v: T(up) - base, m: up }); }
     adds.forEach(x => items.push({ k: x.a.s + '|' + x.a.n, t: nameShort(x.a), sub: x.a.g ? A(x.a.g) : '', v: x.p, a: x.a }));
     const row = (it, i) => `<button type="button" class="dmb-upr" data-i="${i}" aria-pressed="false"><span class="bx"></span><span class="nm">${it.t}${isTop(it.a || {}) ? ' <em class="dmb-tag top">الأكثر طلباً</em>' : ''}<small>${it.sub}</small></span><span class="pr">+${money(it.v)}<small>≈ ${money(Math.max(5, Math.round(it.v / n / 5) * 5))} للفرد</small></span></button>`;
-    const el = bot(`<p class="dmb-h">✨ لو حابب تكمّل حفلتك</p><p>اختيارك الحالي <b>${H.name} – ${A(cur.name)}</b> بـ <b>${money(base)}</b> لعدد ${AD(n)} فرد${d === 'we' ? ' (نهاية الأسبوع)' : ''}. دي اقتراحات بيختارها عملاؤنا كتير، <b>واختيارية تماماً</b>؛ مفيش حاجة بتتضاف غير لو حضرتك اخترتها، وهتشوف فرق السعر قبل أي حاجة:</p><div class="dmb-up">${items.map(row).join('')}</div><div class="dmb-upt"><span>إجمالي حفلتك</span><b class="tt">${money(base)}</b><small class="df">اختار اللي يعجبك وأنا أحسب الفرق</small></div>`,
+    const el = bot(`<p class="dmb-h">✨ لو حابب تكمّل حفلتك</p><p>اختيارك الحالي <b>${H.name} – ${A(cur.name)}</b> بـ <b>${money(base)}</b> لعدد ${AD(n)} فرد${d === 'we' ? ' (نهاية الأسبوع)' : ''}. دي اقتراحات بيختارها عملاؤنا كتير، <b>واختيارية تماماً</b>؛ مفيش حاجة بتتضاف غير لو حضرتك اخترتها، وهتشوف فرق السعر قبل أي حاجة:</p><div class="dmb-up">${items.map(row).join('')}</div><div class="dmb-upt"><span>إجمالي حفلتك</span><b class="tt">${money(base)}</b><small class="df">اختار اللي يعجبك وأنا أحسب الفرق</small></div>${up ? (() => { const vd = valueDiffHTML(cur, up, { title: `${A(up.name)} بيضيف لك إيه بدل ${A(cur.name)}؟` }); return vd ? `<details class="dmb-law"><summary>ليه ترقية المنيو تستاهل؟</summary>${vd}</details>` : ''; })() : ''}`,
       [{ t: 'كمّل عرض السعر بالاختيارات دي', cls: 'pri', fn: () => { const sel = items.filter((x, i) => el._on[i]); const m = sel.find(x => x.k === 'menu'); startQuote({ ev: ['wedding', 'engagement'].includes(S.event) ? S.event : 'wedding', hall: hid, n, day: S.day ? d : undefined, pkWant: (m ? m.m : cur).id, presel: sel.filter(x => x.k !== 'menu').map(x => x.k).concat(['__none']) }); } }, { t: 'لا شكراً، كفاية الأساسي', fn: () => { bot(`<p>تمام${hon() ? ' يا ' + hon() : ''} 👌 الاختيار الأساسي <b>${A(cur.name)}</b> ممتاز وكافي جداً. وتقدر ترجع للاقتراحات دي في أي وقت.</p>`); chips([{ t: 'احجز ميعاد معاينة', fn: () => startVisit() }, { t: 'عرض سعر تفصيلي', fn: () => startQuote({ ev: S.event && S.event !== '-' ? S.event : 'wedding', hall: hid, n, day: S.day ? d : undefined, pkWant: cur.id }) }, { t: 'تجهيز طلب الحجز', fn: () => startBook() }]); } }]);
     el._on = items.map(() => false);
     const upd = () => { const add = items.reduce((x, it, i) => x + (el._on[i] ? it.v : 0), 0), tt = el.querySelector('.tt'), df = el.querySelector('.df'); tt.textContent = money(base + add); df.innerHTML = add ? `+${money(add)} عن الأساسي · يعني حوالي <b>${money(Math.round(add / n / 5) * 5)}</b> زيادة للفرد` : 'اختار اللي يعجبك وأنا أحسب الفرق'; };
