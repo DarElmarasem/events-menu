@@ -33,7 +33,7 @@
   async function sha(s) { try { if (window.crypto && crypto.subtle) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); } } catch (e) { } return sha256js(s); }
   // copy that also works on plain http
   function copyText(t) { if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t); return new Promise(res => { const a = document.createElement('textarea'); a.value = t; a.style.position = 'fixed'; a.style.opacity = '0'; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); } catch (e) { } a.remove(); res(); }); }
-  $('#lgUser').innerHTML = USERS.map(u => `<option value="${u.id}">${u.name} – ${u.role}</option>`).join('');
+  $('#lgUser').innerHTML = USERS.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
   function enter(u, pin) { ME = Object.assign({}, u, { pin: pin || (() => { try { return sessionStorage.getItem('dm-pin') || ''; } catch (e) { return ''; } })(), mgr: ['manager', 'sara'].includes(u.id) }); try { if (pin) sessionStorage.setItem('dm-pin', pin); } catch (e) { } u = ME; $('#login').hidden = true; $('#app').hidden = false; $('#meName').textContent = u.name; $('#meRole').textContent = u.role; try { sessionStorage.setItem('dm-staff', u.id); } catch (e) { } renderAll(); }
   $('.lg').addEventListener('submit', async e => {
     e.preventDefault();
@@ -480,25 +480,52 @@ ${whatIfHTML()}
   function closeDoc() { $('#doc').hidden = true; document.body.style.overflow = ''; }
 
   /* ---------- home ---------- */
+  /* ---------- مكتب النهارده: قائمة عمل واحدة مترتبة بالأولوية ---------- */
+  let QTAB = 'all';
+  function queueItems() {
+    const t0 = today0().getTime(), now = Date.now(), Q2 = [];
+    (WALK || []).filter(x => !x.taker || x.taker === ME.name).forEach(x => Q2.push({ k: 'walk', g: 'c', pri: 0, sort: x.at, tag: x.taker === ME.name ? 'معاك في المقابلة' : 'في الاستقبال الآن', time: ago(x.at), name: x.name || 'عميل', key: ckey(x.phone, x.name), sub: [x.who, x.ev, x.n ? AD(x.n) + ' فرد' : '', x.prio ? 'أهم حاجة: ' + x.prio : ''].filter(Boolean).join(' · '), act: [x.taker === ME.name ? 'كمّل المقابلة' : 'استلمه وابدأ المقابلة', 'wk:' + x.id] }));
+    const H = lsGet(HK(), []);
+    H.filter(x => x.visit).forEach(x => { const vt = +new Date(x.visit); if (vt >= t0 && vt < t0 + 3 * 864e5) { const d = new Date(vt), hh = AD(String(d.getHours() % 12 || 12) + ':' + String(d.getMinutes()).padStart(2, '0')) + (d.getHours() < 12 ? ' ص' : ' م'); Q2.push({ k: 'visit', g: 'v', pri: vt < t0 + 864e5 ? 1 : 2, sort: vt, tag: 'معاينة', time: (vt < t0 + 864e5 ? 'النهارده ' : DAYS[d.getDay()] + ' ') + hh, name: x.name || '—', key: ckey(x.phone, x.name), sub: ar(x.label || ''), act: x.phone ? ['تأكيد الميعاد', 'vc:' + x.no] : null }); } });
+    dueList().forEach(x => { const f = x.followAt || x.at + 2 * 864e5, late = f < t0, st = nextStep(x); Q2.push({ k: late ? 'late' : 'due', g: 'f', pri: late ? 1 : 2, sort: f, tag: late ? 'متابعة متأخرة' : 'متابعة النهارده', time: late ? `من ${AD(Math.max(1, Math.round((t0 - f) / 864e5)))} يوم` : 'النهارده', name: x.name || '—', key: ckey(x.phone, x.name), sub: `${ar(x.label || '')} · ${money(x.total)} · ${esc(x.status || 'اتبعت')}`, step: st.t, act: x.phone ? [st.b || 'رسالة متابعة', 'fu:' + x.no] : null, act2: ['بعد يومين', 'sn:' + x.no] }); });
+    (WAIT || []).filter(x => x.status === 'التاريخ فضي – بلّغ العميل' && x.emp === ME.name).forEach(x => Q2.push({ k: 'wait', g: 'c', pri: 1, sort: x.up || now, tag: 'تاريخ فضي', time: 'بلّغه بسرعة', name: x.name, key: ckey(x.phone, x.name), sub: `كان مستني ${esc(x.hall)} – ${isoTxt(x.free || x.date)}`, act: x.phone ? ['بلّغه واتساب', 'wt:' + x.id] : null }));
+    (LEADS || []).filter(x => !x.owner).slice(0, 8).forEach(x => Q2.push({ k: 'lead', g: 'c', pri: 2, sort: x.last || x.first, tag: 'عميل من الموقع', time: ago(x.last || x.first || now), name: x.name || 'عميل', key: ckey(x.phone, x.name), sub: [x.event, x.count ? AD(x.count) + ' فرد' : '', x.hall, x.ref].filter(Boolean).map(esc).join(' · '), act: ['استلمه', 'ld:' + x.id] }));
+    return Q2.sort((a, b) => a.pri - b.pri || a.sort - b.sort);
+  }
+  function renderQueue() {
+    const el = $('#queue'); if (!el) return;
+    const all = queueItems(), n = g => all.filter(x => x.g === g).length;
+    const L = QTAB === 'all' ? all : all.filter(x => x.g === QTAB);
+    const urgent = all.filter(x => x.pri < 2).length, bn = $('#bellN'); if (bn) { bn.hidden = !urgent; bn.textContent = AD(urgent); }
+    $('#qCount').textContent = all.length ? `${AD(all.length)} ${all.length > 10 ? 'مهمة' : all.length > 2 ? 'مهام' : 'مهمة'} مترتبة بالأولوية` : '';
+    $('#qTabs').innerHTML = [['all', 'الكل', all.length], ['c', 'العملاء', n('c')], ['f', 'المتابعات', n('f')], ['v', 'المعاينات', n('v')]].map(t => `<button type="button" class="${QTAB === t[0] ? 'on' : ''}" data-qt="${t[0]}">${t[1]}${t[2] ? ' ' + AD(t[2]) : ''}</button>`).join('');
+    $$('#qTabs [data-qt]').forEach(b => b.onclick = () => { QTAB = b.dataset.qt; renderQueue(); });
+    el.innerHTML = L.length ? L.map(x => `<div class="qi p${x.pri} k-${x.k}"><span class="st"></span><div class="tm"><b>${x.tag}</b><span>${x.time}</span></div><div class="bd"><a href="#" class="cl" data-client="${esc(x.key)}">${esc(x.name)}</a><p>${x.sub}</p>${x.step ? `<p class="nx">الخطوة الجاية: ${esc(x.step)}</p>` : ''}</div><div class="ac">${x.act ? `<button type="button" class="btn${x.pri === 0 ? ' pri' : ''}" data-qa="${esc(x.act[1])}">${esc(x.act[0])}</button>` : ''}${x.act2 ? `<button type="button" class="btn ghost" data-qa="${esc(x.act2[1])}">${esc(x.act2[0])}</button>` : ''}</div></div>`).join('')
+      : `<div class="qempty"><b>مفيش حاجة مستنياك دلوقتي</b><p>${QTAB === 'all' ? 'وقت كويس تراجع «سجل عروضي» أو تجهّز عرض لعميل كلّمك على التليفون.' : 'مفيش حاجة في القسم ده.'}</p></div>`;
+    $$('#queue [data-qa]').forEach(b => b.onclick = () => queueAct(b.dataset.qa, b));
+  }
+  async function queueAct(a, b) {
+    const [k, id] = [a.slice(0, 2), a.slice(3)], H = lsGet(HK(), []);
+    if (k === 'wk') return takeWalk(id);
+    if (k === 'fu') { const x = H.find(e => e.no === id); if (x) { sendStep(x); renderHome(); } return; }
+    if (k === 'sn') { const x = H.find(e => e.no === id); if (!x) return; x.followAt = Date.now() + 2 * 864e5; x.up = Date.now(); lsSet(HK(), H); api('staff_save', { q: x }); toast('اتأجلت المتابعة يومين'); return renderQueue(); }
+    if (k === 'vc') { const x = H.find(e => e.no === id); if (!x) return; const d = new Date(x.visit); window.open(waLinkTo(x.phone, `أهلاً${x.name ? ' ' + x.name : ''} 🌷\nمعاك ${ME.name} من دار المراسم لضباط الشرطة.\nبنأكد مع حضرتك ميعاد معاينة ${x.hall || 'القاعة'} يوم ${dateTxt(d)} الساعة ${AD(String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'))}.\nالعنوان: شارع حديقة الزهرية – الزمالك، وفيه جراج داخلي. في انتظار حضرتك.`), '_blank'); return; }
+    if (k === 'wt') { const x = WAIT.find(w => w.id === id); window.open(waLinkTo(x.phone, waitMsg(x)), '_blank'); x.status = 'اتبلّغ'; api('staff_wait_set', { id: x.id, status: 'اتبلّغ' }); waitBadge(); return renderQueue(); }
+    if (k === 'ld') { b.disabled = true; const x = LEADS.find(l => l.id === id); const j = await api('staff_claim', { id }); if (j && j.ok === false && j.err === 'taken') { toast('العميل ده استلمه ' + j.owner); x.owner = j.owner; return renderQueue(); } x.owner = ME.name; toast('اتسجل العميل باسمك ✓'); openLead(x); }
+  }
   function renderHome() {
-    const h = new Date().getHours(), greet = h < 12 ? 'صباح الخير' : 'مساء الخير';
-    const S = lsGet(SK(), []), t0 = today0().getTime(), m0 = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
-    const cnt = (from, ty) => S.filter(x => x.at >= from && (!ty || ty.includes(x.type))).length;
-    const H = lsGet(HK(), []), sumM = H.filter(x => x.at >= m0).reduce((a, x) => a + x.total, 0);
-    const act = (go, ic, b, sm, cls) => `<button class="act${cls ? ' ' + cls : ''}" data-go="${go}"><i>${svg(ic)}</i><b>${b}</b><small>${sm}</small></button>`;
-    $('#homeOut').innerHTML = `<div class="hello sm"><img src="../bot/img/crest.png" alt="" style="height:48px"><div><h2>${greet} يا ${esc(ME.name)}</h2><p>${esc(ME.role)} | ${dateTxt(new Date())} | مواعيد القسم ١٠ ص – ١١ م</p></div></div>
-<div class="desk"><div class="dcol">
-<div class="card" id="walkHome" hidden></div>
-${followHTML()}${waitHomeHTML()}${freeLeadsHTML()}${visitsHTML()}<div id="hoBox"></div>
-</div><div class="dcol side">
-<div class="acts v">${act('meet', 'users', 'مقابلة عميل في المكتب', 'استقبال ← احتياج ← شرح ← معاينة ← أسعار ← قفل', 'main')}${act('new', 'receipt', 'عرض سعر جديد', 'احسب وابعت في دقيقة')}${act('obj', 'chat', 'رد على اعتراض', 'غالي، هفكر، خصم…')}</div>
-${quickPriceHTML()}${goalHTML()}
-<div class="stats two"><div class="stat"><small>عروض النهارده</small><b>${AD(cnt(t0, ['save', 'wa', 'doc', 'img']))}</b></div><div class="stat"><small>متابعات النهارده</small><b>${AD(cnt(t0, ['fu']))}</b></div><div class="stat"><small>عروض الشهر</small><b>${AD(H.filter(x => x.at >= m0).length)}</b></div><div class="stat"><small>قيمة عروض الشهر</small><b>${money(sumM)}</b></div></div>
-</div></div>
-<div class="card"><h3>آخر عروضي</h3>${histTable(H.slice(0, 6))}</div>`;
-    $$('#homeOut .act').forEach(b => b.onclick = () => { const g = b.dataset.go; if (g === 'new') { resetQuote(); goTab('quote'); } else if (g === 'meet') { newMeet(); MEET.step = 0; goTab('meet'); } else goTab(g); });
-    bindHist('#homeOut'); bindFollow(); drawWalkHome(); bindQuickPrice(); bindGoal(); bindVisits(); bindFreeLeads(); drawHandover();
-    $$('#homeOut [data-hwa]').forEach(b => b.onclick = () => { const x = WAIT.find(w => w.id === b.dataset.hwa); window.open(waLinkTo(x.phone, waitMsg(x)), '_blank'); x.status = 'اتبلّغ'; api('staff_wait_set', { id: x.id, status: 'اتبلّغ' }); waitBadge(); renderHome(); });
+    const h = new Date().getHours(), t0 = today0().getTime(), m0 = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+    const S = lsGet(SK(), []).filter(x => x.at >= t0), H = lsGet(HK(), []), g = lsGet(GK(), { q: 3, fu: 5, m: 2 });
+    const v = { q: H.filter(x => x.at >= t0).length, fu: S.filter(x => x.type === 'fu').length, m: S.filter(x => x.type === 'meet').length };
+    const kp = (k, n) => { const p = Math.min(100, Math.round(v[k] * 100 / Math.max(1, g[k]))); return `<div class="kpi"><small>${n}</small><b>${AD(v[k])} <span>من ${AD(g[k])}</span></b><i><u style="width:${p}%"></u></i></div>`; };
+    const mq = H.filter(x => x.at >= m0);
+    $('#homeOut').innerHTML = `<div class="ph"><div><h1>مكتب النهارده</h1><p>${h < 12 ? 'صباح الخير' : 'مساء الخير'} يا ${esc(ME.name)} · ${dateTxt(new Date())} · مواعيد القسم ١٠ ص – ١١ م</p></div><div class="phact"><button type="button" class="btn" data-go="new">${svg('receipt')}عرض سعر جديد</button><button type="button" class="btn pri" data-go="meet">${svg('users')}مقابلة عميل</button></div></div>
+<div class="kstrip">${kp('q', 'عروض النهارده')}${kp('fu', 'متابعات')}${kp('m', 'مقابلات في المكتب')}<div class="kpi"><small>قيمة عروض الشهر</small><b>${money(mq.reduce((a, x) => a + (x.total || 0), 0))}</b><span class="ctx">${AD(mq.length)} عرض</span></div><button type="button" class="kedit" id="gEdit" title="تعديل أهدافي">تعديل الأهداف</button></div>
+<div class="hgrid"><section class="panel"><header><h2>قائمة العمل</h2><span class="ctx" id="qCount"></span><div class="qtabs" id="qTabs"></div></header><div id="queue"></div></section>
+<aside class="hside">${quickPriceHTML()}<div id="hoBox"></div></aside></div>
+<section class="panel"><header><h2>آخر عروضي</h2><button type="button" class="btn ghost" data-go="hist" style="margin-inline-start:auto">كل السجل</button></header><div class="pin">${histTable(H.slice(0, 5))}</div></section>`;
+    $$('#homeOut [data-go]').forEach(b => b.onclick = () => { const g2 = b.dataset.go; if (g2 === 'new') { resetQuote(); goTab('quote'); } else if (g2 === 'meet') { newMeet(); MEET.step = 0; goTab('meet'); } else goTab(g2); });
+    renderQueue(); bindHist('#homeOut'); bindQuickPrice(); bindGoal(); drawHandover();
   }
   function histTable(H) {
     if (!H.length) return '<div class="empty">لسه مفيش عروض هنا. ابدأ بـ «مقابلة عميل» لو العميل قدامك، أو «عرض سعر جديد» لو على التليفون.</div>';
@@ -1125,7 +1152,7 @@ ${L.length > 1 ? `<div class="snav"><button id="shPrev" title="السابق">›
     return `<div class="fu wk"><div><b>${esc(x.name || 'عميل')}</b>${x.who ? ` <small>(${esc(x.who)})</small>` : ''} <span class="pill ${x.taker ? 'b' : 'g'}">${x.taker ? 'مع ' + esc(x.taker) : 'مستني في الاستقبال'}</span><br><small>${[x.ev, x.n ? AD(x.n) + ' فرد' : '', x.date ? isoTxt(x.date) : x.day, x.prio ? 'أهم حاجة: ' + x.prio : '', x.bud ? 'الميزانية: ' + x.bud : ''].filter(Boolean).map(esc).join(' | ')} | ${ago(x.at)}</small>${x.notes ? `<br><small>ملاحظته: ${esc(x.notes)}</small>` : ''}</div><div class="btns" style="margin:0">${!x.taker || x.taker === ME.name ? `<button class="btn pri" data-wk="${esc(x.id)}">${x.taker === ME.name ? 'كمّل المقابلة' : 'استلمه وابدأ المقابلة'}</button>` : ''}</div></div>`;
   }
   function walkListHTML() { const L = WALK.filter(x => !x.taker || x.taker === ME.name).slice(0, 6); return L.length ? L.map(x => walkCard(x)).join('') : ''; }
-  function drawWalkHome() { const el = $('#walkHome'); if (!el) return; const h = walkListHTML(); el.hidden = !h; el.innerHTML = h ? `<h3>في الاستقبال دلوقتي <span class="pill g">${AD(WALK.filter(x => !x.taker).length)}</span></h3>${h}` : ''; bindWalk(el); }
+  function drawWalkHome() { renderQueue(); const el = $('#walkHome'); if (!el) return; const h = walkListHTML(); el.hidden = !h; el.innerHTML = h ? `<h3>في الاستقبال دلوقتي <span class="pill g">${AD(WALK.filter(x => !x.taker).length)}</span></h3>${h}` : ''; bindWalk(el); }
   function drawWalkMeet() { const el = $('#walkMeet'); if (!el) return; const h = walkListHTML(); el.hidden = !h; el.innerHTML = h ? `<h3>عملاء سجّلوا على تابلت الاستقبال</h3>${h}` : ''; bindWalk(el); }
   function bindWalk(el) { el.querySelectorAll('[data-wk]').forEach(b => b.onclick = () => takeWalk(b.dataset.wk)); }
   async function takeWalk(id) {
@@ -1231,7 +1258,8 @@ ${L.length > 1 ? `<div class="snav"><button id="shPrev" title="السابق">›
     send: '<path d="M21 3 10 14"/><path d="M21 3 14.5 21 10 14 3 9.5z"/>',
     search: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
     star: '<path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>',
-    bolt: '<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>'
+    bolt: '<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>',
+    bell: '<path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>', chev: '<path d="m6 9 6 6 6-6"/>', out: '<path d="M14 4h5v16h-5"/><path d="M10 8l-4 4 4 4M6 12h10"/>', plus: '<path d="M12 5v14M5 12h14"/>'
   };
   const svg = k => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k] || ''}</svg>`;
   $$('[data-ic]').forEach(e => e.innerHTML = svg(e.dataset.ic));
@@ -1419,7 +1447,11 @@ ${step ? `<div class="card step${step.late ? ' late' : ''}"><h3>${svg('bolt')} �
   }
   function bindFreeLeads() { if ($('#flAll')) $('#flAll').onclick = () => goTab('leads'); $$('[data-flo]').forEach(b => b.onclick = async () => { b.disabled = true; const x = LEADS.find(l => l.id === b.dataset.flo); const j = await api('staff_claim', { id: x.id }); if (j && j.ok === false && j.err === 'taken') { toast('العميل ده استلمه ' + j.owner); x.owner = j.owner; renderHome(); return; } x.owner = ME.name; toast('اتسجل العميل باسمك ✓'); openLead(x); }); }
 
-  function renderAll() { $('#arrows').hidden = false; $('#navMgr').hidden = !ME.mgr; $('#ngMgr').hidden = !ME.mgr; loadHandover(); renderHome(); renderQuote(); renderRules(); renderCall(); setSync(false, '● جاري الاتصال بسجل الدار…'); syncHist().then(ok => { if (ok) renderHome(); }); pollWalk(); loadWait().then(() => { if (!$('#t-home').hidden) renderHome(); }); api('staff_leads').then(j => { if (j && j.rows) { LEADS = j.rows; if (!$('#t-home').hidden) renderHome(); const f = LEADS.filter(x => !x.owner).length, bd = $('#leadsBadge'); bd.hidden = !f; bd.textContent = AD(f); } });  const hs = location.hash.slice(1); if (hs && $(`#nav button[data-t="${hs}"]`) && !$(`#nav button[data-t="${hs}"]`).hidden) goTab(hs); }
+  /* ---------- user menu & bell ---------- */
+  $('#uBtn').onclick = e => { e.stopPropagation(); $('#uDrop').hidden = !$('#uDrop').hidden; };
+  document.addEventListener('click', e => { if (!e.target.closest('.umenu')) $('#uDrop').hidden = true; });
+  $('#bell').onclick = () => { goTab('home'); setTimeout(() => { const q = $('#queue'); if (q) q.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50); };
+  function renderAll() { $('#arrows').hidden = false; $('#meAv').textContent = ME.name.replace(/^(أ\.|م\.|د\.|عميد \/)\s*/, '').slice(0, 1); $('#navMgr').hidden = !ME.mgr; $('#ngMgr').hidden = !ME.mgr; loadHandover(); renderHome(); renderQuote(); renderRules(); renderCall(); setSync(false, '● جاري الاتصال بسجل الدار…'); syncHist().then(ok => { if (ok) renderHome(); }); pollWalk(); loadWait().then(() => { if (!$('#t-home').hidden) renderHome(); }); api('staff_leads').then(j => { if (j && j.rows) { LEADS = j.rows; if (!$('#t-home').hidden) renderHome(); const f = LEADS.filter(x => !x.owner).length, bd = $('#leadsBadge'); bd.hidden = !f; bd.textContent = AD(f); } });  const hs = location.hash.slice(1); if (hs && $(`#nav button[data-t="${hs}"]`) && !$(`#nav button[data-t="${hs}"]`).hidden) goTab(hs); }
   // stay signed in after a page refresh (runs last, once everything above is defined)
   let SU = null; try { SU = USERS.find(x => x.id === sessionStorage.getItem('dm-staff')); } catch (e) { }
   if (SU) enter(SU);

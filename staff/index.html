@@ -4,18 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>مساعد موظف الحجز – دار المراسم</title>
+<title>MARASEM EMPLOYEE AI – مساعد موظف المراسم الذكي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
 
 <div id="login">
   <form class="lg" autocomplete="off">
-    <img src="../bot/img/crest.png" alt="">
-    <h1>مساعد موظف الحجز الذكي</h1>
-    <p>دار المراسم لضباط الشرطة – قسم الحفلات</p>
+    <svg class="seal" viewBox="0 0 200 200" width="120" height="120" role="img" aria-label="دار المراسم لضباط الشرطة"><defs><path id="taL" d="M 27,100 A 73,73 0 0,1 173,100"/><path id="baL" d="M 20,100 A 80,80 0 0,0 180,100"/></defs><circle cx="100" cy="100" r="97" fill="#0F1C36" stroke="#D9BE85" stroke-width="3"/><circle cx="100" cy="100" r="88" fill="none" stroke="#D9BE85" stroke-width="1"/><circle cx="100" cy="100" r="58" fill="none" stroke="#D9BE85" stroke-width="1" opacity=".55"/><text font-weight="600" font-size="16" fill="#D9BE85"><textPath href="#taL" startOffset="50%" text-anchor="middle">دار المراسم لضباط الشرطة</textPath></text><text font-weight="500" font-size="13" fill="#D9BE85"><textPath href="#baL" startOffset="50%" text-anchor="middle">✦ الزمالك – القاهرة ✦</textPath></text><image href="../bot/img/crest.png" x="56" y="54" width="88" height="88"/></svg>
+    <h1>مساعد موظف المراسم الذكي</h1>
+    <p class="en">MARASEM EMPLOYEE AI</p>
+    <p>قسم الحفلات – دار المراسم لضباط الشرطة</p>
     <select id="lgUser" aria-label="اسم الموظف"></select>
     <input id="lgPin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" aria-label="الرقم السري">
     <button type="submit">دخول</button>
@@ -26,16 +27,19 @@
 
 <div id="app" hidden>
   <header>
-    <img src="../bot/img/crest.png" alt="">
-    <div class="tt"><b>مساعد موظف الحجز الذكي</b><small>دار المراسم لضباط الشرطة – قسم الحفلات</small></div>
-    <div class="gsearch"><span data-ic="search"></span><input id="gq" placeholder="ابحث عن عميل بالاسم أو الموبايل… (Ctrl+K)" autocomplete="off"><div id="gqOut" hidden></div></div>
-    <div class="zoom" title="حجم الخط"><button type="button" id="zOut">أ−</button><button type="button" id="zIn">أ+</button></div>
-    <div class="me"><b id="meName"></b><small id="meRole"></small></div>
-    <button class="out" id="logout">خروج</button>
+    <div class="brand"><svg class="seal" viewBox="0 0 200 200" width="48" height="48" role="img" aria-label="دار المراسم لضباط الشرطة"><defs><path id="taH" d="M 27,100 A 73,73 0 0,1 173,100"/><path id="baH" d="M 20,100 A 80,80 0 0,0 180,100"/></defs><circle cx="100" cy="100" r="97" fill="#0F1C36" stroke="#D9BE85" stroke-width="3"/><circle cx="100" cy="100" r="88" fill="none" stroke="#D9BE85" stroke-width="1"/><circle cx="100" cy="100" r="58" fill="none" stroke="#D9BE85" stroke-width="1" opacity=".55"/><text font-weight="600" font-size="16" fill="#D9BE85"><textPath href="#taH" startOffset="50%" text-anchor="middle">دار المراسم لضباط الشرطة</textPath></text><text font-weight="500" font-size="13" fill="#D9BE85"><textPath href="#baH" startOffset="50%" text-anchor="middle">✦ الزمالك – القاهرة ✦</textPath></text><image href="../bot/img/crest.png" x="56" y="54" width="88" height="88"/></svg><div><b>مساعد موظف المراسم الذكي</b><small class="en">MARASEM EMPLOYEE AI</small></div></div>
+    <div class="gsearch"><span data-ic="search"></span><input id="gq" placeholder="ابحث عن عميل بالاسم أو الموبايل أو رقم العرض" autocomplete="off"><kbd>Ctrl K</kbd><div id="gqOut" hidden></div></div>
+    <button type="button" class="bell" id="bell" title="محتاج تتصرف"><span data-ic="bell"></span><i id="bellN" hidden></i></button>
+    <div class="umenu"><button type="button" class="uchip" id="uBtn"><span class="av" id="meAv"></span><span><b id="meName"></b><small id="meRole"></small></span><span data-ic="chev"></span></button>
+      <div class="udrop" id="uDrop" hidden>
+        <div class="zrow"><span>حجم الخط</span><button type="button" id="zOut">أ−</button><button type="button" id="zIn">أ+</button></div>
+        <button type="button" id="tgBtn"><span data-ic="send"></span>ربط تليجرام</button>
+        <button type="button" id="navMini"><span data-ic="columns"></span>تصغير القائمة الجانبية</button>
+        <button type="button" id="logout"><span data-ic="out"></span>خروج</button>
+      </div></div>
   </header>
   <div class="wrap">
     <nav id="nav">
-      <div class="navt"><em>القائمة</em><button type="button" id="navMini" title="تصغير القائمة">⇆</button></div>
       <div class="ngrp">الشغل اليومي</div>
       <button data-t="home" class="on"><span data-ic="home"></span><em>مكتب النهارده</em></button>
       <button data-t="meet"><span data-ic="users"></span><em>مقابلة عميل</em><i class="badge" id="meetBadge" hidden></i></button>
@@ -57,8 +61,6 @@
       <div class="ngrp" id="ngMgr" hidden>الإدارة</div>
       <button data-t="mgr" id="navMgr" hidden><span data-ic="chart"></span><em>لوحة المدير</em></button>
       <div class="sync" id="syncSt"></div>
-      <button type="button" class="tgb" id="tgBtn"><span data-ic="send"></span><em>ربط تليجرام</em></button>
-      <div class="hint"><b>اختصارات:</b><br><kbd>Ctrl K</kbd> بحث عن عميل<br><kbd>M</kbd> مقابلة عميل | <kbd>N</kbd> عرض سعر جديد | <kbd>P</kbd> العرض الرسمي<br><kbd>W</kbd> واتساب | <kbd>/</kbd> بحث الشروط | <kbd>H</kbd> الرئيسية</div>
     </nav>
     <main>
       <!-- الرئيسية -->
@@ -220,7 +222,7 @@
   </div>
 </div>
 
-<div class="arrows" id="arrows" hidden><button type="button" id="upBtn" title="لأعلى">▲</button><button type="button" id="downBtn" title="لأسفل">▼</button></div>
+<div class="arrows" id="arrows" hidden style="display:none!important"><button type="button" id="upBtn" title="لأعلى">▲</button><button type="button" id="downBtn" title="لأسفل">▼</button></div>
 <div id="doc" hidden></div>
 <div id="cust" hidden></div>
 <div class="modal" id="modal" hidden><div class="box"><button class="x" id="modalX">✕</button><div id="modalBody"></div></div></div>
