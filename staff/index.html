@@ -28,6 +28,7 @@
 <div id="app" hidden>
   <header>
     <div class="brand"><svg class="seal" viewBox="0 0 200 200" width="48" height="48" role="img" aria-label="دار المراسم لضباط الشرطة"><defs><path id="taH" d="M 27,100 A 73,73 0 0,1 173,100"/><path id="baH" d="M 20,100 A 80,80 0 0,0 180,100"/></defs><circle cx="100" cy="100" r="97" fill="#0F1C36" stroke="#D9BE85" stroke-width="3"/><circle cx="100" cy="100" r="88" fill="none" stroke="#D9BE85" stroke-width="1"/><circle cx="100" cy="100" r="58" fill="none" stroke="#D9BE85" stroke-width="1" opacity=".55"/><text font-weight="600" font-size="16" fill="#D9BE85"><textPath href="#taH" startOffset="50%" text-anchor="middle">دار المراسم لضباط الشرطة</textPath></text><text font-weight="500" font-size="13" fill="#D9BE85"><textPath href="#baH" startOffset="50%" text-anchor="middle">✦ الزمالك – القاهرة ✦</textPath></text><image href="../bot/img/crest.png" x="56" y="54" width="88" height="88"/></svg><div><b>مساعد موظف المراسم الذكي</b><small class="en">MARASEM EMPLOYEE AI</small></div></div>
+    <div class="hgreet"><small id="hgT"></small><b id="hgN"></b></div>
     <div class="gsearch"><span data-ic="search"></span><input id="gq" placeholder="ابحث عن عميل بالاسم أو الموبايل أو رقم العرض" autocomplete="off"><kbd>Ctrl K</kbd><div id="gqOut" hidden></div></div>
     <button type="button" class="bell" id="bell" title="محتاج تتصرف"><span data-ic="bell"></span><i id="bellN" hidden></i></button>
     <div class="umenu"><button type="button" class="uchip" id="uBtn"><span class="av" id="meAv"></span><span><b id="meName"></b><small id="meRole"></small></span><span data-ic="chev"></span></button>
@@ -61,6 +62,7 @@
       <div class="ngrp" id="ngMgr" hidden>الإدارة</div>
       <button data-t="mgr" id="navMgr" hidden><span data-ic="chart"></span><em>لوحة المدير</em></button>
       <div class="sync" id="syncSt"></div>
+      <div class="nuser" id="nUser"></div>
     </nav>
     <main>
       <!-- الرئيسية -->

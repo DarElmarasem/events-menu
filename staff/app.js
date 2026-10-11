@@ -71,7 +71,7 @@
     seg('#qDay', Q.day, d => { Q.day = d; renderQuote(); });
     const hs = hallsFor(Q.ev, Q.n), okH = hs.filter(h => h.ok);
     if (!Q.hall && okH.length === 1) Q.hall = okH[0].id;
-    $('#qHalls').innerHTML = hs.map(h => `<button type="button" class="hall${h.id === Q.hall ? ' on' : ''}${h.ok ? '' : ' dis'}" data-h="${h.id}"><span class="tag ${h.ok ? 'ok' : 'no'}">${h.ok ? 'مناسبة' : esc(h.why)}</span><b>${esc(h.name)}</b><small>${h.cap}</small></button>`).join('');
+    $('#qHalls').innerHTML = hs.map(h => `<button type="button" class="hall${h.id === Q.hall ? ' on' : ''}${h.ok ? '' : ' dis'}${['akhenaten', 'isis', 'lotus'].includes(h.id) ? ' hph' : ''}" data-h="${h.id}"${['akhenaten', 'isis', 'lotus'].includes(h.id) ? ` style="--img:url(../bot/img/${h.id}.jpg)"` : ''}><span class="tag ${h.ok ? 'ok' : 'no'}">${h.ok ? 'مناسبة' : esc(h.why)}</span><b>${esc(h.name)}</b><small>${h.cap}</small></button>`).join('');
     $$('#qHalls .hall').forEach(b => b.onclick = () => { Q.hall = b.dataset.h; Q.pk = null; Q.adds = {}; renderQuote(); });
     $('#qHallNote').innerHTML = (Q.ev === 'wedding' || Q.ev === 'engagement') && okH.length === 2 ? `<div class="tip">لعدد ${AD(Q.n)} فرد فيه قاعتين مناسبين. شوف «ترشيح ومقارنة» عشان تعرض على العميل الفرق بينهم.</div>` : (Q.hall && !(hs.find(h => h.id === Q.hall) || {}).ok ? '<div class="tip">القاعة دي مش مناسبة للعدد ده.</div>' : '');
     // packages
@@ -517,10 +517,11 @@ ${whatIfHTML()}
     const h = new Date().getHours(), t0 = today0().getTime(), m0 = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
     const S = lsGet(SK(), []).filter(x => x.at >= t0), H = lsGet(HK(), []), g = lsGet(GK(), { q: 3, fu: 5, m: 2 });
     const v = { q: H.filter(x => x.at >= t0).length, fu: S.filter(x => x.type === 'fu').length, m: S.filter(x => x.type === 'meet').length };
-    const kp = (k, n) => { const p = Math.min(100, Math.round(v[k] * 100 / Math.max(1, g[k]))); return `<div class="kpi"><small>${n}</small><b>${AD(v[k])} <span>من ${AD(g[k])}</span></b><i><u style="width:${p}%"></u></i></div>`; };
-    const mq = H.filter(x => x.at >= m0);
-    $('#homeOut').innerHTML = `<div class="ph"><div><h1>مكتب النهارده</h1><p>${h < 12 ? 'صباح الخير' : 'مساء الخير'} يا ${esc(ME.name)} · ${dateTxt(new Date())} · مواعيد القسم ١٠ ص – ١١ م</p></div><div class="phact"><button type="button" class="btn" data-go="new">${svg('receipt')}عرض سعر جديد</button><button type="button" class="btn pri" data-go="meet">${svg('users')}مقابلة عميل</button></div></div>
-<div class="kstrip">${kp('q', 'عروض النهارده')}${kp('fu', 'متابعات')}${kp('m', 'مقابلات في المكتب')}<div class="kpi"><small>قيمة عروض الشهر</small><b>${money(mq.reduce((a, x) => a + (x.total || 0), 0))}</b><span class="ctx">${AD(mq.length)} عرض</span></div><button type="button" class="kedit" id="gEdit" title="تعديل أهدافي">تعديل الأهداف</button></div>
+        const mq = H.filter(x => x.at >= m0);
+    const pq = Math.min(100, Math.round(v.q * 100 / Math.max(1, g.q)));
+    $('#homeOut').innerHTML = `<div class="ph"><div><h1>مكتب النهارده</h1><p>${h < 12 ? 'صباح الخير' : 'مساء الخير'} يا ${esc(ME.name)} · ${dateTxt(new Date())}</p></div></div>
+<div class="htop"><div class="hero"><div class="ring" style="--p:${pq}"><div><b>${AD(v.q)} / ${AD(g.q)}</b><span>عروض النهارده</span></div></div><div class="hk"><div><span>متابعات النهارده</span><b>${AD(v.fu)} من ${AD(g.fu)}</b></div><div><span>مقابلات في المكتب</span><b>${AD(v.m)} من ${AD(g.m)}</b></div><div><span>قيمة عروض الشهر</span><b>${money(mq.reduce((a, x) => a + (x.total || 0), 0))}</b></div></div><button type="button" class="kedit" id="gEdit" title="تعديل أهدافي">تعديل الأهداف</button></div>
+<div class="hacts"><button type="button" class="btn" data-go="meet">${svg('users')}مقابلة عميل</button><button type="button" class="btn pri" data-go="new">${svg('receipt')}عرض سعر جديد</button></div></div>
 <div class="hgrid"><section class="panel"><header><h2>قائمة العمل</h2><span class="ctx" id="qCount"></span><div class="qtabs" id="qTabs"></div></header><div id="queue"></div></section>
 <aside class="hside">${quickPriceHTML()}<div id="hoBox"></div></aside></div>
 <section class="panel"><header><h2>آخر عروضي</h2><button type="button" class="btn ghost" data-go="hist" style="margin-inline-start:auto">كل السجل</button></header><div class="pin">${histTable(H.slice(0, 5))}</div></section>`;
@@ -1489,6 +1490,13 @@ ${step ? `<div class="card step${step.late ? ' late' : ''}"><h3>${svg('bolt')} �
   });
   const sync = () => { const on = nav.querySelector('button.on'), t = on ? on.dataset.t : 'home';
     $$('#mTabs button').forEach(b => b.classList.toggle('on', b.dataset.mt === t || (b.dataset.mt === 'more' && !TABS.some(x => x[0] === t)))); };
-  new MutationObserver(sync).observe(nav, { subtree: true, attributes: true, attributeFilter: ['class'] }); sync();
+  const greet = () => { const h = new Date().getHours(), nm = ($('#meName') || {}).textContent || ''; $('#hgT').textContent = h < 12 ? 'صباح الخير' : 'مساء الخير'; $('#hgN').textContent = nm;
+    $('#nUser').innerHTML = nm ? `<div class="nu"><span class="av">${($('#meAv') || {}).textContent || ''}</span><div><b>${nm}</b><small>${($('#meRole') || {}).textContent || ''}</small></div></div><button type="button" data-u="tgBtn">ربط تليجرام</button><button type="button" data-u="zIn">تكبير الخط</button><button type="button" data-u="zOut">تصغير الخط</button><button type="button" data-u="logout" class="out">خروج</button>` : ''; };
+  $('#nUser').addEventListener('click', e => { const b = e.target.closest('[data-u]'); if (!b) return; if (b.dataset.u !== 'zIn' && b.dataset.u !== 'zOut') open(false); $('#' + b.dataset.u).click(); });
+  // شريط عرض السعر على الموبايل: الإجمالي + أهم زرارين، والباقي تحت «المزيد»
+  const qb = $('#qBar');
+  if (qb) { const addMore = () => { const sp = qb.querySelector('.sp'); if (sp && !sp.querySelector('.bmore')) { const m = document.createElement('button'); m.type = 'button'; m.className = 'btn bmore'; m.textContent = qb.classList.contains('open') ? 'أقل' : 'المزيد ⋯'; m.onclick = () => { qb.classList.toggle('open'); m.textContent = qb.classList.contains('open') ? 'أقل' : 'المزيد ⋯'; }; sp.appendChild(m); } };
+    new MutationObserver(addMore).observe(qb, { childList: true }); addMore(); }
+  new MutationObserver(() => { sync(); greet(); }).observe(nav, { subtree: true, attributes: true, attributeFilter: ['class'] }); sync(); greet();
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { open(false); document.body.classList.remove('srchOpen'); } });
 })();
