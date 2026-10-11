@@ -100,8 +100,8 @@ window.DMCORE = function (K) {
       const a = K.addons[+i]; if (!a) return; const pr = priceOf(a);
       if (pr.kind === 'pct') { notes.push(`${a.n}: ${pr.label} (تُحتسب عند التعاقد)`); return; }
       const q = Math.max(1, s.qty || 1), unit = pr.kind === 'opts' ? (pr.opts[s.opt || 0] || pr.opts[0])[1] : pr.v;
-      const amount = pr.kind === 'pp' ? unit * Q.n : unit * q;
-      const lbl = `${a.n}${pr.kind === 'opts' ? ' – ' + (pr.opts[s.opt || 0] || pr.opts[0])[0] : ''}${pr.kind === 'pp' ? ` (${money(unit)} × ${AD(Q.n)} فرد)` : q > 1 ? ` × ${AD(q)}` : ''}${pr.kind === 'from' ? ' (يبدأ من)' : ''}`;
+      const ppN = s.qty > 1 ? s.qty : Q.n, amount = pr.kind === 'pp' ? unit * ppN : unit * q;
+      const lbl = `${a.n}${pr.kind === 'opts' ? ' – ' + (pr.opts[s.opt || 0] || pr.opts[0])[0] : ''}${pr.kind === 'pp' ? ` (${money(unit)} × ${AD(ppN)} فرد)` : q > 1 ? ` × ${AD(q)}` : ''}${pr.kind === 'from' ? ' (يبدأ من)' : ''}`;
       lines.push({ t: lbl, v: amount, g: a.g });
     });
     const total = lines.reduce((x, l) => x + l.v, 0), D = depositOf(Q.ev === 'katb' && Q.hall === 'mawadda' ? 'mawadda' : Q.hall);
