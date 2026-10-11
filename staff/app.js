@@ -1456,3 +1456,39 @@ ${step ? `<div class="card step${step.late ? ' late' : ''}"><h3>${svg('bolt')} �
   let SU = null; try { SU = USERS.find(x => x.id === sessionStorage.getItem('dm-staff')); } catch (e) { }
   if (SU) enter(SU);
 })();
+
+/* ---------- v8 – الموبايل: قائمة منسدلة + شريط سفلي (نفس الهوية) ---------- */
+(() => {
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const hdr = $('#app > header'), nav = $('#nav'); if (!hdr || !nav) return;
+  const ico = t => { const e = nav.querySelector(`button[data-t="${t}"] span[data-ic]`); return e ? e.innerHTML : ''; };
+  const burger = document.createElement('button');
+  burger.type = 'button'; burger.id = 'mBurger'; burger.className = 'bell mOnly'; burger.title = 'القائمة';
+  burger.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+  hdr.insertBefore(burger, hdr.firstChild);
+  const sBtn = document.createElement('button');
+  sBtn.type = 'button'; sBtn.id = 'mSearch'; sBtn.className = 'bell mOnly'; sBtn.title = 'بحث';
+  sBtn.innerHTML = $('.gsearch [data-ic]') ? $('.gsearch [data-ic]').innerHTML : '🔍';
+  hdr.insertBefore(sBtn, $('#bell'));
+  const ov = document.createElement('div'); ov.id = 'mOv'; document.body.appendChild(ov);
+  const open = on => { document.body.classList.toggle('navOpen', on); };
+  burger.onclick = () => open(!document.body.classList.contains('navOpen'));
+  ov.onclick = () => open(false);
+  nav.addEventListener('click', e => { if (e.target.closest('button[data-t]')) open(false); });
+  sBtn.onclick = () => { document.body.classList.toggle('srchOpen'); if (document.body.classList.contains('srchOpen')) setTimeout(() => $('#gq').focus(), 50); };
+  // شريط سفلي لأهم ٥ حاجات
+  const TABS = [['home', 'الرئيسية'], ['meet', 'مقابلة'], ['quote', 'عرض سعر'], ['hist', 'عروضي']];
+  const bar = document.createElement('div'); bar.id = 'mTabs';
+  bar.innerHTML = TABS.map(([t, n]) => `<button type="button" data-mt="${t}">${ico(t)}<em>${n}</em></button>`).join('') +
+    `<button type="button" data-mt="more">${burger.innerHTML}<em>المزيد</em></button>`;
+  $('#app').appendChild(bar);
+  bar.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.mt === 'more') return open(true);
+    const n = nav.querySelector(`button[data-t="${b.dataset.mt}"]`); if (n) n.click();
+  });
+  const sync = () => { const on = nav.querySelector('button.on'), t = on ? on.dataset.t : 'home';
+    $$('#mTabs button').forEach(b => b.classList.toggle('on', b.dataset.mt === t || (b.dataset.mt === 'more' && !TABS.some(x => x[0] === t)))); };
+  new MutationObserver(sync).observe(nav, { subtree: true, attributes: true, attributeFilter: ['class'] }); sync();
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { open(false); document.body.classList.remove('srchOpen'); } });
+})();
