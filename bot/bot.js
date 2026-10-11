@@ -579,6 +579,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   log.addEventListener('scroll', () => { if (!panel.hidden) idleArm(); }, { passive: true });
   ['pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel'].forEach(ev => window.addEventListener(ev, () => { if (panel.hidden && started) idleArm(); }, { passive: true }));
   launch.addEventListener('click', open); mini.addEventListener('click', open);
+  try { if (sessionStorage.getItem('dmb-gohome')) { sessionStorage.removeItem('dmb-gohome'); const top0 = () => window.scrollTo(0, 0); top0(); window.addEventListener('load', () => { top0(); setTimeout(top0, 60); }); } } catch (e) { }
   // QR «?ai=1» opens the assistant straight away
   let DL = null, DLSRC = '';
   try { const u = new URLSearchParams(location.search); const src = u.get('src'); if (src) DLSRC = src.slice(0, 40); if (u.get('ev') || u.get('hall')) DL = { ev: u.get('ev'), hall: u.get('hall') }; } catch (e) { }
@@ -625,8 +626,11 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
       hideWarn();
       try { localStorage.removeItem('dmb-lead-v1'); localStorage.removeItem(LKEY); localStorage.removeItem('dmb-lang'); localStorage.removeItem('dmb-z'); } catch (e) { }
       try { sessionStorage.clear(); } catch (e) { }
-      const u = new URL(location.href); u.hash = ''; if (/[?&]ai=1/.test(location.search) || !panel.hidden) u.searchParams.set('ai', '1');
-      location.replace(u.toString());
+      try { panel.hidden = true; document.documentElement.classList.remove('dmb-open'); } catch (e) { }
+      const u = new URL(location.href); u.hash = ''; u.searchParams.delete('ai');
+      try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) { }
+      try { sessionStorage.setItem('dmb-gohome', '1'); } catch (e) { }
+      window.scrollTo(0, 0); location.replace(u.toString());
     };
     const warn = () => {
       if (!used() || panel.hidden && !/[?&]ai=1/.test(location.search)) return arm();
