@@ -1011,8 +1011,9 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   }
 
   // ---- (1) understand a long, detailed message in one go ----
+  const isDayCmp = t => !/(^| )(احسب|احسبلي)( |$)/.test(t) && /(وسط|منتصف) ?ال?اسبوع/.test(t) && /(اخر|نهايه|نهاية) ?ال?اسبوع|ويك ?اند|weekend/.test(t) && /(فرق|الفرق|قارن|مقارنه|ولا|اوفر|ارخص|نوفر|توفير|يفرق|احسن)/.test(t);
   function longAns(t) {
-    const nw = t.trim().split(' ').length; if (nw < 6) return false;
+    const nw = t.trim().split(' ').length; if (nw < 6 || isDayCmp(t)) return false;
     const halls = findHalls(t).filter(h => K.halls[h]), ev = findEvent(t), date = findDate(t), day = findDay(t, date), budget = findBudget(t);
     let count = findCount(t, false);
     if (count && budget && count * 1000 === budget && !new RegExp(' ' + count + ' ?(?:فرد|افراد|شخص|نفر|معزوم|ضيف|مدعو)').test(t)) count = null;
@@ -1119,6 +1120,10 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
     const nw = t.trim().split(' ').length;
     const count = findCount(t, (FLOW && FLOW.wantCount) || nw <= 3 || / (?:لو|طب|طيب|وللو|ول) \d/.test(t));
     const day = findDay(t, date);
+    // مقارنة منتصف الأسبوع ونهايته (قبل أي حساب أو سؤال جاري)
+    if (!EN() && isDayCmp(t)) {
+      FLOW = null; if (halls[0] && K.halls[halls[0]]) S.hall = halls[0]; const c = count || findCount(t, true); if (c) S.count = c; if (ev) S.event = ev; return dayCompareAns();
+    }
     if (FLOW && FLOW.step) { if (FLOW.step(raw, t, { halls, ev, count, date, day })) return; }
     const prevHall = S.hall;
     if (halls.length && halls[0] !== S.hall && !menuQ) S.menu = null;
@@ -1427,7 +1432,7 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
       bot(`<p class="dmb-h">تكلفة تقديرية – ${h.name}</p><p>${AD(n)} فرد${dayTxt ? ' – ' + dayTxt : ''}${dateNote}</p><table class="dmb-t"><tr><th>المنيو</th><th>الإجمالي التقديري</th></tr>${rows.join('')}</table>${notesFor(h, n, baseN, day)}${ctaLine(hid)}${src(hid)}`, [{ t: 'عرض سعر تفصيلي بالإضافات', fn: () => startQuote({ ev: ['wedding', 'engagement'].includes(S.event) ? S.event : 'wedding', hall: hid, n, day }), cls: 'pri' }, { t: 'تجهيز طلب الحجز', fn: () => startBook() }]);
     }
     // ordered by what clients need next: the menus → set menu or buffet → the other day → viewing → add-ons → change the count
-    chips([{ t: 'احسبها بنفسك', fn: () => calcCard(hid) }, ...h.menus.filter(menuOK).slice(0, 2).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.replace(/\d+$/, ''), n: +(m.id.match(/\d+$/) || [0])[0] }) })), { t: 'قارن المنيوهات', fn: () => menusCompareAns() }, { t: 'منتصف الأسبوع ولا نهايته؟', fn: dayCompareAns }, ...(h.menus.some(m => /^ob/.test(m.id)) ? [{ t: 'ست منيو ولا أوبن بوفيه؟', q: 'الفرق بين الست منيو والاوبن بوفيه' }] : []), ...(h.pk.type === 'wk' || h.pk.fee ? [{ t: day === 'we' ? 'احسب لمنتصف الأسبوع' : 'احسب لنهاية الأسبوع', fn: () => { S.day = day === 'we' ? 'wd' : 'we'; S.date = null; estimate(); } }] : []), { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'مقترحات لحفلتك', fn: () => suggestAns(hid) }, { t: 'تغيير العدد', fn: () => askCount() }]);
+    chips([{ t: 'احسبها بنفسك', fn: () => calcCard(hid) }, ...(n ? [{ t: 'منتصف الأسبوع ولا نهايته؟', fn: () => { S.hall = hid; S.count = n; dayCompareAns(); } }] : []), ...h.menus.filter(menuOK).slice(0, 2).map(m => ({ t: 'محتوى ' + m.name, fn: () => menuDetail({ k: m.id.replace(/\d+$/, ''), n: +(m.id.match(/\d+$/) || [0])[0] }) })), { t: 'قارن المنيوهات', fn: () => menusCompareAns() }, { t: 'منتصف الأسبوع ولا نهايته؟', fn: dayCompareAns }, ...(h.menus.some(m => /^ob/.test(m.id)) ? [{ t: 'ست منيو ولا أوبن بوفيه؟', q: 'الفرق بين الست منيو والاوبن بوفيه' }] : []), ...(h.pk.type === 'wk' || h.pk.fee ? [{ t: day === 'we' ? 'احسب لمنتصف الأسبوع' : 'احسب لنهاية الأسبوع', fn: () => { S.day = day === 'we' ? 'wd' : 'we'; S.date = null; estimate(); } }] : []), { t: 'حجز موعد معاينة', fn: () => startVisit() }, { t: 'مقترحات لحفلتك', fn: () => suggestAns(hid) }, { t: 'تغيير العدد', fn: () => askCount() }]);
   }
   function notesFor(h, n, baseN, day) {
     const L = [];
@@ -1592,15 +1597,16 @@ ${row('فوتو سيشن', 'حتى ٦ أفراد', money(5000), 'رسوم الج
 <tr><td><b>عددك فيها</b></td>${col(H => `${feel(H)}<br><small>حوالي ${AD(full(H))}٪ من سعتها</small>`)}</tr>
 <tr><td><b>الباكدج محسوب على</b></td>${col(H => `${AD(pkN(H, day))} فرد${extra(H) ? `<br><small>+ ${AD(extra(H))} وجبة إضافية</small>` : '<br><small>عددك داخل الباكدج</small>'}`)}</tr>
 <tr><td><b>التكلفة لعدد ${AD(n)}</b><br><small>${dayLbl}</small></td>${col(H => `<b>${money(lowAt(H, n, day))}</b><br><small>حتى ${money(highAt(H, n, day))}</small>`)}</tr>
-<tr><td><b>نهاية الأسبوع</b></td>${col(H => weTxt(H))}</tr>
+${S.day ? `<tr><td><b>نهاية الأسبوع</b></td>${col(H => weTxt(H))}</tr>` : `<tr><td><b>نهاية الأسبوع</b><br><small>الخميس – السبت</small></td>${col(H => `<b>${money(lowAt(H, n, 'we'))}</b><br><small>${weTxt(H)}</small>`)}</tr>
+<tr><td><b>توفيرك لو منتصف الأسبوع</b></td>${col(H => `<b>${money(lowAt(H, n, 'we') - lowAt(H, n, 'wd'))}</b>`)}</tr>`}
 <tr><td><b>المنيوهات</b></td>${col(H => `${AD(okMenus(H).length)} اختيارات${obs(H) ? '<br><small>منها أوبن بوفيه</small>' : ''}`)}</tr>
 </table>
 <div class="dmb-sec"><b>الفرق باختصار:</b><ul>
 <li><b>${HALLNAME[lo]}</b> أوفر بحوالي <b>${money(diff)}</b> لنفس العدد${S.day ? '' : ' (منتصف الأسبوع)'}.</li>
-<li><b>${HALLNAME[hi]}</b> ${full(Hh) < full(L) ? 'أوسع وعددك فيها براحة أكبر' : 'أفخم'}${obs(Hh) && !obs(L) ? '، وفيها اختيار أوبن بوفيه' : ''}${okMenus(Hh).length > okMenus(L).length ? '، ومنيوهاتها أكتر' : ''}.</li>
+<li><b>${HALLNAME[hi]}</b> ${full(Hh) < full(L) ? 'أوسع وعددك فيها براحة أكبر' : 'أفخم'}${obs(Hh) && !obs(L) ? '، وفيها اختيار أوبن بوفيه' : ''}${okMenus(Hh).length > okMenus(L).length ? '، ومنيوهاتها أكتر' : ''}.</li>${S.day ? '' : (() => { const c = [[lo, 'wd'], [lo, 'we'], [hi, 'wd'], [hi, 'we']].map(([h, d]) => ({ h, d, v: lowAt(K.halls[h], n, d) })), b = c.reduce((a, x) => x.v < a.v ? x : a), w = c.reduce((a, x) => x.v > a.v ? x : a); return `<li>أوفر اختيار لعددك: <b>${HALLNAME[b.h]} – ${b.d === 'we' ? 'نهاية' : 'منتصف'} الأسبوع</b>، وفرقه عن <b>${HALLNAME[w.h]} – ${w.d === 'we' ? 'نهاية' : 'منتصف'} الأسبوع</b> حوالي <b>${money(r500(w.v - b.v))}</b>.</li>`; })()}
 </ul></div><p class="dmb-note">الأرقام تقديرية شاملة الباكدج والوجبات الإضافية لعدد ${AD(n)} فرد، من أقل منيو لأعلاه.</p>`;
     bot(html + recPick([lo, hi], n) + '<p>اختار القاعة اللي تحب تشوف تفاصيل منيوهاتها.</p>');
-    chips([lo, hi].map(h => ({ t: 'التفاصيل في ' + HALLNAME[h], fn: () => { S.hall = h; S.menu = null; estimate(); } })).concat([{ t: 'مقارنة كاملة بين القاعتين', fn: () => compareHalls(lo, hi) }, ...(more || [{ t: 'حجز موعد معاينة', fn: () => startVisit() }])]));
+    chips([lo, hi].map(h => ({ t: 'التفاصيل في ' + HALLNAME[h], fn: () => { S.hall = h; S.menu = null; estimate(); } })).concat([{ t: 'منتصف الأسبوع ولا نهايته؟', fn: () => { S.count = n; S.hall = lo; dayCompareAns(); } }, { t: 'مقارنة كاملة بين القاعتين', fn: () => compareHalls(lo, hi) }, ...(more || [{ t: 'حجز موعد معاينة', fn: () => startVisit() }])]));
   }
   let MINOK = {};
   function belowMin(hid, n) {
@@ -3300,6 +3306,8 @@ ${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانت
 
   // ---- weekday vs weekend ----
   function weekDiff(hid) {
+    if (K.halls[hid]) S.hall = hid;
+    if (S.count) return dayCompareAns();
     hid = K.halls[hid] ? hid : (K.halls[S.hall] ? S.hall : null);
     if (!hid) { bot('<p>في قاعة أخناتون يوجد باكدج مستقل لكل من منتصف الأسبوع ونهايته، وفي قاعتي إيزيس واللوتس تُضاف رسوم ثابتة لأيام الخميس والجمعة والسبت والعطلات. أنهي قاعة تهمك؟</p>'); chips(byCount(['akhenaten', 'isis', 'lotus']).map(h => ({ t: HALLNAME[h], fn: () => weekDiff(h) }))); return; }
     S.hall = hid; const H = K.halls[hid];
@@ -3309,7 +3317,7 @@ ${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانت
     } else {
       bot(`<p class="dmb-h">منتصف الأسبوع ونهايته – ${H.name}</p><p>الباكدج واحد طوال الأسبوع لعدد ${AD(H.pk.n)} فرد، ويُضاف <b>${money(H.pk.fee)}</b> فقط للحفلات أيام الخميس والجمعة والسبت والأعياد والعطلات الرسمية.</p>${src(hid, 3)}`);
     }
-    chips([{ t: 'احسب التكلفة لعدد معين', fn: () => askCount() }, { t: 'عرض سعر تفصيلي', fn: () => startQuote(quotePre(hid)) }]);
+    chips([{ t: 'قارن بالأرقام لعددي', fn: () => askCount(dayCompareAns) }, { t: 'عرض سعر تفصيلي', fn: () => startQuote(quotePre(hid)) }]);
   }
 
   // ---- katb: Mawadda vs Lotus side by side ----
@@ -3357,7 +3365,7 @@ ${focus !== 'sm' && focus !== 'ob' && diff > 0 ? `<p class="dmb-note">الانت
     if (W('ليه اختار', 'ليه اختاركم', 'ليه احجز عندكم', 'ليه احجز معاكم', 'ايه اللي يميزكم', 'بتتميزوا', 'مميزاتكم', 'مميزات الدار', 'ايه يميز الدار', 'ليه دار المراسم', 'ليه انتم', 'ليه انتو', 'افضل من غيركم', 'why you', 'ايه اللي يميز الدار', 'عرفني بالدار', 'عرفني عن الدار', 'نبذه عن الدار')) { whyUs(); return true; }
     if (W('عروض', 'العروض', 'عرض خاص', 'اوفر', 'اوفرز', 'offer', 'offers', 'ازاي اوفر', 'نوفر', 'اوفر فلوس', 'توفير', 'اوفر حاجه', 'اقل تكلفه ممكنه') && !W('شو', 'فاير', 'زفه', 'ليزر', 'عروض فنيه', 'المؤثرات', 'عرض سعر', 'عرض اسعار', 'خصم', 'تخفيض', 'تفاوض', 'سعر خاص')) { offersAns(); return true; }
     const weekW = W('وسط الاسبوع', 'منتصف الاسبوع', 'اخر الاسبوع', 'نهايه الاسبوع', 'ويك اند', 'weekend', 'الويك اند');
-    if (weekW && W('الفرق', 'فرق', 'ليه', 'اختلاف', 'مقارنه', 'قارن', 'يفرق', 'بيفرق')) { weekDiff(hallsK[0]); return true; }
+    if (weekW && W('الفرق', 'فرق', 'ليه', 'اختلاف', 'مقارنه', 'قارن', 'يفرق', 'بيفرق', 'ولا', 'اوفر', 'ارخص', 'نوفر', 'توفير')) { if (count) S.count = count; weekDiff(hallsK[0]); return true; }
     const difW = W('الفرق', 'فرق', 'قارن', 'قارنلي', 'مقارنه', 'يفرق', 'بيفرق', 'ولا', 'احسن', 'افضل', 'vs');
     const smW = /ست ?منيو|سيت ?منيو|set ?menu/.test(t), obW = /اوبن ?بوفيه|بوفيه مفتوح|open ?buffet/.test(t);
     const pkW = /باكدج|باكيدج|باكيج|بكدج|باكج|الباكدجات/.test(t);
