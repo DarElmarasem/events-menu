@@ -322,6 +322,10 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
 .dmb-panel>.dmb-log{flex:1 1 0!important;min-height:0!important}
 .dmb-panel>.dmb-in{flex:0 0 auto!important;position:relative}
 .dmb-panel>.dmb-chips{flex:0 1 auto!important;min-height:0;overflow-y:auto}
+.dmb-panel>.dmb-tels{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;justify-content:flex-start}
+.dmb-panel>.dmb-tels::-webkit-scrollbar{display:none}
+.dmb-panel>.dmb-tels>*{flex:0 0 auto}
+@media(min-width:480px){.dmb-panel>.dmb-tels{justify-content:center}}
 .dmb-short .dmb-chips{max-height:64px}
 .dmb-tiny .dmb-chips{max-height:46px}
 .dmb-short .dmb-tels,.dmb-short .dmb-cr,.dmb-short .dmb-sig{display:none!important}
@@ -489,16 +493,29 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
   let fitRaf = 0;
   // iOS Safari: the keyboard shrinks only the *visual* viewport. The panel follows it (height + offset), and the fixed
   // parts around the conversation are compacted by the space actually left, so the input bar is never pushed out.
+  const DVH = !!(window.CSS && CSS.supports && CSS.supports('height', '100dvh'));
   function fitVV() {
     cancelAnimationFrame(fitRaf);
     fitRaf = requestAnimationFrame(() => {
-      if (panel.hidden || !MOB()) { panel.style.removeProperty('--dmb-vh'); panel.style.removeProperty('--dmb-vt'); panel.classList.remove('dmb-kb', 'dmb-short', 'dmb-tiny'); return; }
-      const h = vv ? vv.height : window.innerHeight, top = vv ? Math.max(0, vv.offsetTop) : 0;
-      const layoutH = document.documentElement.clientHeight || window.innerHeight || h;
-      panel.style.setProperty('--dmb-vh', Math.round(h) + 'px');
-      panel.style.setProperty('--dmb-vt', Math.round(top) + 'px');
+      const P = panel.style;
+      if (panel.hidden || !MOB()) { P.removeProperty('--dmb-vh'); P.removeProperty('--dmb-vt'); panel.classList.remove('dmb-kb', 'dmb-short', 'dmb-tiny'); return; }
       const focused = document.activeElement === input;
-      const kb = focused && (layoutH - h > 120 || h < (window.innerHeight || h) * 0.8);
+      const layoutH = window.innerHeight || document.documentElement.clientHeight;
+      // the page behind is locked (body fixed); if Safari scrolled the document while focusing, put it back so the panel is not moved twice
+      if ((window.scrollY || 0) !== 0 && document.body.style.position === 'fixed') window.scrollTo(0, 0);
+      let h = layoutH, kb = false;
+      if (focused && vv) {
+        // keyboard open: follow the visual viewport (its height, and its offset clamped to the possible range)
+        h = vv.height;
+        kb = layoutH - h > 120;
+        const top = kb ? Math.min(Math.max(0, vv.offsetTop), Math.max(0, layoutH - h)) : 0;
+        P.setProperty('--dmb-vh', Math.round(h) + 'px');
+        P.setProperty('--dmb-vt', Math.round(top) + 'px');
+      } else {
+        // keyboard closed: no offset at all; CSS 100dvh sizes the panel (innerHeight only where dvh is unsupported)
+        P.removeProperty('--dmb-vt');
+        if (DVH) P.removeProperty('--dmb-vh'); else P.setProperty('--dmb-vh', Math.round(layoutH) + 'px');
+      }
       panel.classList.toggle('dmb-kb', kb);
       panel.classList.toggle('dmb-short', h < 600);
       panel.classList.toggle('dmb-tiny', h < 340);
@@ -511,7 +528,7 @@ html.dmb-open,html.dmb-open body{overflow:hidden}
     window.addEventListener('resize', fitVV);
     window.addEventListener('orientationchange', () => setTimeout(fitVV, 350));
   }
-  ['focus', 'blur'].forEach(ev => input.addEventListener(ev, () => { fitVV(); [80, 250, 500, 800].forEach(d => setTimeout(fitVV, d)); }));
+  ['focus', 'blur'].forEach(ev => input.addEventListener(ev, () => { fitVV(); [80, 250, 500, 800, 1200].forEach(d => setTimeout(fitVV, d)); }));
   let retEl = null;
   function showRet() { const a = launch.querySelector('.dmb-lt .ar'); if (a) { if (!a.dataset.o) a.dataset.o = a.textContent; a.textContent = tr('↩ رجوع للمساعد الذكي', '↩ Back to the assistant'); } launch.classList.add('ret'); mini.classList.add('ret'); document.documentElement.classList.add('dmb-retmode'); const ma = mini.querySelector('.dmb-lt .ar'); if (ma) ma.textContent = a ? a.textContent : ''; }
   function hideRet() { const a = launch.querySelector('.dmb-lt .ar'); if (a && a.dataset.o) a.textContent = a.dataset.o; launch.classList.remove('ret'); mini.classList.remove('ret'); document.documentElement.classList.remove('dmb-retmode'); const ma = mini.querySelector('.dmb-lt .ar'); if (ma && a) ma.textContent = a.textContent; }
