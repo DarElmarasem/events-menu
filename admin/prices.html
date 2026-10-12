@@ -106,11 +106,14 @@ input.bad{border-color:var(--bad)}
       out.push(sec('المناسبات الخاصة والمؤتمرات', '', `<table><tr><th>القاعة</th><th>العدد</th><th>سعر الحجز</th></tr>${K.special.halls.map((h, i) => `<tr><td>${esc(h.name)}</td><td>${num(['special', 'halls', i, 'n'])}</td><td>${num(['special', 'halls', i, 'price'])}</td></tr>`).join('')}</table>${mh.length ? `<table style="margin-top:12px"><tr><th>المنيو</th><th>سعر الفرد</th></tr>${K.special.menus.map((m, i) => m.pp == null ? '' : `<tr><td>${esc(m.name)}</td><td>${num(['special', 'menus', i, 'pp'])}</td></tr>`).join('')}</table>` : ''}`));
     }
     if (K.deposit) out.push(sec('مقدم الحجز والتأمين', '', `<table><tr><th>القاعة</th><th>مقدم الحجز</th><th>التأمين</th></tr>${K.deposit.map((r, i) => `<tr><td>${esc(r[0])}</td><td>${num(['deposit', i, 1])}</td><td>${num(['deposit', i, 2])}</td></tr>`).join('')}</table>`));
+    // the value of what each wedding package already includes (shown to the client under the estimate; empty = hidden)
+    out.push(sec('قيمة الخدمات المشمولة في الباكدج', 'اكتب قيمة كل خدمة لو اتطلبت لوحدها، والمساعد يعرض للعميل إجماليها تحت الحسبة (السيب فاضي = مش بيظهر)', Object.keys(H).map(id => { const items = (H[id].inc || []).flatMap(s => s.o.filter(o => o[0] === 'i').map(o => o[1])).filter(x => !/حجز القاع|كراسي/.test(x)); return items.length ? `<p style="margin:10px 0 4px;color:var(--gold)">${esc(H[id].name)}</p><table><tr><th>الخدمة المشمولة</th><th>قيمتها لوحدها (ج)</th></tr>${items.map(x => `<tr><td>${esc(x)}</td><td><input type="number" min="0" data-iv='${esc(JSON.stringify([id, x]))}' value="${esc(K.incv && K.incv[id] && K.incv[id][x] != null ? K.incv[id][x] : '')}"></td></tr>`).join('')}</table>` : ''; }).join('')));
     // add-ons (price kept as text exactly as printed, e.g. «1,500 ج» or «10 ج للفرد»)
     const SC = { akhenaten: 'أخناتون', isis: 'إيزيس', lotus: 'اللوتس', lotusk: 'كتب كتاب اللوتس', mawadda: 'المودة والرحمة', birthday: 'أعياد الميلاد', special: 'مناسبات خاصة', photo: 'فوتو سيشن', aqiqa: 'العقيقة' };
     out.push(sec('الإضافات والخدمات', `${K.addons.length} بند – السعر بيتكتب زي ما هو مطبوع (مثلاً: 1,500 ج أو 10 ج للفرد)`, `<input id="search" type="text" placeholder="ابحث باسم الخدمة أو القاعة…"><table id="addons" style="margin-top:10px"><tr><th>القاعة</th><th>القسم</th><th>الخدمة</th><th>السعر</th></tr>${K.addons.map((a, i) => `<tr data-q="${esc((SC[a.s] || a.s) + ' ' + a.g + ' ' + a.n)}"><td>${esc(SC[a.s] || a.s)}</td><td>${esc(a.g)}</td><td>${esc(a.n)}</td><td>${txt(['addons', i, 'p'])}</td></tr>`).join('')}</table>`));
     $('#app').innerHTML = out.join('');
     $('#app').querySelectorAll('input[data-p]').forEach(el => el.addEventListener('input', onEdit));
+    $('#app').querySelectorAll('input[data-iv]').forEach(el => el.addEventListener('input', onIncv));
     const s = $('#search'); if (s) s.addEventListener('input', () => { const q = s.value.trim(); $('#addons').querySelectorAll('tr[data-q]').forEach(tr => tr.classList.toggle('hide', q && !tr.dataset.q.includes(q))); });
   }
 
@@ -124,11 +127,22 @@ input.bad{border-color:var(--bad)}
     log();
   }
 
+  function onIncv(e) {
+    const el = e.target, [hid, item] = JSON.parse(el.dataset.iv), v = el.value.trim();
+    const old = ORIG.incv && ORIG.incv[hid] && ORIG.incv[hid][item] != null ? ORIG.incv[hid][item] : '';
+    if (v !== '' && (!isFinite(+v) || +v < 0)) { el.classList.add('bad'); return; } el.classList.remove('bad');
+    if (v === '') { if (K.incv && K.incv[hid]) { delete K.incv[hid][item]; if (!Object.keys(K.incv[hid]).length) delete K.incv[hid]; if (!Object.keys(K.incv).length) delete K.incv; } }
+    else { K.incv = K.incv || {}; K.incv[hid] = K.incv[hid] || {}; K.incv[hid][item] = +v; }
+    const key = 'incv|' + hid + '|' + item, nv = v === '' ? '' : +v;
+    if (nv === old) { changes.delete(key); el.classList.remove('changed'); } else { changes.set(key, { path: ['incv', hid, item], old: old === '' ? '—' : old, v: nv === '' ? '—' : nv }); el.classList.add('changed'); }
+    log();
+  }
   // the names a person reads in the change log
   function readable(path) {
     const P = path.slice();
     if (P[0] === 'halls') { const h = K.halls[P[1]]; let s = h.name; if (P[2] === 'menus') { s += ' – ' + h.menus[P[3]].name; const f = { wd: 'منتصف الأسبوع', we: 'نهاية الأسبوع', price: 'سعر الباكدج', extra: 'الوجبة الإضافية' }[P[4]]; if (f) s += ' – ' + f; if (P[4] === 'tiers') s += ' – الوجبة الإضافية ' + ['أول ٥٠', 'من ٥١ لـ ١٠٠', 'أكتر من ١٠٠'][P[5]]; } else s += ' – ' + label(P.slice(2)); return s; }
     if (P[0] === 'addons') { const a = K.addons[P[1]]; return 'إضافة – ' + a.n; }
+    if (P[0] === 'incv') return K.halls[P[1]].name + ' – قيمة «' + P[2] + '» المشمولة';
     if (P[0] === 'deposit') return K.deposit[P[1]][0] + ' – ' + (P[2] === 1 ? 'مقدم الحجز' : 'التأمين');
     return label(P);
   }
